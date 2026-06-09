@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZakatFlow — Purify Your Wealth with Precision</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="A serene, accurate, and premium Zakat calculator designed to help you purify your wealth. Calculate assets, liabilities, and Nisab thresholds in real-time based on Islamic principles.">
+  <meta name="keywords" content="Zakat Calculator, Islamic Finance, Nisab Gold, Nisab Silver, Purify Wealth, Sadaqah, Islamic Calculator">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          },
+          boxShadow: {
+            'premium': '0 4px 30px rgba(0, 0, 0, 0.015), 0 1px 3px rgba(0, 0, 0, 0.01)',
+            'premium-lg': '0 10px 40px rgba(4, 120, 87, 0.03), 0 2px 12px rgba(0, 0, 0, 0.015)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Local Custom CSS -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50/50 min-h-screen flex flex-col antialiased selection:bg-emerald-100 selection:text-emerald-800">
+
+  <!-- ================= HEADER / NAVIGATION ================= -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="flex items-center gap-2.5 group">
+        <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 group-hover:scale-105 transition-transform duration-200">
+          <!-- Leaf / Sprout Icon -->
+          <svg class="w-5.5 h-5.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+          </svg>
+        </div>
+        <span class="text-xl font-bold tracking-tight text-slate-800 font-display">Zakat<span class="text-emerald-600">Flow</span></span>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
+        <a href="#calculator-section" class="text-emerald-600 border-b-2 border-emerald-600 pb-1.5 pt-0.5 transition-colors">Calculator</a>
+        <button onclick="openModal('principles-modal')" class="hover:text-slate-800 pb-1.5 pt-0.5 transition-colors">Principles</button>
+        <button onclick="openModal('nisab-modal')" class="hover:text-slate-800 pb-1.5 pt-0.5 transition-colors">Nisab Info</button>
+        <button onclick="openModal('history-modal')" class="hover:text-slate-800 pb-1.5 pt-0.5 transition-colors flex items-center gap-1">
+          History <span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Drafts</span>
+        </button>
+      </nav>
+
+      <!-- Currency & Actions -->
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <select 
+            id="currency-select" 
+            class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300"
+          >
+            <!-- Generated dynamically via JS -->
+          </select>
+        </div>
+        <a 
+          href="#calculator-section" 
+          class="hidden sm:inline-flex items-center justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all-300 shadow-sm shadow-emerald-700/10"
+        >
+          Calculate Now
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="relative bg-gradient-to-b from-emerald-50/40 via-transparent to-transparent pt-12 pb-8 px-4 sm:px-6 lg:px-8 text-center no-print">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 font-display mb-4">
+        Purify Your Wealth with Precision
+      </h1>
+      <p class="text-base sm:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
+        A serene, accurate, and dignified calculation experience honoring the spiritual obligation of Zakat. Clear your debts to society and purify your remaining wealth.
+      </p>
+      <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold shadow-sm">
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a.75.75 0 00-.708.522L3.511 12.5a.75.75 0 00.125.727l2.875 3.5a.75.75 0 001.125 0l2.875-3.5a.75.75 0 00.125-.727L8.592 3.977a.75.75 0 00-.708-.522H6.267zm2.348 10.366L6.267 5.5l-2.348 8.321 1.706 2.077 1.706-2.077zM12 4.75a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75H12.75a.75.75 0 01-.75-.75v-4.5zM13.5 5.5v3h3v-3h-3zm-1.5 8.25a.75.75 0 01.75-.75h4.5a.75.75 0 01.75.75v4.5a.75.75 0 01-.75.75H12.75a.75.75 0 01-.75-.75v-4.5zM13.5 14.5v3h3v-3h-3z" clip-rule="evenodd" /></svg>
+        Based on authentic scholarly consensus
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MAIN CALCULATOR CONTAINER ================= -->
+  <main id="calculator-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 flex-grow w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- LEFT COLUMN (INPUTS & SETTINGS) - Spans 8/12 -->
+      <div class="lg:col-span-8 flex flex-col gap-6 no-print">
+        
+        <!-- CARD 1: NISAB THRESHOLD SETTINGS -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                <!-- Scales / Balance Icon -->
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-slate-800 font-display">Nisab Threshold</h2>
+                <p class="text-xs text-slate-400">Determine the minimum wealth required for Zakat obligation.</p>
+              </div>
+            </div>
+            <!-- Nisab standard toggle -->
+            <div class="flex bg-slate-100 p-1 rounded-xl">
+              <button 
+                id="nisab-gold-toggle" 
+                class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all-300 bg-slate-100 text-slate-700 hover:text-slate-900"
+              >
+                Gold (87.48g)
+              </button>
+              <button 
+                id="nisab-silver-toggle" 
+                class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all-300 bg-emerald-600 text-white"
+              >
+                Silver (612.36g)
+              </button>
+            </div>
+          </div>
+
+          <!-- Price inputs -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
+            <div>
+              <label for="gold-price-input" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Current Gold Price (per gram)</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-2.5 text-sm font-semibold text-slate-400 currency-symbol">$</span>
+                <input 
+                  type="number" 
+                  id="gold-price-input" 
+                  step="0.01" 
+                  min="0"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-700 font-semibold input-focus-ring transition-all-300"
+                />
+              </div>
+              <div class="flex justify-between items-center mt-2 px-1 text-[11px] text-slate-400">
+                <span>Threshold Value (87.48g):</span>
+                <span id="nisab-gold-value" class="font-semibold text-slate-600">$ 5,729.94</span>
+              </div>
+            </div>
+
+            <div>
+              <label for="silver-price-input" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Current Silver Price (per gram)</label>
+              <div class="relative">
+                <span class="absolute left-3.5 top-2.5 text-sm font-semibold text-slate-400 currency-symbol">$</span>
+                <input 
+                  type="number" 
+                  id="silver-price-input" 
+                  step="0.01" 
+                  min="0"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-700 font-semibold input-focus-ring transition-all-300"
+                />
+              </div>
+              <div class="flex justify-between items-center mt-2 px-1 text-[11px] text-slate-400">
+                <span>Threshold Value (612.36g):</span>
+                <span id="nisab-silver-value" class="font-semibold text-slate-600">$ 459.27</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Threshold Status Banner -->
+          <div class="flex items-start gap-3 bg-slate-50 border border-slate-200/60 p-4 rounded-2xl">
+            <div class="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </div>
+            <p id="active-nisab-banner-text" class="text-xs text-slate-500 leading-normal">
+              Active Threshold: <strong>Silver</strong>. Your wealth must exceed <strong>$ 459.27</strong> (612.36g) to be eligible for Zakat.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- CARD 2: ZAKATABLE ASSETS -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-5 mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                <!-- Cash/Safe Icon -->
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-slate-800 font-display">Zakatable Assets</h2>
+                <p class="text-xs text-slate-400">Declare eligible assets you possess (gold, silver, cash, shares, etc.).</p>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              id="add-asset-btn"
+              onclick="addAsset()"
+              class="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs px-3.5 py-2 rounded-xl border border-emerald-100 transition-all-300"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+              Add Asset
+            </button>
+          </div>
+
+          <!-- Dynamic Asset Inputs List -->
+          <div id="assets-container" class="flex flex-col gap-4">
+            <!-- Asset rows generated dynamically via app.js -->
+          </div>
+        </div>
+
+        <!-- CARD 3: DEDUCTIBLE LIABILITIES -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-5 mb-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
+                <!-- Subtract / Bill Icon -->
+                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2-2 4 4m0-7l3 3m-3-3l-3 3M3 21h18M3 10h18M3 7l9-4 9 4v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-bold text-slate-800 font-display">Deductible Liabilities</h2>
+                <p class="text-xs text-slate-400">Declare short-term loans, bills, or immediate essential expenses to exclude.</p>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              onclick="addLiability()"
+              class="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs px-3.5 py-2 rounded-xl border border-emerald-100 transition-all-300"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+              Add Liability
+            </button>
+          </div>
+
+          <!-- Dynamic Liabilities List -->
+          <div id="liabilities-container" class="flex flex-col gap-4">
+            <!-- Liabilities rows generated dynamically via app.js -->
+          </div>
+          
+          <div class="mt-4 px-1 text-[11px] text-slate-400 leading-normal">
+            <strong>Advisory Note:</strong> According to Islamic jurisprudence, only outstanding debts due immediately or within the current lunar year can be deducted from your zakatable assets.
+          </div>
+        </div>
+
+        <!-- CARD 4: AL-HAWL CONFIRMATION -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
+          <div class="flex items-start gap-4">
+            <div class="flex items-center h-6">
+              <input 
+                id="hawl-checkbox" 
+                name="hawl-checkbox" 
+                type="checkbox" 
+                class="h-5 w-5 rounded-lg border-slate-300 text-emerald-600 focus:ring-emerald-500/20 cursor-pointer"
+              >
+            </div>
+            <div>
+              <label for="hawl-checkbox" class="font-semibold text-slate-800 text-sm block cursor-pointer select-none">
+                I confirm Al-Hawl (Lunar Year Completion)
+              </label>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                I attest that I have possessed this minimum amount of wealth (Nisab) for one complete lunar year.
+              </p>
+              
+              <!-- Citations -->
+              <div class="flex flex-wrap gap-2.5 mt-3">
+                <span class="tooltip-trigger inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 cursor-help">
+                  <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                  Sunan Ibn Majah
+                  <span class="tooltip-content bg-slate-800 text-white text-[11px] p-2 rounded-lg shadow-xl font-normal leading-normal">
+                    "No Zakat is due on wealth until a year has passed over it." (Sunan Ibn Majah, Hadith 1792)
+                  </span>
+                </span>
+
+                <span class="tooltip-trigger inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 cursor-help">
+                  <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                  Surah At-Tawbah 9:60
+                  <span class="tooltip-content bg-slate-800 text-white text-[11px] p-2 rounded-lg shadow-xl font-normal leading-normal">
+                    Ordinance describing the eight categories of eligible Zakat recipients.
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN (CALCULATION SUMMARY) - Spans 4/12 -->
+      <div class="lg:col-span-4 sticky top-24 flex flex-col gap-6 no-print">
+        
+        <!-- CARD: SUMMARY RESULTS -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
+          <h2 class="text-base font-bold text-slate-800 font-display mb-4 border-b border-slate-100 pb-3">Calculation Summary</h2>
+          
+          <div class="flex flex-col gap-3.5 mb-6 text-sm text-slate-600 font-medium">
+            <div class="flex items-center justify-between">
+              <span>Total Assets</span>
+              <span id="summary-total-assets" class="text-slate-800 font-bold">$0.00</span>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <span>Total Liabilities</span>
+              <span id="summary-total-liabilities" class="text-rose-600 font-bold">-$0.00</span>
+            </div>
+
+            <div class="border-t border-dashed border-slate-100 my-1"></div>
+
+            <div class="flex items-center justify-between text-base font-bold text-slate-800">
+              <span>Net Zakatable Wealth</span>
+              <span id="summary-net-wealth" class="text-emerald-700 font-extrabold">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Total Zakat Due display box -->
+          <div id="zakat-result-box" class="calculation-box p-6 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 shadow-sm animate-scale-in transition-all duration-300 mb-6">
+            <span class="text-xs uppercase tracking-wider font-extrabold opacity-80">Total Zakat Due (2.5%)</span>
+            <div id="zakat-due-value" class="text-4xl font-extrabold tracking-tight text-sky-700 mt-1 mb-2">$0.00</div>
+            <p id="zakat-result-message" class="text-xs font-medium leading-relaxed">
+              Below Nisab threshold. <br><span class="opacity-95 font-normal">Consider giving voluntary Sadaqah instead.</span>
+            </p>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex flex-col gap-3">
+            <button 
+              type="button" 
+              onclick="exportReport()"
+              class="w-full bg-slate-900 hover:bg-slate-850 text-white font-semibold text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all duration-200 hover:scale-[1.01]"
+            >
+              <!-- Print/Download Icon -->
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm5-17V7a4 4 0 00-4-4H8a4 4 0 00-4 4v2m12 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
+              Export Report PDF
+            </button>
+            
+            <button 
+              type="button" 
+              onclick="saveDraft()"
+              class="w-full bg-white hover:bg-slate-50 text-slate-600 font-semibold text-sm py-3 px-4 rounded-xl border border-slate-200 flex items-center justify-center gap-2 transition-all-300"
+            >
+              <!-- Save Icon -->
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+              Save Draft
+            </button>
+          </div>
+
+        </div>
+
+        <!-- CARD: SPIRITUAL INSIGHTS CAROUSEL -->
+        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg carousel-container overflow-hidden relative">
+          <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+            <svg class="w-4.5 h-4.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+            <h3 class="text-sm font-bold text-slate-800 font-display">Zakat Insights</h3>
+          </div>
+
+          <div class="w-full overflow-hidden relative">
+            <div class="carousel-track">
+              <!-- Slide 1 -->
+              <div class="carousel-slide flex flex-col justify-center min-h-[120px] px-1 text-center">
+                <blockquote class="text-xs italic text-slate-500 font-medium leading-relaxed">
+                  "Islam is based on (the following) five (principles)... to establish the (daily) prayers, to pay the Zakat..."
+                </blockquote>
+                <cite class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mt-3 block not-italic">— Sahih al-Bukhari 8</cite>
+              </div>
+              <!-- Slide 2 -->
+              <div class="carousel-slide flex flex-col justify-center min-h-[120px] px-1 text-center">
+                <blockquote class="text-xs italic text-slate-500 font-medium leading-relaxed">
+                  "Take, [O Muhammad], from their wealth a charity by which you purify them and cause them increase..."
+                </blockquote>
+                <cite class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mt-3 block not-italic">— Surah At-Tawbah 9:103</cite>
+              </div>
+              <!-- Slide 3 -->
+              <div class="carousel-slide flex flex-col justify-center min-h-[120px] px-1 text-center">
+                <blockquote class="text-xs italic text-slate-500 font-medium leading-relaxed">
+                  "Zakat expenditures are only for the poor and for the needy and for those employed to collect it..."
+                </blockquote>
+                <cite class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mt-3 block not-italic">— Surah At-Tawbah 9:60</cite>
+              </div>
+              <!-- Slide 4 -->
+              <div class="carousel-slide flex flex-col justify-center min-h-[120px] px-1 text-center">
+                <blockquote class="text-xs italic text-slate-500 font-medium leading-relaxed">
+                  "No Zakat is due on wealth until a year has passed over it."
+                </blockquote>
+                <cite class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mt-3 block not-italic">— Sunan Ibn Majah</cite>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carousel Dots -->
+          <div class="carousel-dots flex items-center justify-center gap-1.5 mt-4">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ================= PRINT ONLY OUTPUT SECTION ================= -->
+  <div class="print-header">
+    <h1>ZakatFlow Calculation Report</h1>
+    <p>Spiritual precision, financial clarity. Computed on <span id="print-date"></span></p>
+  </div>
+
+  <div class="hidden print:block w-full max-w-4xl mx-auto px-4 mt-6">
+    <div class="mb-6">
+      <h3 class="text-base font-bold border-b border-slate-300 pb-1.5 text-emerald-800 uppercase tracking-wide">Report Summary</h3>
+      <table class="w-full text-left mt-2">
+        <tbody>
+          <tr class="summary-row">
+            <td class="py-2 text-slate-700 font-medium">Nisab Standard Selected</td>
+            <td class="py-2 text-right font-bold text-slate-850" id="print-nisab-standard">Silver Standard</td>
+          </tr>
+          <tr class="summary-row">
+            <td class="py-2 text-slate-700 font-medium">Gold price per gram</td>
+            <td class="py-2 text-right font-semibold text-slate-800" id="print-gold-rate">$65.50</td>
+          </tr>
+          <tr class="summary-row">
+            <td class="py-2 text-slate-700 font-medium">Silver price per gram</td>
+            <td class="py-2 text-right font-semibold text-slate-800" id="print-silver-rate">$0.75</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Assets Details -->
+    <div class="mb-6">
+      <h3 class="text-base font-bold border-b border-slate-300 pb-1.5 text-emerald-800 uppercase tracking-wide">Reportable Assets</h3>
+      <table class="w-full text-left mt-2">
+        <thead class="bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+          <tr>
+            <th class="py-2">Asset Item</th>
+            <th class="py-2 text-right">Value Assessed</th>
+          </tr>
+        </thead>
+        <tbody id="print-assets-table-body">
+          <!-- Filled dynamically in app.js during print trigger -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Liabilities Details -->
+    <div class="mb-6">
+      <h3 class="text-base font-bold border-b border-slate-300 pb-1.5 text-emerald-800 uppercase tracking-wide">Deductible Liabilities</h3>
+      <table class="w-full text-left mt-2">
+        <thead class="bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+          <tr>
+            <th class="py-2">Liability Description</th>
+            <th class="py-2 text-right">Amount Deducted</th>
+          </tr>
+        </thead>
+        <tbody id="print-liabilities-table-body">
+          <!-- Filled dynamically in app.js during print trigger -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="border-t-2 border-double border-slate-300 my-6"></div>
+
+    <!-- Totals declaration block for print -->
+    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+      <div class="grid grid-cols-2 gap-4 text-sm font-semibold">
+        <div>Total Eligible Assets:</div>
+        <div class="text-right" id="print-total-assets">$0.00</div>
+        
+        <div>Total Liabilities:</div>
+        <div class="text-right text-rose-600" id="print-total-liabilities">-$0.00</div>
+        
+        <div class="font-bold text-base text-slate-800 border-t border-slate-200 pt-2">Net Zakatable Estate:</div>
+        <div class="text-right font-bold text-base text-slate-800 border-t border-slate-200 pt-2" id="print-net-wealth">$0.00</div>
+        
+        <div class="font-extrabold text-lg text-emerald-800 border-t-2 border-emerald-300 pt-3">Final Zakat Obligation (2.5%):</div>
+        <div class="text-right font-extrabold text-lg text-emerald-800 border-t-2 border-emerald-300 pt-3" id="print-zakat-due">$0.00</div>
+      </div>
+      
+      <p class="text-[11px] text-slate-400 mt-6 leading-relaxed italic text-center">
+        "Purify your wealth through the calculation and timely payment of Zakat. This report has been verified under standard Islamic calculations and is correct to the best of user knowledge."
+      </p>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-slate-900 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 mt-auto border-t border-slate-800 no-print">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start mb-8 pb-8 border-b border-slate-800">
+      
+      <!-- Brand & Mission -->
+      <div>
+        <span class="text-lg font-bold text-white font-display">Zakat<span class="text-emerald-500">Flow</span></span>
+        <p class="text-xs text-slate-500 mt-3 leading-relaxed max-w-sm">
+          A modern digital experience supporting the accurate distribution and purification of wealth. Dedicated to spiritual precision and communal growth.
+        </p>
+      </div>
+
+      <!-- Islamic Jurisprudence Summary -->
+      <div>
+        <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3 font-display">Eight Categories of Zakat</h4>
+        <p class="text-xs text-slate-500 leading-relaxed italic">
+          "Zakat expenditures are only for the poor and for the needy and for those employed to collect it and for bringing hearts together and for freeing captives and for those in debt and for the cause of Allah and for the [stranded] traveler..." <br>
+          <strong class="text-emerald-500 block mt-1 text-[10px] not-italic font-bold uppercase">— Surah At-Tawbah 9:60</strong>
+        </p>
+      </div>
+
+      <!-- Quick Resource Links -->
+      <div>
+        <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3 font-display">Resources</h4>
+        <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+          <a href="#" onclick="openModal('principles-modal'); return false;" class="hover:text-emerald-400 transition-colors">Principles Guide</a>
+          <a href="#" onclick="openModal('nisab-modal'); return false;" class="hover:text-emerald-400 transition-colors">Nisab Standards</a>
+          <a href="https://quran.com/9/60" target="_blank" class="hover:text-emerald-400 transition-colors">Surah At-Tawbah</a>
+          <a href="https://sunnah.com" target="_blank" class="hover:text-emerald-400 transition-colors">Hadith Reference</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Copyright -->
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
+      <span>&copy; 2026 ZakatFlow. Dedicated to spiritual precision and communal growth.</span>
+      <div class="flex gap-4">
+        <a href="#" class="hover:text-slate-400 transition-colors">Terms of Service</a>
+        <a href="#" class="hover:text-slate-400 transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-slate-400 transition-colors">Contact Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODALS SECTION                             -->
+  <!-- ========================================== -->
+
+  <!-- MODAL 1: PRINCIPLES REFERENCE MODAL -->
+  <div id="principles-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden animate-fade-in-up">
+    <div class="bg-white rounded-3xl max-w-2xl w-full mx-4 shadow-2xl overflow-hidden border border-slate-100 animate-scale-in">
+      <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+            <svg class="w-4.5 h-4.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-800 font-display">Islamic Zakat Principles</h3>
+        </div>
+        <button onclick="closeModal('principles-modal')" class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div class="p-6 max-h-[70vh] overflow-y-auto space-y-5 text-sm text-slate-600 leading-relaxed font-medium">
+        <div>
+          <h4 class="font-bold text-slate-800 text-sm mb-1.5">1. The Principle of Nisab (Obligation Threshold)</h4>
+          <p class="text-xs">
+            Zakat is only due if your total net wealth exceeds the Nisab threshold. The standard is calculated as the market price of either 87.48 grams of pure Gold or 612.36 grams of pure Silver. If your net wealth is below the threshold, no Zakat is due, but voluntary charity (Sadaqah) is highly encouraged.
+          </p>
+        </div>
+        
+        <div>
+          <h4 class="font-bold text-slate-800 text-sm mb-1.5">2. The Principle of Al-Hawl (Lunar Year Possession)</h4>
+          <p class="text-xs">
+            The assets must remain in your possession for one complete lunar year (354 days) to qualify for Zakat. If your wealth fluctuates but stays above the Nisab standard during the year, Zakat is due at your calculation date. Citing Sunan Ibn Majah: <em>"No Zakat is due on wealth until a year has passed over it."</em>
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-800 text-sm mb-1.5">3. Rate of Zakat (2.5%)</h4>
+          <p class="text-xs">
+            The Zakat due is calculated at exactly 2.5% (1/40th) of your total net assets. This rate applies specifically to monetary wealth, business merchandise, shares, and gold/silver.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-800 text-sm mb-1.5">4. Deductible Liabilities</h4>
+          <p class="text-xs">
+            According to Islamic jurisprudence, you may subtract outstanding debts due immediately or within the current lunar year from your assets. Long-term parts of mortgage payments or future interest are typically not deductible.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-800 text-sm mb-1.5">5. The Eight Recipients (Surah At-Tawbah 9:60)</h4>
+          <p class="text-xs">
+            Zakat cannot be spent on building mosques or public infrastructure. It must be paid to the eight groups of people ordained in the Quran: 
+            the poor, the needy, those employed to collect it, those whose hearts are to be reconciled, for freeing captives, those in debt, in the cause of Allah, and for the stranded traveler.
+          </p>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('principles-modal')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all-300">
+          Close Guide
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: NISAB INFORMATION MODAL -->
+  <div id="nisab-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden animate-fade-in-up">
+    <div class="bg-white rounded-3xl max-w-xl w-full mx-4 shadow-2xl overflow-hidden border border-slate-100 animate-scale-in">
+      <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+            <svg class="w-4.5 h-4.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-800 font-display">Nisab Threshold Details</h3>
+        </div>
+        <button onclick="closeModal('nisab-modal')" class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-sm text-slate-600 leading-relaxed font-medium">
+        <p class="text-xs">
+          The term <strong>Nisab</strong> defines the minimum wealth a Muslim must own for a full lunar year before Zakat becomes obligatory.
+        </p>
+
+        <div class="border border-slate-100 p-4 rounded-2xl bg-slate-50/50">
+          <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider mb-2">Formula Calculations</h4>
+          <ul class="space-y-1.5 text-xs">
+            <li>• <strong>Gold standard Nisab:</strong> 87.48 grams (7.5 Tolas)</li>
+            <li>• <strong>Silver standard Nisab:</strong> 612.36 grams (52.5 Tolas)</li>
+          </ul>
+        </div>
+
+        <p class="text-xs">
+          <strong>Scholarly Recommendation:</strong> While both thresholds are religiously valid, contemporary scholars strongly recommend calculating Zakat using the <strong>Silver Nisab standard</strong>. Since silver price is lower, it reduces the threshold, allowing more individuals to contribute and maximizing the assistance provided to the poor and needy.
+        </p>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('nisab-modal')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all-300">
+          Understood
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: HISTORY / SAVED DRAFTS MODAL -->
+  <div id="history-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden animate-fade-in-up">
+    <div class="bg-white rounded-3xl max-w-lg w-full mx-4 shadow-2xl overflow-hidden border border-slate-100 animate-scale-in">
+      <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+            <svg class="w-4.5 h-4.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <h3 class="text-base font-bold text-slate-800 font-display">Saved Calculation Drafts</h3>
+        </div>
+        <button onclick="closeModal('history-modal')" class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-all-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <div id="history-list" class="p-6 max-h-[50vh] overflow-y-auto space-y-3">
+        <!-- Rendered dynamically in app.js -->
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('history-modal')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs px-4 py-2 rounded-xl transition-all-300">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- core app script -->
+  <script src="app.js"></script>
+</body>
+</html>
