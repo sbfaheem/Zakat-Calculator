@@ -118,15 +118,15 @@ const TRANSLATIONS = {
     btn_close: 'Close',
     btn_understood: 'Understood',
     btn_close_guide: 'Close Guide',
-    insights_title: 'Zakat Insights',
-    insight_1_quote: '"Islam is based on (the following) five (principles)... to establish the (daily) prayers, to pay the Zakat..."',
-    insight_1_source: '— Sahih al-Bukhari 8',
-    insight_2_quote: '"Take, [O Muhammad], from their wealth a charity by which you purify them and cause them increase..."',
-    insight_2_source: '— Surah At-Tawbah 9:103',
-    insight_3_quote: '"Zakat expenditures are only for the poor and for the needy and for those employed to collect it..."',
-    insight_3_source: '— Surah At-Tawbah 9:60',
-    insight_4_quote: '"No Zakat is due on wealth until a year has passed over it."',
-    insight_4_source: '— Sunan Ibn Majah',
+    insights_title: 'Benefits of Paying Zakat',
+    insight_1_quote: '"Indeed, those who believe and do righteous deeds and establish prayer and give Zakat will have their reward with their Lord, and there will be no fear concerning them, nor will they grieve."',
+    insight_1_source: '— Surah Al-Baqarah 2:277',
+    insight_2_quote: '"There is not a day upon which the servants wake up except that two angels descend. One of them says: \'O Allah, give recompense to the one who spends!\'"',
+    insight_2_source: '— Sahih al-Bukhari 1442',
+    insight_3_quote: '"Take, [O Muhammad], from their wealth a charity by which you purify them and cause them increase, and invoke [Allah\'s blessings] upon them."',
+    insight_3_source: '— Surah At-Tawbah 9:103',
+    insight_4_quote: '"Charity extinguishes sin as water extinguishes fire."',
+    insight_4_source: '— Sunan at-Tirmidhi 614',
     footer_desc: 'A modern digital experience supporting the accurate distribution and purification of wealth. Dedicated to spiritual precision and communal growth.',
     footer_categories_title: 'Eight Categories of Zakat',
     footer_categories_text: '"Zakat expenditures are only for the poor and for the needy and for those employed to collect it and for bringing hearts together and for freeing captives and for those in debt and for the cause of Allah and for the [stranded] traveler..."',
@@ -218,8 +218,8 @@ const TRANSLATIONS = {
     hawl_title: 'أؤكد مرور حول كامل (سنة هجرية)',
     hawl_subtitle: 'أقر بأنني ملكت هذا الحد الأدنى من الثروة (النصاب) لمدة عام هجري كامل دون انقطاع.',
     citation_ibn_majah: 'سنن ابن ماجه',
-    citation_tawbah: 'سورة التوبة 9:60',
-    tooltip_ibn_majah: '"لَيْسَ فِي مَالٍ زَكَاةٌ حَتَّى يَحُولَ عَلَيْهِ الْحَوْلُ" (سنن ابن ماجه، حديث 1792)',
+    citation_tawbah: 'سورة التوبة ٩:٦٠',
+    tooltip_ibn_majah: '"لَيْسَ فِي مَالٍ زَكَاةٌ حَتَّى يَحُولَ عَلَيْهِ الْحَوْلُ" (سنن ابن ماجه، حديث ١٧٩٢)',
     tooltip_tawbah: 'الفريضة الإلهية التي تبين الأصناف الثمانية لمستحقي الزكاة.',
     summary_title: 'ملخص العملية الحسابية',
     summary_assets: 'إجمالي الأصول',
@@ -350,15 +350,15 @@ const TRANSLATIONS = {
     btn_close: 'بند کریں',
     btn_understood: 'سمجھ گیا',
     btn_close_guide: 'گائیڈ بند کریں',
-    insights_title: 'زکوٰۃ کی فضیلت و حکمت',
-    insight_1_quote: '"اسلام کی بنیاد پانچ چیزوں پر ہے... نماز قائم کرنا اور زکوٰۃ ادا کرنا..."',
-    insight_1_source: '— صحیح البخاری 8',
-    insight_2_quote: '"آپ ان کے اموال میں سے صدقہ (زکوٰۃ) لے لیجئے جس کے ذریعے آپ انہیں پاک اور صاف کر دیں..."',
-    insight_2_source: '— سورہ التوبہ 9:103',
-    insight_3_quote: '"صدقات (زکوٰۃ) تو صرف فقراء، مساکین اور اس پر مقرر عاملین کے لیے ہیں..."',
-    insight_3_source: '— سورہ التوبہ 9:60',
-    insight_4_quote: '"کسی مال پر زکوٰۃ فرض نہیں جب تک اس پر ایک سال نہ گزر جائے"',
-    insight_4_source: '— سنن ابن ماجہ',
+    insights_title: 'زکوٰۃ ادا کرنے کے فضائل و برکات',
+    insight_1_quote: '"بے شک جو لوگ ایمان لائے اور انہوں نے نیک اعمال کیے اور نماز قائم کی اور زکوٰۃ دی، ان کا اجر ان کے رب کے پاس ہے، اور ان پر نہ کوئی خوف ہوگا اور نہ وہ غمگین ہوں گے۔"',
+    insight_1_source: '— سورہ البقرة 2:277',
+    insight_2_quote: '"کوئی دن ایسا نہیں جاتا جس میں بندے صبح کو اٹھتے ہوں مگر دو فرشتے آسمان سے نازل ہوتے ہیں۔ ان میں سے ایک کہتا ہے: اے اللہ! خرچ کرنے والے کو اس کا نعم البدل عطا فرما۔"',
+    insight_2_source: '— صحیح البخاری 1442',
+    insight_3_quote: '"آپ ان کے اموال میں سے صدقہ (زکوٰۃ) لے لیجئے جس کے ذریعے آپ انہیں پاک اور صاف کر دیں، اور ان کے حق میں دعا کیجیے۔"',
+    insight_3_source: '— سورہ التوبہ 9:103',
+    insight_4_quote: '"اور صدقہ (گناہوں کی) آگ کو ایسے بجھا دیتا ہے جیسے پانی آگ کو بجھاتا ہے۔"',
+    insight_4_source: '— سنن الترمذی 614',
     footer_desc: 'درست حساب کتاب اور دولت کی پاکیزگی کے لیے ایک جدید ڈیجیٹل پلیٹ فارم۔ جو روحانی درستگی اور باہمی ترقی کے لیے وقف ہے۔',
     footer_categories_title: 'زکوٰۃ کے آٹھ مصارف',
     footer_categories_text: '"زکوٰۃ تو بس فقیروں اور مسکینوں اور زکوٰۃ کے کام پر مقرر لوگوں کا حق ہے اور ان کا جن کی تالیفِ قلب مقصود ہو اور غلاموں کے آزاد کرانے میں اور قرض داروں کے قرضے میں اور اللہ کی راہ میں اور مسافروں کے لیے..."',
@@ -977,6 +977,8 @@ function initCarousel() {
   const track = document.querySelector('.carousel-track');
   const slides = Array.from(document.querySelectorAll('.carousel-slide'));
   const dotsContainer = document.querySelector('.carousel-dots');
+  const prevBtn = document.getElementById('carousel-prev-btn');
+  const nextBtn = document.getElementById('carousel-next-btn');
   
   if (!track || slides.length === 0) return;
 
@@ -984,7 +986,7 @@ function initCarousel() {
 
   // Render Dots
   dotsContainer.innerHTML = slides.map((_, index) => 
-    `<button class="w-2 h-2 rounded-full transition-all duration-300 ${index === 0 ? 'bg-emerald-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'}" data-slide="${index}"></button>`
+    `<button class="w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === 0 ? 'bg-emerald-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'}" data-slide="${index}"></button>`
   ).join('');
 
   const dots = Array.from(dotsContainer.querySelectorAll('button'));
@@ -998,15 +1000,20 @@ function initCarousel() {
 
     dots.forEach((dot, index) => {
       if (index === currentIndex) {
-        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-600 scale-125 transition-all duration-300";
+        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 scale-125 transition-all duration-300";
       } else {
-        dot.className = "w-2 h-2 rounded-full bg-slate-300 hover:bg-slate-400 transition-all duration-300";
+        dot.className = "w-2 h-2 rounded-full bg-slate-500 hover:bg-slate-400 transition-all duration-300";
       }
     });
   }
 
   function nextSlide() {
     currentIndex = (currentIndex + 1) % slides.length;
+    updateCarousel();
+  }
+
+  function prevSlide() {
+    currentIndex = (currentIndex - 1 + slides.length) % slides.length;
     updateCarousel();
   }
 
@@ -1026,6 +1033,20 @@ function initCarousel() {
       startTimer();
     });
   });
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      prevSlide();
+      startTimer();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      nextSlide();
+      startTimer();
+    });
+  }
 
   track.addEventListener('mouseenter', stopTimer);
   track.addEventListener('mouseleave', startTimer);
