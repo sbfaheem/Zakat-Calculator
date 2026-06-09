@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;850;900&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
 
 :root {
   --font-sans: 'Inter', sans-serif;
@@ -14,6 +14,44 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+}
+
+/* Multilingual Typography Overrides */
+html[lang="ar"] body, 
+html[lang="ar"] input, 
+html[lang="ar"] select, 
+html[lang="ar"] button,
+html[lang="ar"] textarea {
+  font-family: 'Tajawal', var(--font-sans) !important;
+}
+
+html[lang="ar"] h1, 
+html[lang="ar"] h2, 
+html[lang="ar"] h3, 
+html[lang="ar"] h4, 
+html[lang="ar"] h5, 
+html[lang="ar"] h6 {
+  font-family: 'Tajawal', var(--font-display) !important;
+  font-weight: 800 !important;
+}
+
+html[lang="ur"] body, 
+html[lang="ur"] input, 
+html[lang="ur"] select, 
+html[lang="ur"] button,
+html[lang="ur"] textarea {
+  font-family: 'Noto Nastaliq Urdu', 'Tajawal', var(--font-sans) !important;
+  line-height: 2.2 !important; /* Nastaliq requires extra line-height */
+}
+
+html[lang="ur"] h1, 
+html[lang="ur"] h2, 
+html[lang="ur"] h3, 
+html[lang="ur"] h4, 
+html[lang="ur"] h5, 
+html[lang="ur"] h6 {
+  font-family: 'Noto Nastaliq Urdu', 'Tajawal', var(--font-display) !important;
+  line-height: 2.0 !important;
 }
 
 /* Custom Scrollbars */
