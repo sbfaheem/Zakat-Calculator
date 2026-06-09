@@ -125,7 +125,7 @@
         </div>
 
         <!-- Slider Viewport -->
-        <div class="w-full overflow-hidden relative px-8 md:px-20">
+        <div class="w-full overflow-hidden relative px-12 md:px-24">
           <div class="carousel-track">
             <!-- Slide 1 -->
             <div class="carousel-slide flex flex-col justify-center text-center min-h-[140px] md:min-h-[120px]">
@@ -528,7 +528,7 @@
   </div>
 
   <!-- ================= FOOTER ================= -->
-  <footer class="bg-slate-900 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 mt-auto border-t border-slate-800 no-print">
+  <footer class="bg-slate-900 text-slate-400 pt-12 pb-24 lg:pb-12 px-4 sm:px-6 lg:px-8 mt-auto border-t border-slate-800 no-print">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-start mb-8 pb-8 border-b border-slate-800">
       
       <!-- Brand & Mission -->
@@ -702,6 +702,17 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- ================= STICKY BOTTOM BAR FOR MOBILE ================= -->
+  <div id="sticky-mobile-summary" class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 py-3.5 px-5 flex items-center justify-between shadow-2xl lg:hidden transform translate-y-full transition-transform duration-300 no-print">
+    <div class="flex flex-col text-start">
+      <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400" data-i18n="zakat_box_header">Total Zakat Due (2.5%)</span>
+      <span id="sticky-zakat-value" class="text-lg font-bold text-sky-700">$0.00</span>
+    </div>
+    <a href="#calculator-section" onclick="scrollToSummary(); return false;" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-emerald-700/10">
+      <span data-i18n="summary_title">Calculation Summary</span>
+    </a>
   </div>
 
   <!-- core app script -->

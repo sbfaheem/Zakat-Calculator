@@ -612,10 +612,10 @@ function renderAssets() {
     calculateAssetTotal(asset);
 
     return `
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all duration-200 animate-scale-in">
+      <div class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all duration-200 animate-scale-in">
         
         <!-- Asset Type Dropdown -->
-        <div class="md:col-span-3">
+        <div class="col-span-2 md:col-span-3">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].col_asset_category}</label>
           <select 
             onchange="updateAsset(${index}, 'type', this.value)" 
@@ -630,7 +630,7 @@ function renderAssets() {
         </div>
 
         <!-- Unit Selector Toggle -->
-        <div class="md:col-span-2">
+        <div class="col-span-1 md:col-span-2">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].col_unit}</label>
           <select 
             onchange="updateAsset(${index}, 'unit', this.value)" 
@@ -643,7 +643,7 @@ function renderAssets() {
         </div>
 
         <!-- Amount Input -->
-        <div class="md:col-span-2">
+        <div class="col-span-1 md:col-span-2">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
             ${isCurrency ? TRANSLATIONS[lang].col_total : TRANSLATIONS[lang].col_weight}
           </label>
@@ -661,7 +661,7 @@ function renderAssets() {
         </div>
 
         <!-- Price per Unit Input -->
-        <div class="md:col-span-2">
+        <div class="col-span-1 md:col-span-2">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
             ${TRANSLATIONS[lang].col_price}
           </label>
@@ -681,7 +681,7 @@ function renderAssets() {
         </div>
 
         <!-- Total Value Readonly Display -->
-        <div class="md:col-span-2">
+        <div class="col-span-1 md:col-span-2">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].col_total}</label>
           <div class="bg-slate-100/60 border border-slate-200/50 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 min-h-[38px] flex items-center" id="asset-total-display-${index}">
             ${formatMoney(asset.total)}
@@ -689,13 +689,14 @@ function renderAssets() {
         </div>
 
         <!-- Delete Row Button -->
-        <div class="md:col-span-1 flex justify-end">
+        <div class="col-span-2 md:col-span-1 flex justify-end md:justify-center items-center">
           <button 
             type="button" 
             onclick="removeAsset('${asset.id}')"
-            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all-300"
+            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all-300 flex items-center gap-1.5"
             title="Remove row"
           >
+            <span class="md:hidden text-xs font-bold text-slate-400 hover:text-rose-600" data-i18n="btn_close">Delete</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>
         </div>
@@ -806,10 +807,10 @@ function renderLiabilities() {
 
   container.innerHTML = STATE.liabilities.map((lib, index) => {
     return `
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all duration-200 animate-scale-in">
+      <div class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all duration-200 animate-scale-in">
         
         <!-- Description -->
-        <div class="md:col-span-7">
+        <div class="col-span-2 md:col-span-7">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].liabs_description}</label>
           <input 
             type="text" 
@@ -821,7 +822,7 @@ function renderLiabilities() {
         </div>
 
         <!-- Amount Due -->
-        <div class="md:col-span-4">
+        <div class="col-span-1 md:col-span-4">
           <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].liabs_amount}</label>
           <div class="relative">
             <span class="absolute start-3.5 top-2 text-sm font-medium text-slate-400 currency-symbol">${CURRENCIES[STATE.currency].symbol}</span>
@@ -837,13 +838,14 @@ function renderLiabilities() {
         </div>
 
         <!-- Delete Button -->
-        <div class="md:col-span-1 flex justify-end">
+        <div class="col-span-1 md:col-span-1 flex justify-end md:justify-center items-center">
           <button 
             type="button" 
             onclick="removeLiability('${lib.id}')"
-            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all-300"
+            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all-300 flex items-center gap-1.5"
             title="Remove liability"
           >
+            <span class="md:hidden text-xs font-bold text-slate-400 hover:text-rose-600" data-i18n="btn_close">Delete</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
           </button>
         </div>
@@ -954,6 +956,19 @@ function calculateAll() {
   }
 
   dueValEl.textContent = formatMoney(zakatDue);
+
+  // Update sticky bottom mobile summary value & colors
+  const stickyZakat = document.getElementById('sticky-zakat-value');
+  if (stickyZakat) {
+    stickyZakat.textContent = formatMoney(zakatDue);
+    if (netWealth >= activeNisab && STATE.alHawlConfirmed) {
+      stickyZakat.className = "text-lg font-extrabold text-emerald-600";
+    } else if (netWealth >= activeNisab) {
+      stickyZakat.className = "text-lg font-extrabold text-amber-600";
+    } else {
+      stickyZakat.className = "text-lg font-extrabold text-sky-700";
+    }
+  }
 
   // Sync value overlays inside print report forms
   const printDate = document.getElementById('print-date');
@@ -1309,3 +1324,25 @@ window.exportReport = function() {
 
   window.print();
 };
+
+// Sticky Bottom Bar scroll handler & smooth scroll helper for Mobile/Tablet responsive screens
+window.scrollToSummary = function() {
+  const resultBox = document.getElementById('zakat-result-box');
+  if (resultBox) {
+    resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+};
+
+window.addEventListener('scroll', () => {
+  const stickyBar = document.getElementById('sticky-mobile-summary');
+  const calcSection = document.getElementById('calculator-section');
+  if (!stickyBar || !calcSection) return;
+  
+  const rect = calcSection.getBoundingClientRect();
+  // Show sticky bar when user scrolls past the top of the calculator section inputs
+  if (rect.top < 0) {
+    stickyBar.classList.remove('translate-y-full');
+  } else {
+    stickyBar.classList.add('translate-y-full');
+  }
+});
