@@ -1,5 +1,10 @@
 // ZakatFlow Core Logic with Trilingual and RTL Support
 
+// Helper to generate unique IDs
+function generateId() {
+  return 'id_' + Math.random().toString(36).substr(2, 9);
+}
+
 // State Management
 const STATE = {
   language: 'en',
