@@ -31,7 +31,16 @@ const CURRENCIES = {
   PKR: { symbol: 'Rs', name: 'Pakistani Rupee', gold: 18200, silver: 210 },
   EUR: { symbol: '€', name: 'Euro', gold: 60.20, silver: 0.69 },
   GBP: { symbol: '£', name: 'British Pound', gold: 52.10, silver: 0.60 },
-  AED: { symbol: 'د.إ', name: 'UAE Dirham', gold: 240.50, silver: 2.75 }
+  AED: { symbol: 'د.إ', name: 'UAE Dirham', gold: 240.50, silver: 2.75 },
+  AUD: { symbol: 'A$', name: 'Australian Dollar', gold: 98.00, silver: 1.12 },
+  CAD: { symbol: 'C$', name: 'Canadian Dollar', gold: 90.00, silver: 1.03 },
+  SAR: { symbol: 'SR', name: 'Saudi Riyal', gold: 245.60, silver: 2.81 },
+  QAR: { symbol: 'QR', name: 'Qatari Riyal', gold: 238.40, silver: 2.73 },
+  OMR: { symbol: 'OMR', name: 'Omani Riyal', gold: 25.20, silver: 0.29 },
+  KWD: { symbol: 'KD', name: 'Kuwaiti Dinar', gold: 20.10, silver: 0.23 },
+  MYR: { symbol: 'RM', name: 'Malaysian Ringgit', gold: 308.00, silver: 3.53 },
+  INR: { symbol: '₹', name: 'Indian Rupee', gold: 5470.00, silver: 62.60 },
+  BDT: { symbol: '৳', name: 'Bangladeshi Taka', gold: 7700.00, silver: 88.10 }
 };
 
 const ASSET_TYPES = [
