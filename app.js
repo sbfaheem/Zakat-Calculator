@@ -1066,6 +1066,42 @@ function initCarousel() {
   track.addEventListener('mouseenter', stopTimer);
   track.addEventListener('mouseleave', startTimer);
 
+  // Swipe support for mobile touchscreen sliding
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  track.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  track.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  }, { passive: true });
+
+  function handleSwipe() {
+    const swipeThreshold = 40; // minimum pixels to count as swipe
+    const isRtl = document.documentElement.dir === 'rtl';
+    
+    if (touchEndX < touchStartX - swipeThreshold) {
+      // Swiped Left
+      if (isRtl) {
+        prevSlide();
+      } else {
+        nextSlide();
+      }
+      startTimer();
+    } else if (touchEndX > touchStartX + swipeThreshold) {
+      // Swiped Right
+      if (isRtl) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+      startTimer();
+    }
+  }
+
   startTimer();
 
   // Re-sync carousel alignment on window resize or layout dir shift
