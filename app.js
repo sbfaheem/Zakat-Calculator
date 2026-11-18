@@ -68,6 +68,8 @@ const TRANSLATIONS = {
     nav_calculator: 'کیلکولیٹر',
     nav_principles: 'شرعی اصول',
     nav_nisab: 'نصاب کی معلومات',
+    nav_recipients: 'مصارفِ زکوٰۃ',
+    nav_recipients_text: 'زکوٰۃ کس کو مل سکتی ہے؟',
     nav_history: 'محفوظ ڈرافٹس',
     nav_drafts_badge: 'آٹو سیو فعال ہے',
     hero_title: 'اپنے مال کو درستگی اور آسانی کے ساتھ پاک کریں',
@@ -158,14 +160,47 @@ const TRANSLATIONS = {
     btn_view_result: 'زکوٰۃ کا حتمی نتیجہ دیکھیں →',
     result_step_title: 'آپ کا حتمی زکوٰۃ نتیجہ',
     result_step_subtitle: 'آپ کی دولت کی تطہیر کا مکمل اور شفاف حساب۔',
-    hawl_question: 'کیا یہ دولت آپ کے پاس مکمل ایک اسلامی قمری سال رہی ہے؟',
+    hawl_question: 'کیا آپ کے پاس یہ رقم یا سونا پورے ایک اسلامی قمری سال سے موجود ہے؟',
     hawl_question_sub: 'زکوٰۃ صرف اسی مال پر فرض ہوتی ہے جس پر نصاب کی مقدار مکمل ہونے کے بعد ایک قمری سال (354 دن) گزر چکا ہو۔',
     hawl_yes: 'ہاں (پورا سال گزرا ہے)',
     hawl_no: 'نہیں (سال نہیں گزرا)',
     hawl_notsure: 'یقین نہیں ہے (?)',
+    hawl_notsure_guide_title: 'اگر سال گزرنے کا یقین نہ ہو تو کیا کریں؟',
+    hawl_notsure_guide_body: 'اگر آپ کو صحیح دن یاد نہیں جب آپ کی بچت پہلی بار نصاب تک پہنچی تھی، تو فقہاء کا مشورہ ہے کہ آپ سال کا کوئی ایک بابرکت اسلامی دن (جیسے یکم رمضان یا یکم محرم) اپنی زکوٰۃ کا سالانہ دن مقرر کر لیں۔ اس دن جتنا مال موجود ہو اس کی زکوٰۃ ادا کر دیں۔ اس طرح آپ کا فریضہ ادا ہو جائے گا اور آئندہ کے لیے ہر سال وہی مستقل تاریخ رہے گی۔',
+    btn_choose_pay_now: 'میں ابھی زکوٰۃ ادا کروں گا (ہاں شمار کریں)',
+    btn_choose_wait: 'میں سال مکمل ہونے کا انتظار کروں گا (نہیں شمار کریں)',
     result_headline: 'کل واجب الادا زکوٰۃ (2.5%)',
     story_title: 'آپ کے حساب کی آسان کہانی',
     breakdown_heading: 'مال اور اخراجات کی تفصیل',
+    recipients_banner_title: 'میری زکوٰۃ کن لوگوں کو مل سکتی ہے؟',
+    recipients_banner_subtitle: 'قرآن مجید کے بتائے ہوئے 8 شرعی مصارف اور ان رشتہ داروں کی تفصیل جنہیں زکوٰۃ نہیں دی جا سکتی۔',
+    btn_view_recipients: '8 شرعی مصارف دیکھیں',
+    recipients_modal_title: 'زکوٰۃ کن لوگوں کو دی جا سکتی ہے؟',
+    recipients_modal_subtitle: 'قرآن مجید کے بیان کردہ آٹھ مستحقین (سورہ التوبہ 9:60)',
+    recipients_verse_quote: '\"زکوٰۃ تو بس فقیروں اور مسکینوں اور زکوٰۃ کے کام پر مقرر لوگوں کا حق ہے اور ان کا جن کی تالیفِ قلب مقصود ہو اور غلاموں کے آزاد کرانے میں اور قرض داروں کے قرضے میں اور اللہ کی راہ میں اور مسافروں کے لیے — یہ اللہ کی طرف سے مقرر کردہ فریضہ ہے، اور اللہ سب کچھ جاننے والا، بڑی حکمت والا ہے۔\"',
+    recipients_verse_source: '— سورہ التوبہ 9:60',
+    cat_1_title: '۱۔ فقراء (غریب و نادار لوگ)',
+    cat_1_desc: 'وہ مجبور افراد جن کے پاس کوئی ذریعہ معاش یا دولت نہیں ہے اور وہ بنیادی ضروریات (روٹی، کپڑا، مکان) پوری کرنے سے قاصر ہیں۔',
+    cat_2_title: '۲۔ مساکین (ضرورت مند محنت کش)',
+    cat_2_desc: 'وہ محنت کش افراد جن کی معمولی آمدنی ہے لیکن وہ گھریلو اخراجات کے لیے ناکافی ہے اور ان کی ملکیت نصاب سے کم ہے۔',
+    cat_3_title: '۳۔ عاملین (زکوٰۃ جمع اور تقسیم کرنے والے)',
+    cat_3_desc: 'وہ امانت دار افراد جنہیں حکومت یا اسلامی ادارے زکوٰۃ کی وصولی، حساب اور تقسیم کی ذمہ داری سونپتے ہیں۔',
+    cat_4_title: '۴۔ مؤلفۃ القلوب (دلجوئی کے مستحق افراد)',
+    cat_4_desc: 'وہ نو مسلم جنہیں مالی پریشانی کا سامنا ہو اور ان کی دلجوئی اور اسلام پر استقامت کے لیے مدد ضروری ہو۔',
+    cat_5_title: '۵۔ فی الرقاب (قیدیوں اور غلاموں کی رہائی)',
+    cat_5_desc: 'مجبور قیدیوں، جبری مشقت یا انسانی اسمگلنگ کے شکار افراد کو تاوان ادا کر کے آزاد کرانا۔',
+    cat_6_title: '۶۔ غارمین (قرض کے بوجھ تلے دبے افراد)',
+    cat_6_desc: 'وہ افراد جو علاج معالجے، ناگہانی آفت یا بنیادی ضرورت کے باعث قرض کے نیچے دب گئے ہوں اور ادائیگی کی کوئی صورت نہ ہو۔',
+    cat_7_title: '۷۔ فی سبیل اللہ (اللہ کی راہ میں)',
+    cat_7_desc: 'دینِ اسلام کی خدمت، اشاعتِ علم، دینی طلباء اور رفاہی کاموں میں مخلصانہ جدوجہد کرنے والے۔',
+    cat_8_title: '۸۔ ابن السبیل (مسافر جو بے یار و مددگار ہو)',
+    cat_8_desc: 'وہ مسافر جو سفر کے دوران رقم ختم ہو جانے یا لٹ جانے کے باعث پھنس گیا ہو، چاہے وہ اپنے وطن میں صاحبِ حیثیت ہی کیوں نہ ہو۔',
+    recipients_ineligible_title: 'وہ افراد جنہیں آپ اپنی زکوٰۃ نہیں دے سکتے:',
+    ineligible_1: '<strong>اپنے اصول:</strong> والدین، دادا، دادی، نانا، نانی (ان کی مالی دیکھ بھال آپ کا براہِ راست ذاتی فرض ہے)۔',
+    ineligible_2: '<strong>اپنی فروع:</strong> بیٹا، بیٹی، پوتا، پوتی، نواسہ، نواسی۔',
+    ineligible_3: '<strong>شریکِ حیات:</strong> شوہر اپنی بیوی کو یا بیوی اپنے شوہر کو زکوٰۃ نہیں دے سکتی۔',
+    ineligible_4: '<strong>صاحبِ نصاب لوگ:</strong> جس شخص کے پاس نصاب کی مقدار رقم یا سونا چاندی موجود ہو۔',
+    ineligible_5: '<strong>تعمیراتی کام:</strong> مسجد کی تعمیر، قبرستان، سڑکیں یا رفاہی ادارے جہاں کسی مستحق غریب کو مال کا بلا شرکت غیرے مالک نہ بنایا جائے۔',
     btn_export: 'رپورٹ PDF ڈاؤن لوڈ کریں',
     btn_share_whatsapp: 'واٹس ایپ پر شیئر کریں',
     btn_start_again: 'دوبارہ شروع کریں',
@@ -324,12 +359,47 @@ const TRANSLATIONS = {
     hawl_yes: 'Yes (Full year completed)',
     hawl_no: 'No (Not a full year yet)',
     hawl_notsure: 'Not Sure (?)',
+    hawl_notsure_guide_title: 'What to do if you are not sure:',
+    hawl_notsure_guide_body: 'If you do not know the exact day your savings first reached the nisab, scholars advise picking one Islamic date (such as 1st of Ramadan or 1st of Muharram) as your personal Zakat day every year. If you have this much wealth on that day, calculate and pay your Zakat. This fixes your date for all future years.',
+    btn_choose_pay_now: 'I will pay my Zakat now (Count as Yes)',
+    btn_choose_wait: 'I will wait to complete my year (Count as No)',
     result_headline: 'Total Zakat Obligation (2.5%)',
     story_title: 'The Short Story of Your Calculation',
     breakdown_heading: 'Wealth & Deductions Breakdown',
-    btn_export: 'Download PDF Report',
+    recipients_banner_title: 'Who can receive your Zakat?',
+    recipients_banner_subtitle: 'Learn about the 8 Quranic categories of eligible recipients and who is exempt.',
+    btn_view_recipients: 'View 8 Categories',
+    recipients_modal_title: 'Who Can Receive My Zakat?',
+    recipients_modal_subtitle: 'The 8 Quranic Categories (Surah At-Tawbah 9:60)',
+    recipients_verse_quote: '"Zakat expenditures are only for the poor and for the needy and for those employed to collect it and for bringing hearts together and for freeing captives and for those in debt and for the cause of Allah and for the [stranded] traveler — an obligation ordained by Allah. And Allah is Knowing and Wise."',
+    recipients_verse_source: '— Surah At-Tawbah 9:60',
+    cat_1_title: '1. The Poor (Al-Fuqara)',
+    cat_1_desc: 'Families who have virtually no income or wealth, and cannot afford basic food, clothing, or shelter.',
+    cat_2_title: '2. The Needy (Al-Masakin)',
+    cat_2_desc: 'People who work or have a small income, but it does not meet basic essential family costs and they possess less than Nisab.',
+    cat_3_title: '3. Zakat Collectors (Al-Amilina Alayha)',
+    cat_3_desc: 'Trustworthy workers authorized by official or community bodies to collect, account for, and distribute Zakat funds.',
+    cat_4_title: '4. Reconciling Hearts (Al-Mu\'allafatu Qulubuhum)',
+    cat_4_desc: 'New Muslims in need of community welcome, encouragement, and relief from economic hardship.',
+    cat_5_title: '5. Freeing Captives (Fir-Riqab)',
+    cat_5_desc: 'Freeing people from human trafficking, bonded labor exploitation, or unjust captivity.',
+    cat_6_title: '6. Burdened Debtors (Al-Gharimin)',
+    cat_6_desc: 'People burdened by overwhelming debts incurred for basic survival, medical emergencies, or disasters, with no means to repay.',
+    cat_7_title: '7. In Allah\'s Cause (Fi Sabilillah)',
+    cat_7_desc: 'Those engaged in the advancement of religious knowledge, Islamic scholars/students, and community welfare striving in faith.',
+    cat_8_title: '8. The Stranded Traveler (Ibn As-Sabil)',
+    cat_8_desc: 'Anyone stranded on a lawful journey without access to their funds to safely return home, even if wealthy in their home country.',
+    recipients_ineligible_title: 'Who CANNOT Receive Your Zakat:',
+    ineligible_1: '<strong>Direct ascendants:</strong> Your parents, grandparents, and great-grandparents (you must care for them directly).',
+    ineligible_2: '<strong>Direct descendants:</strong> Your children, grandchildren, and great-grandchildren.',
+    ineligible_3: '<strong>Your spouse:</strong> Husband or wife cannot pay Zakat to one another.',
+    ineligible_4: '<strong>Wealthy individuals:</strong> Anyone whose net wealth equals or exceeds the Nisab threshold.',
+    ineligible_5: '<strong>Public infrastructure:</strong> Building mosques, digging wells for public roads, or general charities where ownership is not transferred directly to an eligible person.',
+    nav_recipients: 'Recipients Guide',
+    nav_recipients_text: 'Who Can Receive Zakat?',
+    btn_export: 'Download PDF',
     btn_share_whatsapp: 'Share on WhatsApp',
-    btn_start_again: 'Start Again',
+    btn_start_again: 'Start again',
     live_zakat_bar_title: 'Your Zakat so far',
     btn_jump_result: 'View Result',
     help_link: 'Help',
@@ -480,15 +550,50 @@ const TRANSLATIONS = {
     btn_view_result: 'عرض نتيجة الزكاة النهائية →',
     result_step_title: 'نتيجة حساب الزكاة الشرعية',
     result_step_subtitle: 'التقييم الشامل والواضح لفريضة تطهير أموالك.',
-    hawl_question: 'هل ملكت هذا القدر من المال لعام قمري هجري كامل؟',
+    hawl_question: 'هل ملكت هذا القدر من المال أو الذهب لعام هجري كامل؟',
     hawl_question_sub: 'تشترط الشريعة لوجوب الزكاة مضي حول كامل (354 يوماً) على المال الزائد عن النصاب.',
     hawl_yes: 'نعم (اكتمل الحول)',
     hawl_no: 'لا (لم يكتمل الحول بعد)',
     hawl_notsure: 'لست متأكداً (?)',
+    hawl_notsure_guide_title: 'ماذا تفعل إذا لم تكن متأكداً من الحول؟',
+    hawl_notsure_guide_body: 'إذا كنت لا تذكر اليوم المحدد الذي بلغت فيه أموالك النصاب، فينصح العلماء باختيار موعد هجري سنوي مبارك (مثل الأول من رمضان أو الأول من محرم) ليكون موعد زكاتك الثابت، وتزكي عن أموالك في ذلك اليوم، وتثبت هذا الموعد سنوياً.',
+    btn_choose_pay_now: 'سأدفع زكاتي الآن (اعتماد نعم)',
+    btn_choose_wait: 'سأنتظر اكتمال العام (اعتماد لا)',
     result_headline: 'إجمالي الزكاة الواجبة (2.5%)',
     story_title: 'ملخص الحساب بكلمات بسيطة',
     breakdown_heading: 'بيان الأصول والخصومات',
-    btn_export: 'تصدير التقرير كـ PDF',
+    recipients_banner_title: 'من هم المستحقون لصرف زكاتك؟',
+    recipients_banner_subtitle: 'تعرف على مصارف الزكاة الثمانية الشرعية ومن لا تجوز الزكاة لهم.',
+    btn_view_recipients: 'عرض المصارف الثمانية',
+    recipients_modal_title: 'مصارف الزكاة الشرعية (لمن تصرف الزكاة؟)',
+    recipients_modal_subtitle: 'الأصناف الثمانية المنصوص عليها في القرآن الكريم (سورة التوبة ٩:٦٠)',
+    recipients_verse_quote: '\"إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا وَالْمُؤَلَّفَةِ قُلُوبُهُمْ وَفِي الرِّقَابِ وَالْغَارِمِينَ وَفِي سَبِيلِ اللَّهِ وَابْنِ السَّبِيلِ فَرِيضَةً مِّنَ اللَّهِ وَاللَّهُ عَلِيمٌ حَكِيمٌ\"',
+    recipients_verse_source: '— سورة التوبة ٩:٦٠',
+    cat_1_title: '١. الفقراء',
+    cat_1_desc: 'الذين لا يملكون شيئاً يكفيهم من قوت وكساء ومأوى، أو يجدون أقل من نصف كفايتهم الأساسية.',
+    cat_2_title: '٢. المساكين',
+    cat_2_desc: 'الذين يملكون مالاً أو كسباً لكنه لا يفي باحتياجاتهم ونفقاتهم الأساسية وهم دون حد النصاب.',
+    cat_3_title: '٣. العاملين عليها',
+    cat_3_desc: 'الجباة والأمناء المكلفون رسمياً بجمع الزكاة وحفظها وتوزيعها على مستحقيها.',
+    cat_4_title: '٤. المؤلفة قلوبهم',
+    cat_4_desc: 'المسلمون الجدد المحتاجون إلى الدعم والتثبيت، أو من يُرجى إسلامهم ودفع أذاهم.',
+    cat_5_title: '٥. في الرقاب',
+    cat_5_desc: 'تحرير الأرقاء، وفك الأسرى، ومساعدة ضحايا الاتجار بالبشر والعمل القسري المستعبد.',
+    cat_6_title: '٦. الغارمين',
+    cat_6_desc: 'المدينون الذين تراكمت عليهم الديون المباحة لعلاج أو حادث أو حاجة أساسية وعجزوا عن سدادها.',
+    cat_7_title: '٧. في سبيل الله',
+    cat_7_desc: 'الجهاد المشروع في سبيل الله، وطلاب العلم الشرعي، والمشاريع الدعوية الخالصة.',
+    cat_8_title: '٨. ابن السبيل',
+    cat_8_desc: 'المسافر المنقطع عن بلده ونفقته في سفر مباح، فيُعطى ما يوصله إلى وجهته وإن كان غنياً في بلده.',
+    recipients_ineligible_title: 'الأصناف الذين لا يجوز دفع الزكاة إليهم شرعاً:',
+    ineligible_1: '<strong>الأصول:</strong> الآباء والأمهات والأجداد والجدات (فنفقتهم واجبة على المزكي من ماله الخاص).',
+    ineligible_2: '<strong>الفروع:</strong> الأبناء والبنات وأولادهم.',
+    ineligible_3: '<strong>الزوجان:</strong> لا يجوز للزوج أن يدفع زكاته لزوجته، وكذلك الزوجة لزوجها الموسر.',
+    ineligible_4: '<strong>الأغنياء:</strong> كل من يملك كفايته أو يملك نصاباً زكوياً فائضاً عن حاجته الأصلية.',
+    ineligible_5: '<strong>بناء المساجد والمشاريع العامة:</strong> لا تصرف الزكاة في بناء المساجد أو الطرق لأن الزكاة تمليك للمستحق الفقير.',
+    nav_recipients: 'دليل المستحقين',
+    nav_recipients_text: 'مصارف الزكاة الثمانية',
+    btn_export: 'تحميل التقرير PDF',
     btn_share_whatsapp: 'مشاركة عبر واتساب',
     btn_start_again: 'بدء الحساب من جديد',
     live_zakat_bar_title: 'زكاتك حتى الآن',
@@ -1017,20 +1122,37 @@ function updateStepHeader() {
   }
 }
 
-// Al-Hawl Answer Handler
+// Al-Hawl Answer Handler: supports 'yes', 'no', 'notsure'
 window.setHawlAnswer = function(answer) {
-  STATE.wizard.hawlAnswer = answer ? 'yes' : 'no';
+  if (answer === true || answer === 'yes') {
+    STATE.wizard.hawlAnswer = 'yes';
+  } else if (answer === false || answer === 'no') {
+    STATE.wizard.hawlAnswer = 'no';
+  } else {
+    STATE.wizard.hawlAnswer = 'notsure';
+  }
 
   const btnYes = document.getElementById('hawl-btn-yes');
   const btnNo = document.getElementById('hawl-btn-no');
+  const btnNotsure = document.getElementById('hawl-btn-notsure');
+  const guideCard = document.getElementById('hawl-notsure-guide');
 
   if (btnYes && btnNo) {
-    if (answer) {
-      btnYes.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-emerald-600 text-white border-emerald-600 shadow-sm";
-      btnNo.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+    if (STATE.wizard.hawlAnswer === 'yes') {
+      btnYes.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-emerald-600 text-white border-emerald-600 shadow-sm";
+      btnNo.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+      if (btnNotsure) btnNotsure.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+      if (guideCard) guideCard.classList.add('hidden');
+    } else if (STATE.wizard.hawlAnswer === 'no') {
+      btnNo.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-rose-600 text-white border-rose-600 shadow-sm";
+      btnYes.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+      if (btnNotsure) btnNotsure.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+      if (guideCard) guideCard.classList.add('hidden');
     } else {
-      btnNo.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-rose-600 text-white border-rose-600 shadow-sm";
-      btnYes.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+      if (btnNotsure) btnNotsure.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-amber-500 text-white border-amber-500 shadow-sm";
+      btnYes.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+      btnNo.className = "tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+      if (guideCard) guideCard.classList.remove('hidden');
     }
   }
 
@@ -1076,6 +1198,7 @@ function updateWizardCalculations() {
   }
 
   // 2. Perform Comprehensive Wizard Math via Nisab Module
+  const isHawlNotNo = STATE.wizard.hawlAnswer !== 'no';
   const totals = NisabModule ? NisabModule.calculateWizardTotals(STATE.wizard, {
     goldPricePerGram: STATE.goldPrice,
     silverPricePerGram: STATE.silverPrice,
@@ -1093,7 +1216,7 @@ function updateWizardCalculations() {
     netWealth: 0,
     nisabThreshold: activeNisabThreshold,
     meetsNisab: false,
-    hawlConfirmed: STATE.wizard.hawlAnswer === 'yes',
+    hawlConfirmed: isHawlNotNo,
     isEligible: false,
     zakatDue: 0
   };
@@ -1133,26 +1256,29 @@ function updateWizardCalculations() {
   if (liveNetWealthEl) liveNetWealthEl.textContent = `(Net: ${formatMoney(totals.netWealth)})`;
   if (liveNisabChipVal) liveNisabChipVal.textContent = formatMoney(activeNisabThreshold);
 
-  // 6. Update Step 6 Breakdown Cards
+  // 6. Update Step 6 Breakdown Cards (6 cards with small icons)
   const cardCash = document.getElementById('card-breakdown-cash');
   const cardMetals = document.getElementById('card-breakdown-metals');
   const cardBusiness = document.getElementById('card-breakdown-business');
   const cardDebts = document.getElementById('card-breakdown-debts');
+  const cardNet = document.getElementById('card-breakdown-net');
+  const cardNisab = document.getElementById('card-breakdown-nisab');
 
   if (cardCash) cardCash.textContent = formatMoney(totals.cashTotal);
   if (cardMetals) cardMetals.textContent = formatMoney(totals.metalsTotal);
   if (cardBusiness) cardBusiness.textContent = formatMoney(totals.businessTotal);
   if (cardDebts) cardDebts.textContent = `-${formatMoney(totals.debtsTotal)}`;
+  if (cardNet) cardNet.textContent = formatMoney(totals.netWealth);
+  if (cardNisab) cardNisab.textContent = formatMoney(activeNisabThreshold);
 
-  // 7. Update Step 6 Main Result Card & Short Story
+  // 7. Update Step 6 Main Result Card & Canonical Plain Headline
   const resultBox = document.getElementById('wizard-result-box');
   const resultDueDisplay = document.getElementById('wizard-zakat-due-display');
   const resultPlainMsg = document.getElementById('wizard-result-plain-message');
   const storyText = document.getElementById('wizard-story-text');
+  const currSym = CURRENCIES[STATE.currency] ? CURRENCIES[STATE.currency].symbol : 'Rs';
 
   if (resultDueDisplay) resultDueDisplay.textContent = formatMoney(totals.zakatDue);
-
-  const isHawlYes = STATE.wizard.hawlAnswer === 'yes';
 
   if (!totals.meetsNisab) {
     // Wealth is below Nisab
@@ -1160,60 +1286,46 @@ function updateWizardCalculations() {
       resultBox.className = "p-6 sm:p-8 rounded-3xl bg-sky-50 border border-sky-200 text-sky-950 shadow-sm space-y-3 text-center transition-all duration-300";
     }
     if (resultDueDisplay) resultDueDisplay.className = "text-4xl sm:text-5xl font-black tracking-tight text-sky-700 my-2";
-    if (resultPlainMsg) {
-      resultPlainMsg.className = "text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto text-sky-900";
-      resultPlainMsg.textContent = (lang === 'ur')
-        ? "اس سال آپ پر زکوٰۃ واجب نہیں ہے کیونکہ آپ کی دولت نصاب کی حد سے کم ہے۔"
-        : (lang === 'ar'
-          ? "لا تجب عليك الزكاة هذا العام لأن صافي ثروتك أقل من حد النصاب الشرعي."
-          : "No zakat is due this year because your wealth is below the nisab.");
-    }
-  } else if (!isHawlYes) {
+  } else if (STATE.wizard.hawlAnswer === 'no') {
     // Meets Nisab but full lunar year has not completed
     if (resultBox) {
       resultBox.className = "p-6 sm:p-8 rounded-3xl bg-amber-50 border border-amber-200 text-amber-950 shadow-sm space-y-3 text-center transition-all duration-300";
     }
     if (resultDueDisplay) resultDueDisplay.className = "text-4xl sm:text-5xl font-black tracking-tight text-amber-700 my-2";
-    if (resultPlainMsg) {
-      resultPlainMsg.className = "text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto text-amber-900";
-      resultPlainMsg.textContent = (lang === 'ur')
-        ? "چونکہ اس مال پر ابھی مکمل ایک قمری سال (الحول) نہیں گزرا، اس لیے فی الوقت زکوٰۃ فرض نہیں ہے۔ جب سال مکمل ہو جائے تو حساب کیجیے گا۔"
-        : (lang === 'ar'
-          ? "نظراً لعدم اكتمال الحول (سنة هجرية كاملة) على ملكية هذا النصاب، فلا تجب الزكاة حالياً حتى يحول الحول."
-          : "No Zakat is due right now because a full Islamic lunar year (Al-Hawl) has not yet passed over this wealth.");
-    }
   } else {
     // Eligible: Meets Nisab and Hawl completed
     if (resultBox) {
       resultBox.className = "p-6 sm:p-8 rounded-3xl bg-emerald-600 text-white shadow-xl space-y-3 text-center transition-all duration-300";
     }
     if (resultDueDisplay) resultDueDisplay.className = "text-4xl sm:text-5xl font-black tracking-tight text-white my-2";
-    if (resultPlainMsg) {
-      resultPlainMsg.className = "text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto text-emerald-50";
-      resultPlainMsg.textContent = (lang === 'ur')
-        ? `آپ پر زکوٰۃ واجب الادا ہے: ${formatMoney(totals.zakatDue)}`
-        : (lang === 'ar'
-          ? `الزكاة المفروضة الواجبة عليك: ${formatMoney(totals.zakatDue)}`
-          : `Zakat is due: ${formatMoney(totals.zakatDue)}`);
-    }
   }
 
-  // 8. Plain Short Story sentence
+  // Canonical plain headline: "Zakat is due: Rs X" OR "No zakat is due this year because your wealth is below the nisab."
+  if (resultPlainMsg) {
+    resultPlainMsg.textContent = NisabModule ? NisabModule.formatZakatHeadline({
+      meetsNisab: totals.meetsNisab,
+      hawlConfirmed: STATE.wizard.hawlAnswer !== 'no',
+      zakatDue: totals.zakatDue,
+      symbol: currSym,
+      language: lang
+    }) : `Zakat is due: ${formatMoney(totals.zakatDue)}`;
+  }
+
+  // 8. Canonical Short Story sentence: "You have Rs A. The nisab is Rs B. Your zakat is 2.5% of Rs C = Rs D."
   if (storyText) {
-    const assetsFormatted = formatMoney(totals.grossAssets);
-    const debtsFormatted = formatMoney(totals.debtsTotal);
-    const netFormatted = formatMoney(totals.netWealth);
-    const nisabFormatted = formatMoney(activeNisabThreshold);
-    const zakatFormatted = formatMoney(totals.zakatDue);
-
-    if (lang === 'ur') {
-      storyText.innerHTML = `آپ کے کل اثاثے <strong>${assetsFormatted}</strong> ہیں۔ آپ پر فوری و سالانہ واجب الادا قرضے <strong>${debtsFormatted}</strong> ہیں۔ آپ کی خالص دولت <strong>${netFormatted}</strong> ہے۔ اس وقت حدِ نصاب <strong>${nisabFormatted}</strong> ہے۔ آپ کی واجب الادا زکوٰۃ 2.5٪ کے حساب سے <strong>${zakatFormatted}</strong> بنتی ہے۔`;
-    } else if (lang === 'ar') {
-      storyText.innerHTML = `إجمالي أصولك وأموالك <strong>${assetsFormatted}</strong>. والديون والالتزامات المستحقة عليك <strong>${debtsFormatted}</strong>. وصافي ثروتك الزكوية <strong>${netFormatted}</strong>. وحد النصاب المعتمد <strong>${nisabFormatted}</strong>. وتبلغ الزكاة الواجبة بنسبة 2.5% مبلغ <strong>${zakatFormatted}</strong>.`;
-    } else {
-      storyText.innerHTML = `You have <strong>${assetsFormatted}</strong> in total assets. You owe <strong>${debtsFormatted}</strong> in deductible debts. Your net zakatable wealth is <strong>${netFormatted}</strong>. The active Nisab threshold is <strong>${nisabFormatted}</strong>. Your zakat is 2.5% of ${netFormatted} = <strong>${zakatFormatted}</strong>.`;
-    }
+    storyText.innerHTML = NisabModule ? NisabModule.formatZakatStory({
+      grossAssets: totals.grossAssets,
+      netWealth: totals.netWealth,
+      nisabThreshold: activeNisabThreshold,
+      zakatDue: totals.zakatDue,
+      symbol: currSym,
+      language: lang
+    }) : `You have ${formatMoney(totals.grossAssets)}. The nisab is ${formatMoney(activeNisabThreshold)}. Your zakat is 2.5% of ${formatMoney(totals.netWealth)} = ${formatMoney(totals.zakatDue)}.`;
   }
+
+  // 9. Sync PDF Print Elements
+  syncPrintReport(totals, standardName, activeNisabThreshold);
+}
 
   // 9. Sync PDF Print Elements
   syncPrintReport(totals, standardName, activeNisabThreshold);

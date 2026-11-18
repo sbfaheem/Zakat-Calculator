@@ -201,3 +201,60 @@ test('Wizard totals calculation - Case (d): assets with debts reducing wealth be
   assert.equal(res.zakatResult.isEligible, false);
   assert.equal(res.zakatResult.zakatDue, 0, 'No zakat due when net wealth after deductible debts is below Nisab');
 });
+
+test('Canonical Headline formatting: "Zakat is due: Rs X" and below-Nisab notice', () => {
+  // Case 1: Below Nisab
+  const belowNisabEn = Nisab.formatZakatHeadline({
+    meetsNisab: false,
+    hawlConfirmed: true,
+    zakatDue: 0,
+    symbol: 'Rs',
+    language: 'en'
+  });
+  assert.equal(belowNisabEn, 'No zakat is due this year because your wealth is below the nisab.');
+
+  // Case 2: Zakat is due
+  const zakatDueEn = Nisab.formatZakatHeadline({
+    meetsNisab: true,
+    hawlConfirmed: true,
+    zakatDue: 20000,
+    symbol: 'Rs',
+    language: 'en'
+  });
+  assert.equal(zakatDueEn, 'Zakat is due: Rs 20,000.00');
+
+  // Case 3: Hawl not confirmed
+  const hawlNoEn = Nisab.formatZakatHeadline({
+    meetsNisab: true,
+    hawlConfirmed: false,
+    zakatDue: 0,
+    symbol: 'Rs',
+    language: 'en'
+  });
+  assert.equal(hawlNoEn, 'No zakat is due this year because you have not owned this wealth for a full Islamic year.');
+});
+
+test('Canonical Short Story formatting: "You have Rs A. The nisab is Rs B. Your zakat is 2.5% of Rs C = Rs D."', () => {
+  const storyEn = Nisab.formatZakatStory({
+    grossAssets: 800000,
+    netWealth: 800000,
+    nisabThreshold: 265029.41,
+    zakatDue: 20000,
+    symbol: 'Rs',
+    language: 'en'
+  });
+
+  assert.equal(storyEn, 'You have Rs 800,000.00. The nisab is Rs 265,029.41. Your zakat is 2.5% of Rs 800,000.00 = Rs 20,000.00.');
+
+  const storyUr = Nisab.formatZakatStory({
+    grossAssets: 800000,
+    netWealth: 800000,
+    nisabThreshold: 265029.41,
+    zakatDue: 20000,
+    symbol: 'Rs',
+    language: 'ur'
+  });
+  assert.ok(storyUr.includes('آپ کے پاس Rs 800,000.00 ہیں'));
+  assert.ok(storyUr.includes('حدِ نصاب Rs 265,029.41 ہے'));
+  assert.ok(storyUr.includes('Rs 20,000.00'));
+});

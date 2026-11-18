@@ -312,6 +312,48 @@
     });
   }
 
+  /**
+   * Generates the canonical plain headline for Zakat eligibility
+   * Guarantees rule compliance:
+   * - "Zakat is due: Rs X"
+   * - "No zakat is due this year because your wealth is below the nisab."
+   */
+  function formatZakatHeadline({ meetsNisab, hawlConfirmed = true, zakatDue = 0, symbol = 'Rs', language = 'en' }) {
+    const formattedDue = `${symbol} ${formatNumber(zakatDue)}`;
+    if (!meetsNisab) {
+      if (language === 'ur') return 'اس سال آپ پر زکوٰۃ واجب نہیں ہے کیونکہ آپ کی دولت نصاب کی حد سے کم ہے۔';
+      if (language === 'ar') return 'لا تجب عليك الزكاة هذا العام لأن ثروتك أقل من حد النصاب.';
+      return 'No zakat is due this year because your wealth is below the nisab.';
+    }
+    if (!hawlConfirmed) {
+      if (language === 'ur') return 'اس سال آپ پر زکوٰۃ واجب نہیں ہے کیونکہ آپ کے پاس یہ مال مکمل ایک اسلامی سال سے موجود نہیں ہے۔';
+      if (language === 'ar') return 'لا تجب عليك الزكاة هذا العام لأنه لم يمضِ على مالك عام هجري كامل.';
+      return 'No zakat is due this year because you have not owned this wealth for a full Islamic year.';
+    }
+    if (language === 'ur') return `زکوٰۃ واجب ہے: ${formattedDue}`;
+    if (language === 'ar') return `الزكاة الواجبة: ${formattedDue}`;
+    return `Zakat is due: ${formattedDue}`;
+  }
+
+  /**
+   * Generates the canonical plain short story
+   * Required template: "You have Rs A. The nisab is Rs B. Your zakat is 2.5% of Rs C = Rs D."
+   */
+  function formatZakatStory({ grossAssets = 0, netWealth = 0, nisabThreshold = 0, zakatDue = 0, symbol = 'Rs', language = 'en' }) {
+    const a = `${symbol} ${formatNumber(grossAssets)}`;
+    const b = `${symbol} ${formatNumber(nisabThreshold)}`;
+    const c = `${symbol} ${formatNumber(netWealth)}`;
+    const d = `${symbol} ${formatNumber(zakatDue)}`;
+
+    if (language === 'ur') {
+      return `آپ کے پاس ${a} ہیں۔ حدِ نصاب ${b} ہے۔ آپ کی زکوٰۃ ${c} کا 2.5٪ = ${d} ہے۔`;
+    }
+    if (language === 'ar') {
+      return `لديك ${a}. وحد النصاب هو ${b}. وزكاتك هي 2.5% من ${c} = ${d}.`;
+    }
+    return `You have ${a}. The nisab is ${b}. Your zakat is 2.5% of ${c} = ${d}.`;
+  }
+
   return {
     CONSTANTS: {
       TOLA_TO_GRAMS,
@@ -332,6 +374,8 @@
     calculateZakat,
     calculateWizardTotals,
     parseLocalizedNumber,
-    formatNumber
+    formatNumber,
+    formatZakatHeadline,
+    formatZakatStory
   };
 });

@@ -48,8 +48,11 @@
       </a>
 
       <!-- Desktop Nav Links -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+      <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
         <a href="#calculator-section" class="text-emerald-700 border-b-2 border-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_calculator">Calculator</a>
+        <button type="button" onclick="openModal('recipients-modal')" class="text-emerald-800 hover:text-emerald-950 font-bold pb-1.5 pt-0.5 transition-colors flex items-center gap-1.5" data-i18n="nav_recipients">
+          <span>🤲</span> <span data-i18n="nav_recipients_text">Who Can Receive Zakat?</span>
+        </button>
         <button type="button" onclick="openModal('principles-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_principles">Principles</button>
         <button type="button" onclick="openModal('nisab-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_nisab">Nisab Info</button>
         <button type="button" onclick="resetWizard()" class="text-slate-400 hover:text-rose-600 text-xs font-bold pb-1.5 pt-0.5 transition-colors" data-i18n="btn_start_over">Reset / Start Again</button>
@@ -858,29 +861,51 @@
         </div>
 
         <!-- Al-Hawl Question Card -->
-        <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
-          <div class="flex items-start justify-between gap-2">
+        <div class="p-5 sm:p-6 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-3.5">
+          <div class="flex items-start justify-between gap-3">
             <div>
-              <h3 class="text-base font-bold text-slate-900" data-i18n="hawl_question">
-                Have you owned this much wealth for a full Islamic lunar year?
+              <h3 class="text-base sm:text-lg font-bold text-slate-900" data-i18n="hawl_question">
+                Have you owned this much money or gold for a full Islamic year?
               </h3>
-              <p class="text-xs text-slate-500 mt-0.5" data-i18n="hawl_question_sub">
+              <p class="text-xs sm:text-sm text-slate-500 mt-0.5" data-i18n="hawl_question_sub">
                 Zakat only becomes obligatory after 1 full lunar year (354 days) has passed over wealth above Nisab.
               </p>
             </div>
-            <button type="button" onclick="showHelp('hawl-ruling')" class="text-xs font-bold text-emerald-700 hover:underline">? Explain</button>
+            <button type="button" onclick="showHelp('hawl-ruling')" class="text-xs font-bold text-emerald-700 hover:underline flex-shrink-0" title="Explain ruling">
+              ? <span data-i18n="help_link">Help</span>
+            </button>
           </div>
 
-          <div class="grid grid-cols-3 gap-2.5 pt-1">
-            <button type="button" onclick="setHawlAnswer(true)" id="hawl-btn-yes" class="tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-emerald-600 text-white border-emerald-600 shadow-sm" data-i18n="hawl_yes">
+          <!-- Big Yes / No / Not sure buttons -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <button type="button" onclick="setHawlAnswer('yes')" id="hawl-btn-yes" class="tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-emerald-600 text-white border-emerald-600 shadow-sm" data-i18n="hawl_yes">
               Yes (ہاں)
             </button>
-            <button type="button" onclick="setHawlAnswer(false)" id="hawl-btn-no" class="tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100" data-i18n="hawl_no">
+            <button type="button" onclick="setHawlAnswer('no')" id="hawl-btn-no" class="tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100" data-i18n="hawl_no">
               No (نہیں)
             </button>
-            <button type="button" onclick="showHelp('hawl-notsure')" id="hawl-btn-notsure" class="tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100" data-i18n="hawl_notsure">
-              Not Sure (یقین نہیں)
+            <button type="button" onclick="setHawlAnswer('notsure')" id="hawl-btn-notsure" class="tap-target-48 p-3.5 rounded-xl border text-center font-bold text-base transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100" data-i18n="hawl_notsure">
+              Not sure (یقین نہیں)
             </button>
+          </div>
+
+          <!-- Inline guidance card when "Not sure" is selected -->
+          <div id="hawl-notsure-guide" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-950 text-xs sm:text-sm leading-relaxed space-y-2 animate-scale-in">
+            <div class="flex items-center gap-2 font-bold text-amber-900">
+              <span class="w-5 h-5 rounded-full bg-amber-200 flex items-center justify-center text-xs">💡</span>
+              <span data-i18n="hawl_notsure_guide_title">What to do if you are not sure:</span>
+            </div>
+            <p data-i18n="hawl_notsure_guide_body">
+              If you do not know the exact day your savings first reached the nisab, scholars advise picking one Islamic date (such as 1st of Ramadan or 1st of Muharram) as your personal Zakat day every year. If you have this much wealth on that day, calculate and pay your Zakat. This fixes your date for all future years.
+            </p>
+            <div class="pt-2 flex flex-wrap gap-2">
+              <button type="button" onclick="setHawlAnswer('yes')" class="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-sm">
+                <span data-i18n="btn_choose_pay_now">I will pay my Zakat now (Count as Yes)</span>
+              </button>
+              <button type="button" onclick="setHawlAnswer('no')" class="px-3.5 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all">
+                <span data-i18n="btn_choose_wait">I will wait to complete my year (Count as No)</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -892,28 +917,28 @@
           <div id="wizard-zakat-due-display" class="text-4xl sm:text-5xl font-black tracking-tight text-white my-2">
             Rs 0.00
           </div>
-          <p id="wizard-result-plain-message" class="text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto opacity-95">
-            <!-- Plain sentence inserted dynamically -->
+          <p id="wizard-result-plain-message" class="text-base sm:text-lg font-bold leading-relaxed max-w-xl mx-auto opacity-95">
+            <!-- Plain sentence inserted dynamically: "Zakat is due: Rs X" OR "No zakat is due this year because your wealth is below the nisab." -->
           </p>
         </div>
 
-        <!-- PLAIN STORY BREAKDOWN -->
-        <div class="p-5 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-          <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700" data-i18n="story_title">
+        <!-- PLAIN SHORT STORY BREAKDOWN -->
+        <div class="p-5 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+          <h3 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-700" data-i18n="story_title">
             The Short Story of Your Calculation
           </h3>
-          <p id="wizard-story-text" class="text-sm sm:text-base text-slate-800 leading-relaxed font-medium">
-            <!-- Formatted story sentence -->
+          <p id="wizard-story-text" class="text-sm sm:text-base text-slate-800 leading-relaxed font-semibold">
+            <!-- "You have Rs A. The nisab is Rs B. Your zakat is 2.5% of Rs C = Rs D." -->
           </p>
         </div>
 
-        <!-- 4-CATEGORY BREAKDOWN CARDS -->
+        <!-- 6-CATEGORY DETAILED BREAKDOWN CARDS -->
         <div>
           <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 mb-3" data-i18n="breakdown_heading">
             Wealth & Deductions Breakdown
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <!-- Cash -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+            <!-- 1. Cash -->
             <div class="p-4 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
               <span class="flex items-center gap-2 text-slate-700 font-bold">
                 <span class="text-lg">💵</span> <span data-i18n="step_2_tab">Cash & Bank</span>
@@ -921,7 +946,7 @@
               <strong id="card-breakdown-cash" class="text-slate-900 font-extrabold">Rs 0.00</strong>
             </div>
 
-            <!-- Gold & Silver -->
+            <!-- 2. Gold & Silver -->
             <div class="p-4 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
               <span class="flex items-center gap-2 text-slate-700 font-bold">
                 <span class="text-lg">🪙</span> <span data-i18n="step_3_tab">Gold & Silver</span>
@@ -929,7 +954,7 @@
               <strong id="card-breakdown-metals" class="text-slate-900 font-extrabold">Rs 0.00</strong>
             </div>
 
-            <!-- Business -->
+            <!-- 3. Business -->
             <div class="p-4 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
               <span class="flex items-center gap-2 text-slate-700 font-bold">
                 <span class="text-lg">🏬</span> <span data-i18n="step_4_tab">Business Goods</span>
@@ -937,21 +962,58 @@
               <strong id="card-breakdown-business" class="text-slate-900 font-extrabold">Rs 0.00</strong>
             </div>
 
-            <!-- Debts -->
+            <!-- 4. Debts -->
             <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/50 flex items-center justify-between">
               <span class="flex items-center gap-2 text-rose-800 font-bold">
                 <span class="text-lg">📉</span> <span data-i18n="step_5_tab">Deductible Debts</span>
               </span>
               <strong id="card-breakdown-debts" class="text-rose-700 font-extrabold">-Rs 0.00</strong>
             </div>
+
+            <!-- 5. Net Wealth -->
+            <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-center justify-between">
+              <span class="flex items-center gap-2 text-emerald-900 font-bold">
+                <span class="text-lg">⚖️</span> <span data-i18n="summary_net_wealth">Net Wealth</span>
+              </span>
+              <strong id="card-breakdown-net" class="text-emerald-800 font-extrabold">Rs 0.00</strong>
+            </div>
+
+            <!-- 6. Active Nisab Threshold -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between">
+              <span class="flex items-center gap-2 text-slate-700 font-bold">
+                <span class="text-lg">🎯</span> <span data-i18n="threshold_val_label">Nisab Threshold</span>
+              </span>
+              <strong id="card-breakdown-nisab" class="text-slate-800 font-extrabold">Rs 0.00</strong>
+            </div>
           </div>
+        </div>
+
+        <!-- WHO CAN RECEIVE MY ZAKAT PROMOTIONAL BANNER -->
+        <div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-start">
+          <div class="flex items-center gap-3.5">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-2xl flex-shrink-0 shadow-md shadow-emerald-700/20">
+              🤲
+            </div>
+            <div>
+              <h3 class="text-base sm:text-lg font-bold text-emerald-950" data-i18n="recipients_banner_title">
+                Who can receive your Zakat?
+              </h3>
+              <p class="text-xs sm:text-sm text-emerald-800 font-medium mt-0.5" data-i18n="recipients_banner_subtitle">
+                Learn about the 8 Quranic categories of eligible recipients and who is exempt.
+              </p>
+            </div>
+          </div>
+          <button type="button" onclick="openModal('recipients-modal')" class="tap-target-48 whitespace-nowrap bg-white hover:bg-emerald-100/70 text-emerald-900 border border-emerald-300 font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2">
+            <span data-i18n="btn_view_recipients">View 8 Categories</span>
+            <span class="rtl:rotate-180">→</span>
+          </button>
         </div>
 
         <!-- ACTION BUTTONS: EXPORT, SHARE, START AGAIN -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-100">
           <button type="button" onclick="exportReport()" class="tap-target-48 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01]">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm5-17V7a4 4 0 00-4-4H8a4 4 0 00-4 4v2m12 0a2 2 0 100-4 2 2 0 000 4z"/></svg>
-            <span data-i18n="btn_export">Download PDF Report</span>
+            <span data-i18n="btn_export">Download PDF</span>
           </button>
 
           <button type="button" onclick="shareOnWhatsApp()" class="tap-target-48 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01]">
@@ -961,7 +1023,7 @@
 
           <button type="button" onclick="resetWizard()" class="tap-target-48 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <span data-i18n="btn_start_again">Start Again</span>
+            <span data-i18n="btn_start_again">Start again</span>
           </button>
         </div>
 
@@ -1249,6 +1311,152 @@
 
       <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
         <button onclick="closeModal('help-modal')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm">
+          <span data-i18n="btn_understood">Understood</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: WHO CAN RECEIVE MY ZAKAT (THE 8 QURANIC CATEGORIES) -->
+  <div id="recipients-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden animate-fade-in-up" role="dialog" aria-modal="true" aria-labelledby="recipients-modal-title">
+    <div class="bg-white rounded-3xl max-w-3xl w-full mx-4 shadow-2xl overflow-hidden border border-slate-100 animate-scale-in">
+      <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xl">🤲</div>
+          <div>
+            <h3 id="recipients-modal-title" class="text-lg sm:text-xl font-extrabold text-slate-900 font-display" data-i18n="recipients_modal_title">
+              Who Can Receive My Zakat?
+            </h3>
+            <span class="text-xs font-semibold text-emerald-700 block" data-i18n="recipients_modal_subtitle">
+              The 8 Quranic Categories (Surah At-Tawbah 9:60)
+            </span>
+          </div>
+        </div>
+        <button onclick="closeModal('recipients-modal')" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all" aria-label="Close modal">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-6 max-h-[70vh] overflow-y-auto space-y-6 text-sm text-slate-700 leading-relaxed font-medium">
+        
+        <!-- Verse Introduction -->
+        <div class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200/60 text-xs sm:text-sm text-emerald-950 italic">
+          <p data-i18n="recipients_verse_quote">
+            "Zakat expenditures are only for the poor and for the needy and for those employed to collect it and for bringing hearts together and for freeing captives and for those in debt and for the cause of Allah and for the [stranded] traveler — an obligation ordained by Allah. And Allah is Knowing and Wise."
+          </p>
+          <cite class="block not-italic font-bold text-emerald-800 text-xs mt-2" data-i18n="recipients_verse_source">— Surah At-Tawbah 9:60</cite>
+        </div>
+
+        <!-- The 8 Categories Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <!-- 1. The Poor -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">🍞</span>
+              <span data-i18n="cat_1_title">1. The Poor (Al-Fuqara)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_1_desc">
+              Families who have virtually no income or wealth, and cannot afford basic food, clothing, or shelter.
+            </p>
+          </div>
+
+          <!-- 2. The Needy -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">💼</span>
+              <span data-i18n="cat_2_title">2. The Needy (Al-Masakin)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_2_desc">
+              People who work or have a small income, but it does not meet basic essential family costs and they possess less than Nisab.
+            </p>
+          </div>
+
+          <!-- 3. Zakat Administrators -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">📋</span>
+              <span data-i18n="cat_3_title">3. Zakat Collectors (Al-Amilina Alayha)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_3_desc">
+              Trustworthy workers authorized by official or community bodies to collect, account for, and distribute Zakat funds.
+            </p>
+          </div>
+
+          <!-- 4. Reconciling Hearts -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">🤝</span>
+              <span data-i18n="cat_4_title">4. Reconciling Hearts (Al-Mu'allafatu Qulubuhum)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_4_desc">
+              New Muslims in need of community welcome, encouragement, and relief from economic hardship.
+            </p>
+          </div>
+
+          <!-- 5. Freeing Captives -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">⛓️</span>
+              <span data-i18n="cat_5_title">5. Freeing Captives (Fir-Riqab)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_5_desc">
+              Freeing people from human trafficking, bonded labor exploitation, or unjust captivity.
+            </p>
+          </div>
+
+          <!-- 6. Those Burdened by Debt -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">🧾</span>
+              <span data-i18n="cat_6_title">6. Burdened Debtors (Al-Gharimin)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_6_desc">
+              People burdened by overwhelming debts incurred for basic survival, medical emergencies, or disasters, with no means to repay.
+            </p>
+          </div>
+
+          <!-- 7. In the Cause of Allah -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">📖</span>
+              <span data-i18n="cat_7_title">7. In Allah's Cause (Fi Sabilillah)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_7_desc">
+              Those engaged in the advancement of religious knowledge, Islamic scholars/students, and community welfare striving in faith.
+            </p>
+          </div>
+
+          <!-- 8. The Stranded Traveler -->
+          <div class="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 space-y-1">
+            <div class="flex items-center gap-2 font-bold text-slate-900">
+              <span class="text-lg">🧳</span>
+              <span data-i18n="cat_8_title">8. The Stranded Traveler (Ibn As-Sabil)</span>
+            </div>
+            <p class="text-xs text-slate-600" data-i18n="cat_8_desc">
+              Anyone stranded on a lawful journey without access to their funds to safely return home, even if wealthy in their home country.
+            </p>
+          </div>
+        </div>
+
+        <!-- IMPORTANT NOTE: Who CANNOT receive your Zakat -->
+        <div class="p-4 sm:p-5 rounded-2xl border border-rose-200 bg-rose-50/60 space-y-2">
+          <div class="flex items-center gap-2 font-bold text-rose-900 text-sm">
+            <span class="text-base">🚫</span>
+            <span data-i18n="recipients_ineligible_title">Who CANNOT Receive Your Zakat:</span>
+          </div>
+          <ul class="text-xs text-rose-800 list-disc list-inside space-y-1 font-medium">
+            <li data-i18n="ineligible_1"><strong>Direct ascendants:</strong> Your parents, grandparents, and great-grandparents (you must care for them directly).</li>
+            <li data-i18n="ineligible_2"><strong>Direct descendants:</strong> Your children, grandchildren, and great-grandchildren.</li>
+            <li data-i18n="ineligible_3"><strong>Your spouse:</strong> Husband or wife cannot pay Zakat to one another.</li>
+            <li data-i18n="ineligible_4"><strong>Wealthy individuals:</strong> Anyone whose net wealth equals or exceeds the Nisab threshold.</li>
+            <li data-i18n="ineligible_5"><strong>Public infrastructure:</strong> Building mosques, digging wells for public roads, or general charities where ownership is not transferred directly to an eligible person.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('recipients-modal')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition-all shadow-sm">
           <span data-i18n="btn_understood">Understood</span>
         </button>
       </div>
