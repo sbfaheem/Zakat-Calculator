@@ -1,17 +1,42 @@
 // ZakatFlow Core Logic with Trilingual and RTL Support
+// Powered by shared Nisab single source of truth module
+
+// Resolve Nisab module in browser or Node environment
+const NisabModule = (typeof Nisab !== 'undefined') ? Nisab : (typeof require !== 'undefined' ? require('./nisab.js') : null);
 
 // Helper to generate unique IDs
 function generateId() {
   return 'id_' + Math.random().toString(36).substr(2, 9);
 }
 
-// State Management
+// Canonical Constants from shared Nisab module
+const TOLA_TO_GRAMS = NisabModule ? NisabModule.CONSTANTS.TOLA_TO_GRAMS : 11.664; // 1 tola = 11.664g
+const SILVER_NISAB_GRAMS = NisabModule ? NisabModule.CONSTANTS.SILVER_NISAB_GRAMS : 612.36; // 52.5 tolas
+const GOLD_NISAB_GRAMS = NisabModule ? NisabModule.CONSTANTS.GOLD_NISAB_GRAMS : 87.48; // 7.5 tolas
+const ZAKAT_RATE = NisabModule ? NisabModule.CONSTANTS.ZAKAT_RATE : 0.025; // 2.5%
+
+// Seed fallback prices (editable, benchmarked from 18 Nov 2026 for Pakistan market)
+// Silver: about Rs 5,048 per tola (about Rs 432.8 per gram)
+// 24K Gold: about Rs 412,000 per tola (about Rs 35,322 per gram)
+const CURRENCIES = {
+  PKR: { symbol: 'Rs', name: 'Pakistani Rupee', gold: 35322.0, silver: 432.8, locale: 'ur-PK' },
+  USD: { symbol: '$', name: 'US Dollar', gold: 120.0, silver: 1.44, locale: 'en-US' },
+  SAR: { symbol: 'SR', name: 'Saudi Riyal', gold: 450.0, silver: 5.40, locale: 'ar-SA' },
+  AED: { symbol: 'AED', name: 'UAE Dirham', gold: 440.0, silver: 5.28, locale: 'ar-AE' },
+  GBP: { symbol: '£', name: 'British Pound', gold: 94.0, silver: 1.13, locale: 'en-GB' }
+};
+
+// State Management - Default audience: Pakistan (Hanafi), default currency PKR, default language Urdu
 const STATE = {
-  language: 'en',
-  currency: 'USD',
-  nisabStandard: 'silver', // 'silver' is preferred by contemporary scholars as default
-  goldPrice: 65.50,
-  silverPrice: 0.75,
+  language: 'ur',
+  currency: 'PKR',
+  nisabStandard: 'silver', // 'silver' is default Hanafi consensus for Pakistan
+  goldPrice: CURRENCIES.PKR.gold,
+  silverPrice: CURRENCIES.PKR.silver,
+  isLivePrice: false,
+  pricesLastUpdated: '18 Nov 2026',
+  livePriceNotice: '',
+  isUserCustomPrices: false,
   assets: [
     { id: generateId(), type: 'Cash', unit: 'Currency', amount: 0, price: 1, total: 0, isPriceCustom: false }
   ],
@@ -20,27 +45,6 @@ const STATE = {
   ],
   alHawlConfirmed: true,
   history: []
-};
-
-// Constants & Conversions
-const TOLA_TO_GRAMS = 11.6638;
-const ZAKAT_RATE = 0.025; // 2.5%
-
-const CURRENCIES = {
-  USD: { symbol: '$', name: 'US Dollar', gold: 65.50, silver: 0.75 },
-  PKR: { symbol: 'Rs', name: 'Pakistani Rupee', gold: 18200, silver: 210 },
-  EUR: { symbol: '€', name: 'Euro', gold: 60.20, silver: 0.69 },
-  GBP: { symbol: '£', name: 'British Pound', gold: 52.10, silver: 0.60 },
-  AED: { symbol: 'د.إ', name: 'UAE Dirham', gold: 240.50, silver: 2.75 },
-  AUD: { symbol: 'A$', name: 'Australian Dollar', gold: 98.00, silver: 1.12 },
-  CAD: { symbol: 'C$', name: 'Canadian Dollar', gold: 90.00, silver: 1.03 },
-  SAR: { symbol: 'SR', name: 'Saudi Riyal', gold: 245.60, silver: 2.81 },
-  QAR: { symbol: 'QR', name: 'Qatari Riyal', gold: 238.40, silver: 2.73 },
-  OMR: { symbol: 'OMR', name: 'Omani Riyal', gold: 25.20, silver: 0.29 },
-  KWD: { symbol: 'KD', name: 'Kuwaiti Dinar', gold: 20.10, silver: 0.23 },
-  MYR: { symbol: 'RM', name: 'Malaysian Ringgit', gold: 308.00, silver: 3.53 },
-  INR: { symbol: '₹', name: 'Indian Rupee', gold: 5470.00, silver: 62.60 },
-  BDT: { symbol: '৳', name: 'Bangladeshi Taka', gold: 7700.00, silver: 88.10 }
 };
 
 const ASSET_TYPES = [
@@ -65,15 +69,31 @@ const TRANSLATIONS = {
     nav_drafts_badge: 'Drafts',
     hero_title: 'Purify Your Wealth with Precision',
     hero_subtitle: 'A serene, accurate, and dignified calculation experience honoring the spiritual obligation of Zakat. Clear your debts to society and purify your remaining wealth.',
-    hero_badge: 'Based on authentic scholarly consensus',
+    hero_badge: 'Calculated using the Hanafi silver nisab by default.',
     nisab_card_title: 'Nisab Threshold',
     nisab_card_subtitle: 'Determine the minimum wealth required for Zakat obligation.',
+    price_banner_fallback: 'Live price unavailable. Please check the price below.',
+    price_banner_fallback_sub: 'Using verified seed rates from 18 Nov 2026. You can edit the prices to match your local market.',
+    price_last_updated: 'Prices last updated:',
+    active_standard_label: 'Active Standard:',
+    active_standard_silver: 'Silver (Hanafi / Pakistan — 612.36g)',
+    active_standard_gold: 'Gold Standard (87.48g)',
+    threshold_silver_label: 'Silver Nisab (612.36g):',
+    threshold_gold_label: 'Gold Nisab (87.48g):',
+    silver_price_hint: 'Editable. About Rs 5,048 per tola (52.5 tolas = 612.36g)',
+    gold_price_hint: 'Editable. About Rs 412,000 per tola (7.5 tolas = 87.48g)',
+    advanced_nisab_title: '⚙️ Advanced: Change Nisab Standard (Gold / Silver)',
+    advanced_show: 'Show details',
+    advanced_hide: 'Hide',
+    choose_standard_prompt: 'Choose Standard:',
+    nisab_switch_explanation: '<strong>Why Silver is default:</strong> The Silver standard (612.36g) gives a lower threshold (about Rs 265,000 vs Rs 3,000,000 for gold). Most scholars in Pakistan advise using Silver so more families in need can receive help. If you own only gold and no cash or silver, some scholars allow using the Gold standard.',
+    help_link: 'Help',
     nisab_toggle_gold: 'Gold (87.48g)',
-    nisab_toggle_silver: 'Silver (612.36g)',
+    nisab_toggle_silver: 'Silver (612.36g) — Recommended',
     gold_price_label: 'Current Gold Price (per gram)',
     silver_price_label: 'Current Silver Price (per gram)',
     threshold_val_label: 'Threshold Value:',
-    active_nisab_text: 'Active Threshold: <strong>{standard}</strong>. Your wealth must exceed <strong>{val}</strong> ({weight}) to be eligible for Zakat.',
+    active_nisab_text: 'Active Standard: <strong>{standard}</strong>. Your net wealth must exceed <strong>{val}</strong> ({weight}) to be eligible for Zakat.',
     assets_card_title: 'Zakatable Assets',
     assets_card_subtitle: 'Declare eligible assets you possess (gold, silver, cash, shares, etc.).',
     btn_add_asset: 'Add Asset',
@@ -181,11 +201,27 @@ const TRANSLATIONS = {
     nav_drafts_badge: 'مسودات',
     hero_title: 'طهّر مالك بدقة وإخلاص',
     hero_subtitle: 'تجربة حسابية هادئة، دقيقة ومحترمة تلتزم بفرائض الزكاة الشرعية. قم بتصفية ديونك للمجتمع وتطهير ما تبقى من ثروتك.',
-    hero_badge: 'بناءً على الإجماع الفقهي المعتمد',
+    hero_badge: 'محسوب وفقاً لنصاب الفضة المعتمد في المذهب الحنفي',
     nisab_card_title: 'حد النصاب الشرعي',
     nisab_card_subtitle: 'تحديد الحد الأدنى من المال الذي تجب فيه الزكاة.',
+    price_banner_fallback: 'الأسعار الحية غير متوفرة حالياً. يرجى مراجعة الأسعار أدناه.',
+    price_banner_fallback_sub: 'باستخدام الأسعار المعيارية لشهر نوفمبر 2026. يمكنك تعديل الأسعار لتناسب السوق المحلي.',
+    price_last_updated: 'آخر تحديث للأسعار:',
+    active_standard_label: 'المعيار المعتمد:',
+    active_standard_silver: 'الفضة (المذهب الحنفي — 612.36 جرام)',
+    active_standard_gold: 'معيار الذهب (87.48 جرام)',
+    threshold_silver_label: 'نصاب الفضة (612.36 جرام):',
+    threshold_gold_label: 'نصاب الذهب (87.48 جرام):',
+    silver_price_hint: 'قابل للتعديل. نصاب الفضة 52.5 تولة = 612.36 جرام',
+    gold_price_hint: 'قابل للتعديل. نصاب الذهب 7.5 تولة = 87.48 جرام',
+    advanced_nisab_title: '⚙️ خيارات متقدمة: تغيير معيار النصاب (ذهب / فضة)',
+    advanced_show: 'عرض التفاصيل',
+    advanced_hide: 'إخفاء',
+    choose_standard_prompt: 'اختر المعيار:',
+    nisab_switch_explanation: '<strong>لماذا الفضة هي المعيار الافتراضي:</strong> معيار الفضة يعطي حداً أدنى أقل لوجوب الزكاة مقارنة بالذهب. يوصي معظم علماء العصر باعتماد الفضة لأن ذلك يعود بالنفع الأكبر على الفقراء والمحتاجين.',
+    help_link: 'مساعدة',
     nisab_toggle_gold: 'الذهب (87.48 جرام)',
-    nisab_toggle_silver: 'الفضة (612.36 جرام)',
+    nisab_toggle_silver: 'الفضة (612.36 جرام) — الموصى به',
     gold_price_label: 'سعر الذهب الحالي (للجرام الواحدة)',
     silver_price_label: 'سعر الفضة الحالي (للجرام الواحدة)',
     threshold_val_label: 'قيمة النصاب الحالية:',
@@ -297,11 +333,27 @@ const TRANSLATIONS = {
     nav_drafts_badge: 'ڈرافٹس',
     hero_title: 'اپنے مال کو درستگی کے ساتھ پاک کریں',
     hero_subtitle: 'زکوٰۃ کے شرعی فریضے کی ادائیگی کے لیے ایک پرسکون، درست اور باوقار کیلکولیٹر۔ معاشرے کے تئیں اپنے واجبات کو ادا کریں اور اپنے باقی مال کو پاک کریں۔',
-    hero_badge: 'معتبر شرعی اتفاقِ رائے کی بنیاد پر',
+    hero_badge: 'بنیادی طور پر حنفی چاندی کے نصاب کے مطابق حساب شدہ',
     nisab_card_title: 'حدِ نصاب',
     nisab_card_subtitle: 'زکوٰۃ کی فرضیت کے لیے مطلوبہ کم از کم دولت کا تعین کریں۔',
+    price_banner_fallback: 'لائیو ریٹس دستیاب نہیں ہیں۔ برائے مہربانی نیچے دیے گئے ریٹس چیک کر لیں۔',
+    price_banner_fallback_sub: '18 نومبر 2026 کے تصدیق شدہ ریٹس استعمال کیے جا رہے ہیں۔ آپ اپنے مقامی صرافہ بازار کے مطابق قیمت تبدیل کر سکتے ہیں۔',
+    price_last_updated: 'قیمتوں کی تاریخ:',
+    active_standard_label: 'فعال معیار:',
+    active_standard_silver: 'چاندی (حنفی / پاکستان — 612.36 گرام)',
+    active_standard_gold: 'سونے کا نصاب (87.48 گرام)',
+    threshold_silver_label: 'چاندی کا نصاب (612.36 گرام):',
+    threshold_gold_label: 'سونے کا نصاب (87.48 گرام):',
+    silver_price_hint: 'تبدیل کیا جا سکتا ہے۔ تقریباً 5,048 روپے فی تولہ (52.5 تولہ = 612.36 گرام)',
+    gold_price_hint: 'تبدیل کیا جا سکتا ہے۔ تقریباً 412,000 روپے فی تولہ (7.5 تولہ = 87.48 گرام)',
+    advanced_nisab_title: '⚙️ ایڈوانسڈ: نصاب کا معیار تبدیل کریں (سونا / چاندی)',
+    advanced_show: 'تفصیل دیکھیں',
+    advanced_hide: 'چھپائیں',
+    choose_standard_prompt: 'معیار منتخب کریں:',
+    nisab_switch_explanation: '<strong>چاندی کا نصاب کیوں ترجیحی ہے؟</strong> چاندی کا نصاب (612.36 گرام / 52.5 تولہ) کم مالیت پر فرض ہوتا ہے (تقریباً 2 لاکھ 65 ہزار روپے بمقابلہ سونے کے 30 لاکھ روپے)۔ پاکستان کے علماء چاندی کے نصاب کی پرزور سفارش کرتے ہیں تاکہ زیادہ سے زیادہ ضرورت مندوں کی مدد ہو سکے۔ اگر آپ کے پاس صرف سونا ہو اور کوئی نقد رقم یا چاندی نہ ہو، تو بعض علماء سونے کے نصاب کی اجازت دیتے ہیں۔',
+    help_link: 'رہنمائی',
     nisab_toggle_gold: 'سونا (87.48 گرام)',
-    nisab_toggle_silver: 'چاندی (612.36 گرام)',
+    nisab_toggle_silver: 'چاندی (612.36 گرام) — سفارش شدہ',
     gold_price_label: 'سونے کی موجودہ قیمت (فی گرام)',
     silver_price_label: 'چاندی کی موجودہ قیمت (فی گرام)',
     threshold_val_label: 'نصاب کی موجودہ مالیت:',
@@ -405,10 +457,15 @@ const TRANSLATIONS = {
   }
 };
 
-// Helper to format money
+// Helper to format money cleanly with currency symbol and localized number
 function formatMoney(amount) {
-  const symbol = CURRENCIES[STATE.currency].symbol;
-  return `${symbol} ${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const curr = CURRENCIES[STATE.currency] || CURRENCIES.PKR;
+  const num = parseFloat(amount) || 0;
+  const formatted = num.toLocaleString(curr.locale || 'en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  return `${curr.symbol} ${formatted}`;
 }
 
 // Initialize the Application
@@ -422,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderAssets();
   renderLiabilities();
   calculateAll();
+  fetchLivePrices(); // Query serverless endpoint for live rates with caching
 });
 
 // Setup Language Selector
@@ -437,7 +495,7 @@ function initLanguageSelector() {
     calculateAll();
   });
 
-  // Set default language
+  // Set default language (Urdu for Pakistan)
   selector.value = STATE.language;
   translateUI();
 }
@@ -480,7 +538,7 @@ function initCurrencySelector() {
   if (!selector) return;
 
   selector.innerHTML = Object.keys(CURRENCIES).map(code => 
-    `<option value="${code}">${code} (${CURRENCIES[code].symbol})</option>`
+    `<option value="${code}" ${code === STATE.currency ? 'selected' : ''}>${code} (${CURRENCIES[code].symbol})</option>`
   ).join('');
 
   selector.value = STATE.currency;
@@ -491,14 +549,14 @@ function initCurrencySelector() {
     const prevDefaults = CURRENCIES[prevCurrency];
     const newDefaults = CURRENCIES[STATE.currency];
     
-    // Auto-update prices to new currency defaults if user hadn't edited
-    if (STATE.goldPrice === prevDefaults.gold) {
+    // Auto-update prices to new currency defaults if user hadn't typed custom prices
+    if (!STATE.isUserCustomPrices) {
       STATE.goldPrice = newDefaults.gold;
-      document.getElementById('gold-price-input').value = STATE.goldPrice;
-    }
-    if (STATE.silverPrice === prevDefaults.silver) {
       STATE.silverPrice = newDefaults.silver;
-      document.getElementById('silver-price-input').value = STATE.silverPrice;
+      const goldInp = document.getElementById('gold-price-input');
+      const silverInp = document.getElementById('silver-price-input');
+      if (goldInp) goldInp.value = STATE.goldPrice;
+      if (silverInp) silverInp.value = STATE.silverPrice;
     }
 
     updateCurrencyLabels();
@@ -516,6 +574,7 @@ function initCurrencySelector() {
 
     renderAssets();
     calculateAll();
+    fetchLivePrices(); // Refresh rates for newly selected currency
   });
 
   updateCurrencyLabels();
@@ -537,13 +596,15 @@ function initNisabPrices() {
     silverInput.value = STATE.silverPrice;
 
     goldInput.addEventListener('input', (e) => {
-      STATE.goldPrice = parseFloat(e.target.value) || 0;
+      STATE.isUserCustomPrices = true;
+      STATE.goldPrice = NisabModule ? NisabModule.parseLocalizedNumber(e.target.value) : (parseFloat(e.target.value) || 0);
       syncNisabPricesToAssets();
       calculateAll();
     });
 
     silverInput.addEventListener('input', (e) => {
-      STATE.silverPrice = parseFloat(e.target.value) || 0;
+      STATE.isUserCustomPrices = true;
+      STATE.silverPrice = NisabModule ? NisabModule.parseLocalizedNumber(e.target.value) : (parseFloat(e.target.value) || 0);
       syncNisabPricesToAssets();
       calculateAll();
     });
@@ -555,21 +616,94 @@ function initNisabPrices() {
   if (goldToggle && silverToggle) {
     goldToggle.addEventListener('click', () => {
       STATE.nisabStandard = 'gold';
-      goldToggle.classList.add('bg-emerald-600', 'text-white');
-      goldToggle.classList.remove('bg-slate-100', 'text-slate-700');
-      silverToggle.classList.remove('bg-emerald-600', 'text-white');
-      silverToggle.classList.add('bg-slate-100', 'text-slate-700');
+      goldToggle.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+      goldToggle.classList.remove('bg-white', 'text-slate-700');
+      silverToggle.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+      silverToggle.classList.add('bg-white', 'text-slate-700');
       calculateAll();
     });
 
     silverToggle.addEventListener('click', () => {
       STATE.nisabStandard = 'silver';
-      silverToggle.classList.add('bg-emerald-600', 'text-white');
-      silverToggle.classList.remove('bg-slate-100', 'text-slate-700');
-      goldToggle.classList.remove('bg-emerald-600', 'text-white');
-      goldToggle.classList.add('bg-slate-100', 'text-slate-700');
+      silverToggle.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+      silverToggle.classList.remove('bg-white', 'text-slate-700');
+      goldToggle.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
+      goldToggle.classList.add('bg-white', 'text-slate-700');
       calculateAll();
     });
+  }
+}
+
+// Fetch live bullion prices via server-side route (/api/prices)
+async function fetchLivePrices() {
+  const curr = STATE.currency;
+  try {
+    const res = await fetch(`/api/prices?currency=${curr}`);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    const data = await res.json();
+    
+    if (data && data.currencies && data.currencies[curr]) {
+      const curRates = data.currencies[curr];
+      STATE.isLivePrice = Boolean(data.isLive);
+      STATE.pricesLastUpdated = data.updatedAtReadable || '18 Nov 2026';
+      
+      // If user hasn't explicitly customized prices, sync with latest rates
+      if (!STATE.isUserCustomPrices) {
+        STATE.goldPrice = curRates.goldPricePerGram;
+        STATE.silverPrice = curRates.silverPricePerGram;
+        const goldInput = document.getElementById('gold-price-input');
+        const silverInput = document.getElementById('silver-price-input');
+        if (goldInput) goldInput.value = STATE.goldPrice;
+        if (silverInput) silverInput.value = STATE.silverPrice;
+        syncNisabPricesToAssets();
+      }
+
+      updatePriceStatusUI(data.isLive, data.updatedAtReadable, data.notice);
+      calculateAll();
+      return;
+    }
+  } catch (err) {
+    console.warn('Live metal prices could not be fetched from /api/prices:', err.message);
+  }
+
+  // Graceful offline fallback
+  STATE.isLivePrice = false;
+  STATE.pricesLastUpdated = '18 Nov 2026';
+  updatePriceStatusUI(false, '18 Nov 2026', 'Live price unavailable. Please check the price below.');
+  calculateAll();
+}
+
+function updatePriceStatusUI(isLive, dateStr, notice) {
+  const lang = STATE.language;
+  const banner = document.getElementById('price-status-banner');
+  const badge = document.getElementById('price-live-badge');
+  const badgeText = document.getElementById('price-live-badge-text');
+  const lastUpdatedEl = document.getElementById('price-last-updated-text');
+  const messageEl = document.getElementById('price-status-message');
+
+  if (lastUpdatedEl) {
+    lastUpdatedEl.textContent = dateStr || '18 Nov 2026';
+  }
+
+  if (isLive) {
+    if (banner) banner.classList.add('hidden');
+    if (badge) {
+      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
+    }
+    if (badgeText) {
+      badgeText.textContent = lang === 'ur' ? 'لائیو مارکیٹ ریٹس' : (lang === 'ar' ? 'أسعار السوق الحية' : 'Live Market Rates');
+    }
+  } else {
+    if (banner) {
+      banner.classList.remove('hidden');
+      if (messageEl && notice) messageEl.textContent = notice;
+    }
+    if (badge) {
+      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800';
+    }
+    if (badgeText) {
+      badgeText.textContent = lang === 'ur' ? '18 نومبر 2026 ریٹس (فال بیک)' : (lang === 'ar' ? 'أسعار احتياطية (18 نوفمبر 2026)' : '18 Nov 2026 Rates (Fallback)');
+    }
   }
 }
 
@@ -889,23 +1023,50 @@ window.removeLiability = function(id) {
 function calculateAll() {
   const lang = STATE.language;
 
-  // Update Nisab Values
-  const goldNisab = 87.48 * STATE.goldPrice;
-  const silverNisab = 612.36 * STATE.silverPrice;
+  // Update Nisab Values using shared Nisab module
+  const goldNisab = NisabModule 
+    ? NisabModule.calculateNisabThreshold({ standard: 'gold', goldPricePerGram: STATE.goldPrice })
+    : (87.48 * STATE.goldPrice);
+  const silverNisab = NisabModule 
+    ? NisabModule.calculateNisabThreshold({ standard: 'silver', silverPricePerGram: STATE.silverPrice })
+    : (612.36 * STATE.silverPrice);
 
-  document.getElementById('nisab-gold-value').textContent = formatMoney(goldNisab);
-  document.getElementById('nisab-silver-value').textContent = formatMoney(silverNisab);
+  const goldValEl = document.getElementById('nisab-gold-value');
+  const silverValEl = document.getElementById('nisab-silver-value');
+  if (goldValEl) goldValEl.textContent = formatMoney(goldNisab);
+  if (silverValEl) silverValEl.textContent = formatMoney(silverNisab);
 
-  // Active Nisab Threshold
+  // Active Nisab Threshold (Silver is default Hanafi consensus for Pakistan)
   const activeNisab = STATE.nisabStandard === 'gold' ? goldNisab : silverNisab;
-  const standardName = STATE.nisabStandard === 'gold' ? (lang === 'ur' ? 'سونا' : (lang === 'ar' ? 'الذهب' : 'Gold')) : (lang === 'ur' ? 'چاندی' : (lang === 'ar' ? 'الفضة' : 'Silver'));
-  const thresholdWeight = STATE.nisabStandard === 'gold' ? '87.48g' : '612.36g';
+  const standardName = STATE.nisabStandard === 'gold' 
+    ? (TRANSLATIONS[lang].active_standard_gold || 'Gold') 
+    : (TRANSLATIONS[lang].active_standard_silver || 'Silver');
+  const thresholdWeight = STATE.nisabStandard === 'gold' ? '87.48g (7.5 tola)' : '612.36g (52.5 tola)';
+
+  // Update Active Standard Badge
+  const activeStandardNameEl = document.getElementById('active-standard-name');
+  if (activeStandardNameEl) {
+    activeStandardNameEl.textContent = standardName;
+  }
+
+  // Update Standard Toggle Button states
+  const silverToggle = document.getElementById('nisab-silver-toggle');
+  const goldToggle = document.getElementById('nisab-gold-toggle');
+  if (silverToggle && goldToggle) {
+    if (STATE.nisabStandard === 'silver') {
+      silverToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-emerald-600 text-white shadow-sm';
+      goldToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-white text-slate-700 hover:text-slate-900';
+    } else {
+      goldToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-emerald-600 text-white shadow-sm';
+      silverToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-white text-slate-700 hover:text-slate-900';
+    }
+  }
 
   // Update Active Banner details
   const activeBanner = document.getElementById('active-nisab-banner-text');
   if (activeBanner) {
     const formattedNisab = formatMoney(activeNisab);
-    let bannerText = TRANSLATIONS[lang].active_nisab_text
+    let bannerText = (TRANSLATIONS[lang].active_nisab_text || '')
       .replace('{standard}', standardName)
       .replace('{val}', formattedNisab)
       .replace('{weight}', thresholdWeight);
@@ -919,51 +1080,58 @@ function calculateAll() {
   const netWealth = totalAssets - totalLiabilities;
 
   // Display outputs in right column summary
-  document.getElementById('summary-total-assets').textContent = formatMoney(totalAssets);
-  document.getElementById('summary-total-liabilities').textContent = `-${formatMoney(totalLiabilities)}`;
-  
+  const summaryAssetsEl = document.getElementById('summary-total-assets');
+  const summaryLiabsEl = document.getElementById('summary-total-liabilities');
   const netWealthEl = document.getElementById('summary-net-wealth');
-  netWealthEl.textContent = formatMoney(netWealth);
 
-  // Zakat due box updates
+  if (summaryAssetsEl) summaryAssetsEl.textContent = formatMoney(totalAssets);
+  if (summaryLiabsEl) summaryLiabsEl.textContent = `-${formatMoney(totalLiabilities)}`;
+  if (netWealthEl) netWealthEl.textContent = formatMoney(netWealth);
+
+  // Compute Zakat using single source of truth
+  const zakatCalc = NisabModule ? NisabModule.calculateZakat({
+    netWealth,
+    nisabThreshold: activeNisab,
+    hawlConfirmed: STATE.alHawlConfirmed
+  }) : {
+    isEligible: netWealth >= activeNisab && STATE.alHawlConfirmed,
+    meetsNisab: netWealth >= activeNisab,
+    zakatDue: (netWealth >= activeNisab && STATE.alHawlConfirmed) ? netWealth * ZAKAT_RATE : 0
+  };
+
   const resultBox = document.getElementById('zakat-result-box');
   const dueValEl = document.getElementById('zakat-due-value');
   const resultMessage = document.getElementById('zakat-result-message');
+  const zakatDue = zakatCalc.zakatDue;
 
-  let zakatDue = 0;
-  
-  if (netWealth >= activeNisab) {
+  if (zakatCalc.meetsNisab) {
     if (STATE.alHawlConfirmed) {
-      zakatDue = netWealth * ZAKAT_RATE;
-      
       // Update styling to Premium Emerald Green (Met Nisab)
-      resultBox.className = "calculation-box p-6 rounded-2xl bg-emerald-600 text-white shadow-lg animate-scale-in transition-all duration-300";
-      dueValEl.className = "text-4xl font-extrabold tracking-tight text-white mt-1 mb-2";
-      resultMessage.innerHTML = `<span class="flex items-center gap-1.5 text-emerald-100 text-sm font-semibold"><svg class="w-4 h-4 text-emerald-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> ${TRANSLATIONS[lang].zakat_msg_met}</span>`;
+      if (resultBox) resultBox.className = "calculation-box p-6 rounded-2xl bg-emerald-600 text-white shadow-lg animate-scale-in transition-all duration-300";
+      if (dueValEl) dueValEl.className = "text-4xl font-extrabold tracking-tight text-white mt-1 mb-2";
+      if (resultMessage) resultMessage.innerHTML = `<span class="flex items-center gap-1.5 text-emerald-100 text-sm font-semibold"><svg class="w-4 h-4 text-emerald-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> ${TRANSLATIONS[lang].zakat_msg_met}</span>`;
     } else {
-      zakatDue = 0;
-      // Below / warning state (Al-Hawl Unconfirmed)
-      resultBox.className = "calculation-box p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shadow-sm animate-scale-in transition-all duration-300";
-      dueValEl.className = "text-4xl font-extrabold tracking-tight text-amber-700 mt-1 mb-2";
-      resultMessage.innerHTML = `<span class="text-amber-700 text-sm font-semibold">${TRANSLATIONS[lang].zakat_msg_hawl}</span>`;
+      // Warning state (Al-Hawl Unconfirmed)
+      if (resultBox) resultBox.className = "calculation-box p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shadow-sm animate-scale-in transition-all duration-300";
+      if (dueValEl) dueValEl.className = "text-4xl font-extrabold tracking-tight text-amber-700 mt-1 mb-2";
+      if (resultMessage) resultMessage.innerHTML = `<span class="text-amber-700 text-sm font-semibold">${TRANSLATIONS[lang].zakat_msg_hawl}</span>`;
     }
   } else {
-    zakatDue = 0;
     // Below Nisab state (Blue/Slate layout)
-    resultBox.className = "calculation-box p-6 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 shadow-sm animate-scale-in transition-all duration-300";
-    dueValEl.className = "text-4xl font-extrabold tracking-tight text-sky-700 mt-1 mb-2";
-    resultMessage.innerHTML = `<span class="text-sky-700 text-sm font-semibold">${TRANSLATIONS[lang].zakat_msg_below}</span>`;
+    if (resultBox) resultBox.className = "calculation-box p-6 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 shadow-sm animate-scale-in transition-all duration-300";
+    if (dueValEl) dueValEl.className = "text-4xl font-extrabold tracking-tight text-sky-700 mt-1 mb-2";
+    if (resultMessage) resultMessage.innerHTML = `<span class="text-sky-700 text-sm font-semibold">${TRANSLATIONS[lang].zakat_msg_below}</span>`;
   }
 
-  dueValEl.textContent = formatMoney(zakatDue);
+  if (dueValEl) dueValEl.textContent = formatMoney(zakatDue);
 
   // Update sticky bottom mobile summary value & colors
   const stickyZakat = document.getElementById('sticky-zakat-value');
   if (stickyZakat) {
     stickyZakat.textContent = formatMoney(zakatDue);
-    if (netWealth >= activeNisab && STATE.alHawlConfirmed) {
+    if (zakatCalc.meetsNisab && STATE.alHawlConfirmed) {
       stickyZakat.className = "text-lg font-extrabold text-emerald-600";
-    } else if (netWealth >= activeNisab) {
+    } else if (zakatCalc.meetsNisab) {
       stickyZakat.className = "text-lg font-extrabold text-amber-600";
     } else {
       stickyZakat.className = "text-lg font-extrabold text-sky-700";
