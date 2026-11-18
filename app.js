@@ -239,7 +239,7 @@ const TRANSLATIONS = {
     print_amount_deducted: 'منہا شدہ رقم',
     print_total_eligible: 'کل قابلِ زکوٰۃ اثاثے:',
     print_final_due: 'کل واجب الادا زکوٰۃ (2.5%):',
-    print_declaration: '"اپنی دولت کو زکوٰۃ کے درست حساب اور بروقت ادائیگی کے ذریعے پاک کریں۔ یہ رپورٹ شرعی معیار اور کیلکولیشنز کے مطابق تیار کی گئی ہے۔"',
+    print_declaration: 'یہ تخمینہ صرف رہنمائی کے لیے ہے۔ اپنے مخصوص حالات کے لیے براہِ کرم مستند مفتی یا عالمِ دین سے رجوع فرمائیں۔',
     modal_principles_title: 'اسلامی زکوٰۃ کے شرعی اصول',
     modal_principles_p1_title: '۱۔ نصاب کا اصول (فرضیت کی حد)',
     modal_principles_p1_body: 'زکوٰۃ صرف اسی صورت میں فرض ہوتی ہے جب آپ کی کل خالص دولت نصاب کی حد سے زیادہ ہو۔ نصاب کا معیار 87.48 گرام خالص سونا یا 612.36 گرام خالص چاندی کی مارکیٹ قیمت کے برابر ہے۔ اگر آپ کی دولت نصاب سے کم ہو تو زکوٰۃ فرض نہیں ہوتی، تاہم نفلی صدقات کی ترغیب دی گئی ہے۔',
@@ -270,7 +270,18 @@ const TRANSLATIONS = {
     text_size_md: 'عام',
     text_size_lg: 'بڑا',
     voice_unavailable_toast: 'آپ کے ڈیوائس پر اس زبان کے لیے آواز دستیاب نہیں ہے۔ آپ اسکرین پر موجود رہنمائی پڑھ سکتے ہیں۔',
-    voice_speaking_toast: 'آواز میں پڑھا جا رہا ہے...'
+    voice_speaking_toast: 'آواز میں پڑھا جا رہا ہے...',
+    privacy_line: 'آپ کا مالی ڈیٹا صرف آپ کے ڈیوائس پر رہتا ہے۔ ہم آپ کا ڈیٹا محفوظ نہیں کرتے۔',
+    print_prices_date_label: 'قیمتوں کی تاریخ و صورتحال',
+    modal_terms_title: 'شرائطِ استعمال (Terms of Service)',
+    modal_privacy_title: 'رازداری کی پالیسی (Privacy Policy)',
+    modal_support_title: 'مدد اور رابطہ (Support & Guidance)',
+    terms_body_1: 'زکوٰۃ فلو ایک غیر تجارتی، مفت اور جدید ڈیجیٹل کیلکولیشن ٹول ہے جو عام فہم اور پرسکون انداز میں آپ کے مالی اثاثوں اور زکوٰۃ کی شرح کا تخمینہ فراہم کرتا ہے۔',
+    terms_body_2: 'یہ حساب حنفی فقہی اصولوں اور چاندی کے بنیادی نصاب پر مبنی ہے۔ یہ عمومی رہنمائی کے لیے ہے اور کسی مخصوص پیچیدہ قانونی یا وراثتی معاملے میں انفرادی شرعی فتوے کا نعم البدل نہیں ہے۔',
+    privacy_body_1: '<strong>رازداری کی مکمل ضمانت:</strong> آپ کے تمام مالی اعداد و شمار، کیش، سونا، چاندی، بینک بیلنس اور کاروباری معلومات مکمل طور پر صرف آپ کے براؤزر میں پروسیس ہوتی ہیں۔',
+    privacy_body_2: 'ہم آپ کے کسی بھی مالی ڈیٹا کو اپنے کسی سرور یا ڈیٹا بیس میں محفوظ یا منتقل نہیں کرتے۔ سونا اور چاندی کی قیمتیں ایک گمنام پبلک سرور روٹ کے ذریعے حاصل کی جاتی ہیں جس میں صارف کی کوئی ذاتی معلومات شامل نہیں ہوتیں۔',
+    support_body_1: 'اگر آپ کو حساب کتاب میں کوئی ابہام ہو یا آپ کوئی مشورہ دینا چاہتے ہیں تو آپ گٹ ہب (GitHub) کے ذریعے ہم سے رابطہ کر سکتے ہیں۔',
+    support_body_2: 'پیچیدہ یا غیر معمولی شرعی مسائل کے لیے براہِ کرم اپنے مقامی دار الافتاء یا مستند عالمِ دین سے رجوع فرمائیں۔'
   },
   en: {
     brand_name: 'Zakat<span class="text-emerald-600">Flow</span>',
@@ -449,7 +460,7 @@ const TRANSLATIONS = {
     print_amount_deducted: 'Amount Deducted',
     print_total_eligible: 'Total Eligible Assets:',
     print_final_due: 'Final Zakat Obligation (2.5%):',
-    print_declaration: '"Purify your wealth through the calculation and timely payment of Zakat. This report has been verified under standard Islamic calculations and is correct to the best of user knowledge."',
+    print_declaration: 'This is an estimate for guidance. Please consult a qualified scholar for your situation.',
     modal_principles_title: 'Islamic Zakat Principles',
     modal_principles_p1_title: '1. The Principle of Nisab (Obligation Threshold)',
     modal_principles_p1_body: 'Zakat is only due if your total net wealth exceeds the Nisab threshold. The standard is calculated as the market price of either 87.48 grams of pure Gold or 612.36 grams of pure Silver. If your net wealth is below the threshold, no Zakat is due, but voluntary charity (Sadaqah) is highly encouraged.',
@@ -480,7 +491,18 @@ const TRANSLATIONS = {
     text_size_md: 'Normal',
     text_size_lg: 'Large',
     voice_unavailable_toast: 'Speech voice is not available on this device. You can read the guidance on screen.',
-    voice_speaking_toast: 'Reading aloud...'
+    voice_speaking_toast: 'Reading aloud...',
+    privacy_line: 'Your numbers stay on your device. We do not store your data.',
+    print_prices_date_label: 'Prices Date & Status',
+    modal_terms_title: 'Terms of Service',
+    modal_privacy_title: 'Privacy Policy',
+    modal_support_title: 'Support & Guidance',
+    terms_body_1: 'ZakatFlow is a free, modern digital calculator designed to provide an accurate and calm estimate of your Zakat obligations according to classical Islamic standards.',
+    terms_body_2: 'Calculated using the Hanafi silver nisab standard by default. This tool is provided for educational and guidance purposes and does not substitute for personalized legal fatwas from qualified scholars.',
+    privacy_body_1: '<strong>Strict Local Privacy Guarantee:</strong> Your numbers stay on your device. We do not store your data.',
+    privacy_body_2: 'All asset values, debt numbers, and calculations are computed locally inside your browser and cached purely on your local machine using standard browser storage. We never collect, transmit, or log your personal financial information on external servers.',
+    support_body_1: 'For technical feedback, source code, and improvements, visit our open-source repository on GitHub.',
+    support_body_2: 'For complex estate or inheritance jurisprudence questions, please consult a qualified local Islamic scholar or Mufti.'
   },
   ar: {
     brand_name: 'زكاة<span class="text-emerald-600"> فلو</span>',
@@ -659,7 +681,7 @@ const TRANSLATIONS = {
     print_amount_deducted: 'المبلغ المخصوم',
     print_total_eligible: 'إجمالي الأصول الخاضعة للزكاة:',
     print_final_due: 'مبلغ الزكاة النهائي المستحق (2.5%):',
-    print_declaration: '"طهّر ثروتك من خلال الحساب الدقيق والدفع الفوري للزكاة. تم إعداد هذا التقرير وتدقيقه وفقاً للمعايير الحسابية الشرعية المعتمدة."',
+    print_declaration: 'هذا الحساب تقديري للاسترشاد فقط. يرجى مراجعة عالم مؤهل أو دار إفتاء لحالتك الخاصة.',
     modal_principles_title: 'أحكام وأصول الزكاة الشرعية',
     modal_principles_p1_title: '١. أصل النصاب (حد وجوب الفريضة)',
     modal_principles_p1_body: 'لا تجب الزكاة إلا إذا بلغ صافي ثروتك حد النصاب. ويُقدر النصاب بقيمة 87.48 جراماً من الذهب الخالص أو 612.36 جراماً من الفضة الخالصة في السوق الحالية. وإذا كانت ثروتك دون النصاب فلا زكاة عليك وتستحب الصدقة التطوعية.',
@@ -690,7 +712,18 @@ const TRANSLATIONS = {
     text_size_md: 'عادي',
     text_size_lg: 'كبير',
     voice_unavailable_toast: 'خدمة القراءة الصوتية غير متوفرة على جهازك لهذه اللغة. يمكنك قراءة الإرشادات على الشاشة.',
-    voice_speaking_toast: 'جارٍ القراءة بصوت عالٍ...'
+    voice_speaking_toast: 'جارٍ القراءة بصوت عالٍ...',
+    privacy_line: 'بياناتك المالية تبقى على جهازك فقط. نحن لا نحفظ أو نخزن بياناتك في أي خادم.',
+    print_prices_date_label: 'تاريخ حالة الأسعار',
+    modal_terms_title: 'شروط الاستخدام',
+    modal_privacy_title: 'سياسة الخصوصية',
+    modal_support_title: 'الدعم والمساعدة',
+    terms_body_1: 'زكاة فلو هي أداة رقمية مجانية حديثة مصممة لتقديم تقدير دقيق وهادئ لالتزامات الزكاة الشرعية وفق الضوابط الفقهية المعتمدة.',
+    terms_body_2: 'يتم الحساب وفق نصاب الفضة في المذهب الحنفي افتراضيًا. هذا الحساب تقديري للاسترشاد فقط، ولا يغني عن استشارة أهل العلم المؤهلين في المسائل المالية المعقدة.',
+    privacy_body_1: '<strong>ضمان الخصوصية التامة:</strong> أرقامك وبياناتك المالية تبقى على جهازك فقط. نحن لا نخزن بياناتك مطلقاً.',
+    privacy_body_2: 'تتم جميع العمليات الحسابية محليًا في متصفحك دون إرسال أي أرقام أو أصول إلى أي خادم خارجي. تحديث أسعار المعادن يتم بصورة مجهولة الهوية بالكامل.',
+    support_body_1: 'للملاحظات التقنية والتطويرات، يمكنك زيارة مشروعنا المفتوح المصدر على GitHub.',
+    support_body_2: 'للاستفسارات الفقهية الدقيقة، يُرجى الرجوع إلى دور الإفتاء والعلماء المعتمدين.'
   }
 };
 
@@ -1732,16 +1765,24 @@ function syncPrintReport(totals, standardName, activeNisab) {
   }
 
   const printDate = document.getElementById('print-date');
-  if (printDate) printDate.textContent = new Date().toLocaleDateString(undefined, { dateStyle: 'long' });
+  if (printDate) {
+    const now = new Date();
+    printDate.textContent = now.toLocaleDateString(undefined, { dateStyle: 'full' }) + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
 
   const printNisabStandard = document.getElementById('print-nisab-standard');
   if (printNisabStandard) printNisabStandard.textContent = `${standardName} (${formatMoney(activeNisab)})`;
 
   const printGoldRate = document.getElementById('print-gold-rate');
-  if (printGoldRate) printGoldRate.textContent = formatMoney(STATE.goldPrice);
+  if (printGoldRate) printGoldRate.textContent = `${formatMoney(STATE.goldPrice)} / gram`;
 
   const printSilverRate = document.getElementById('print-silver-rate');
-  if (printSilverRate) printSilverRate.textContent = formatMoney(STATE.silverPrice);
+  if (printSilverRate) printSilverRate.textContent = `${formatMoney(STATE.silverPrice)} / gram`;
+
+  const printPricesDate = document.getElementById('print-prices-date');
+  if (printPricesDate) {
+    printPricesDate.textContent = `${STATE.pricesLastUpdated || '18 Nov 2026'} (${STATE.isLivePrice ? (lang === 'ur' ? 'لائیو مارکیٹ' : 'Live') : (lang === 'ur' ? 'مارکیٹ ریٹس' : 'Fallback Rates')})`;
+  }
 
   const printTotalAssets = document.getElementById('print-total-assets');
   if (printTotalAssets) printTotalAssets.textContent = formatMoney(totals.grossAssets);
@@ -1754,6 +1795,14 @@ function syncPrintReport(totals, standardName, activeNisab) {
 
   const printZakatDue = document.getElementById('print-zakat-due');
   if (printZakatDue) printZakatDue.textContent = formatMoney(totals.zakatDue);
+
+  // Screen Reader Live Announcer
+  const liveAnnouncer = document.getElementById('live-calculator-announcer');
+  if (liveAnnouncer) {
+    liveAnnouncer.textContent = totals.meetsNisab 
+      ? `Zakat calculation updated: ${formatMoney(totals.zakatDue)} due on net wealth of ${formatMoney(totals.netWealth)}.`
+      : `Zakat calculation updated: Net wealth is ${formatMoney(totals.netWealth)}, below nisab threshold.`;
+  }
 }
 
 // Help Modal Controller
@@ -2021,22 +2070,66 @@ function initCarousel() {
   window.addEventListener('resize', updateCarousel);
 }
 
-// Modal System with Keyboard (Esc) and Backdrop Click Handling
+// Accessible Modal System: Focus Trapping, Esc Closing & Focus Restoration
+const modalFocusStack = new Map();
+
 window.openModal = function(id) {
   const modal = document.getElementById(id);
   if (!modal) return;
+
+  // 1. Remember previously focused element
+  if (typeof document !== 'undefined' && document.activeElement) {
+    modalFocusStack.set(id, document.activeElement);
+  }
+
   modal.classList.remove('hidden');
   modal.classList.add('flex');
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('role', 'dialog');
   document.body.style.overflow = 'hidden';
 
-  // Add Esc key listener
-  const escListener = (e) => {
+  // 2. Discover focusable elements for trap
+  const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const getFocusable = () => Array.from(modal.querySelectorAll(focusableSelector)).filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null);
+  const focusables = getFocusable();
+  
+  if (focusables.length > 0) {
+    focusables[0].focus();
+  }
+
+  // 3. Keydown Listener: Esc and Focus Trap
+  const keydownHandler = (e) => {
     if (e.key === 'Escape') {
+      e.preventDefault();
       closeModal(id);
-      document.removeEventListener('keydown', escListener);
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      const currentFocusables = getFocusable();
+      if (currentFocusables.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = currentFocusables[0];
+      const last = currentFocusables[currentFocusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !modal.contains(document.activeElement)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last || !modal.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     }
   };
-  document.addEventListener('keydown', escListener);
+
+  modal._keydownHandler = keydownHandler;
+  modal.addEventListener('keydown', keydownHandler);
 
   // Click outside to close
   modal.onclick = (e) => {
@@ -2049,9 +2142,27 @@ window.openModal = function(id) {
 window.closeModal = function(id) {
   const modal = document.getElementById(id);
   if (!modal) return;
+
+  if (modal._keydownHandler) {
+    modal.removeEventListener('keydown', modal._keydownHandler);
+    delete modal._keydownHandler;
+  }
+
   modal.classList.remove('flex');
   modal.classList.add('hidden');
+  modal.removeAttribute('aria-modal');
   document.body.style.overflow = '';
+
+  // Return focus to the trigger element that opened this modal
+  const previousElement = modalFocusStack.get(id);
+  if (previousElement && typeof previousElement.focus === 'function') {
+    try {
+      previousElement.focus();
+    } catch (e) {
+      console.warn('Could not restore focus:', e);
+    }
+  }
+  modalFocusStack.delete(id);
 };
 
 // Export PDF Report handler
