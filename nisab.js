@@ -194,6 +194,109 @@
     return isNaN(parsed) ? 0 : parsed;
   }
 
+  const TROY_OUNCE_TO_GRAMS = 31.1034768;
+
+  /**
+   * Convert various weight units (tolas, grams, ounces) to grams
+   * @param {number|string} weight
+   * @param {string} unit ('tola', 'gram', 'ounce')
+   * @returns {number} weight in grams
+   */
+  function weightToGrams(weight, unit = 'tola') {
+    const w = parseLocalizedNumber(weight);
+    const u = String(unit).toLowerCase();
+    if (u === 'tola' || u === 'tolas') return Math.round(w * TOLA_TO_GRAMS * 10000) / 10000;
+    if (u === 'oz' || u === 'ounce' || u === 'ounces') return Math.round(w * TROY_OUNCE_TO_GRAMS * 10000) / 10000;
+    return w; // Default grams
+  }
+
+  /**
+   * Computes comprehensive totals and Zakat due for the multi-step wizard.
+   * Single source of truth for all wizard steps.
+   * @param {Object} wizardData
+   * @param {Object} prices
+   * @returns {Object}
+   */
+  function calculateWizardTotals(wizardData = {}, prices = {}) {
+    const goldPricePerGram = Number(prices.goldPricePerGram) || 0;
+    const silverPricePerGram = Number(prices.silverPricePerGram) || 0;
+    const standard = wizardData.nisabStandard || 'silver';
+
+    // Step 2: Cash
+    const cashInHand = parseLocalizedNumber(wizardData.cashInHand);
+    const bankAccounts = parseLocalizedNumber(wizardData.bankAccounts);
+    const otherSavings = parseLocalizedNumber(wizardData.otherSavings);
+    const moneyOwedToMe = parseLocalizedNumber(wizardData.moneyOwedToMe);
+    const totalCash = cashInHand + bankAccounts + otherSavings + moneyOwedToMe;
+
+    // Step 3: Gold and Silver
+    const goldWeight = parseLocalizedNumber(wizardData.goldWeight);
+    const goldUnit = wizardData.goldUnit || 'tola';
+    const goldCarat = parseInt(wizardData.goldCarat, 10) || 24;
+    const goldWeightGrams = weightToGrams(goldWeight, goldUnit);
+    const pureGoldGrams = toPureGoldGrams(goldWeightGrams, goldCarat);
+    const totalGold = Math.round(pureGoldGrams * goldPricePerGram * 100) / 100;
+
+    const silverWeight = parseLocalizedNumber(wizardData.silverWeight);
+    const silverUnit = wizardData.silverUnit || 'tola';
+    const silverWeightGrams = weightToGrams(silverWeight, silverUnit);
+    const totalSilver = Math.round(silverWeightGrams * silverPricePerGram * 100) / 100;
+    const totalPreciousMetals = totalGold + totalSilver;
+
+    // Step 4: Business and Investments
+    const shopStock = parseLocalizedNumber(wizardData.shopStock);
+    const businessCash = parseLocalizedNumber(wizardData.businessCash);
+    const sharesFunds = parseLocalizedNumber(wizardData.sharesFunds);
+    const propertyForSale = parseLocalizedNumber(wizardData.propertyForSale);
+    const totalBusiness = shopStock + businessCash + sharesFunds + propertyForSale;
+
+    // Total Eligible Assets
+    const totalAssets = totalCash + totalPreciousMetals + totalBusiness;
+
+    // Step 5: Debts & Money Owed
+    const debtsDueNow = parseLocalizedNumber(wizardData.debtsDueNow);
+    const unpaidBills = parseLocalizedNumber(wizardData.unpaidBills);
+    const installmentsThisYear = parseLocalizedNumber(wizardData.installmentsThisYear);
+    const totalLiabilities = debtsDueNow + unpaidBills + installmentsThisYear;
+
+    // Net Zakatable Wealth
+    const netWealth = Math.max(0, totalAssets - totalLiabilities);
+
+    // Nisab Threshold
+    const nisabThreshold = calculateNisabThreshold({
+      standard,
+      silverPricePerGram,
+      goldPricePerGram
+    });
+
+    const hawlConfirmed = wizardData.hawlConfirmed !== false && wizardData.hawlConfirmed !== 'no';
+
+    const zakatResult = calculateZakat({
+      netWealth,
+      nisabThreshold,
+      hawlConfirmed
+    });
+
+    return {
+      breakdown: {
+        cash: { cashInHand, bankAccounts, otherSavings, moneyOwedToMe, total: totalCash },
+        preciousMetals: {
+          gold: { weight: goldWeight, unit: goldUnit, carat: goldCarat, weightGrams: goldWeightGrams, pureGoldGrams, total: totalGold },
+          silver: { weight: silverWeight, unit: silverUnit, weightGrams: silverWeightGrams, total: totalSilver },
+          total: totalPreciousMetals
+        },
+        business: { shopStock, businessCash, sharesFunds, propertyForSale, total: totalBusiness },
+        liabilities: { debtsDueNow, unpaidBills, installmentsThisYear, total: totalLiabilities }
+      },
+      totalAssets,
+      totalLiabilities,
+      netWealth,
+      nisabThreshold,
+      activeStandard: standard,
+      zakatResult
+    };
+  }
+
   /**
    * Formats a number with thousands separators, localized according to language
    * @param {number} num
@@ -216,15 +319,18 @@
       SILVER_NISAB_GRAMS,
       GOLD_NISAB_TOLA,
       GOLD_NISAB_GRAMS,
-      ZAKAT_RATE
+      ZAKAT_RATE,
+      TROY_OUNCE_TO_GRAMS
     },
     FALLBACK_PRICES,
     tolaToGrams,
     gramsToTola,
+    weightToGrams,
     goldPurityFactor,
     toPureGoldGrams,
     calculateNisabThreshold,
     calculateZakat,
+    calculateWizardTotals,
     parseLocalizedNumber,
     formatNumber
   };

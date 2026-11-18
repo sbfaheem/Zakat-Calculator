@@ -48,17 +48,20 @@
       </a>
 
       <!-- Desktop Nav Links -->
-      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-500">
-        <a href="#calculator-section" class="text-emerald-600 border-b-2 border-emerald-600 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_calculator">Calculator</a>
-        <button onclick="openModal('principles-modal')" class="hover:text-slate-800 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_principles">Principles</button>
-        <button onclick="openModal('nisab-modal')" class="hover:text-slate-800 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_nisab">Nisab Info</button>
-        <button onclick="openModal('history-modal')" class="hover:text-slate-800 pb-1.5 pt-0.5 transition-colors flex items-center gap-1">
-          <span data-i18n="nav_history">History</span> <span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full font-bold" data-i18n="nav_drafts_badge">Drafts</span>
-        </button>
+      <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+        <a href="#calculator-section" class="text-emerald-700 border-b-2 border-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_calculator">Calculator</a>
+        <button type="button" onclick="openModal('principles-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_principles">Principles</button>
+        <button type="button" onclick="openModal('nisab-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_nisab">Nisab Info</button>
+        <button type="button" onclick="resetWizard()" class="text-slate-400 hover:text-rose-600 text-xs font-bold pb-1.5 pt-0.5 transition-colors" data-i18n="btn_start_over">Reset / Start Again</button>
       </nav>
 
-      <!-- Currency, Language Selector & Actions -->
+      <!-- Currency, Language Selector & Auto-save Status -->
       <div class="flex items-center gap-3">
+        <!-- Auto-save Pill -->
+        <span id="nav-autosave-badge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-100 shadow-sm">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="nav-autosave-text" data-i18n="badge_autosaved">Saved</span>
+        </span>
         <!-- Language Select -->
         <div class="relative">
           <select 
@@ -183,133 +186,197 @@
     </div>
   </section>
 
-  <!-- ================= MAIN CALCULATOR CONTAINER ================= -->
-  <main id="calculator-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 flex-grow w-full">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-      
-      <!-- LEFT COLUMN (INPUTS & SETTINGS) - Spans 8/12 -->
-      <div class="lg:col-span-8 flex flex-col gap-6 no-print">
+  <!-- ================= MAIN WIZARD CONTAINER ================= -->
+  <main id="calculator-section" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 flex-grow w-full">
+    
+    <!-- PROGRESS BAR WIZARD HEADER -->
+    <div class="bg-white border border-slate-100 rounded-3xl p-5 sm:p-6 shadow-premium mb-6 no-print">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-100">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="wizard-step-badge">Step 1 of 6</span>
+          </span>
+          <h2 id="wizard-step-title" class="text-xl sm:text-2xl font-extrabold text-slate-900 font-display mt-1">
+            Welcome & Settings
+          </h2>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span id="wizard-autosave-status" class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <span data-i18n="badge_autosaved">Saved Automatically</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Visual Progress Track -->
+      <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+        <div id="wizard-progress-bar" class="bg-emerald-600 h-2.5 rounded-full transition-all duration-300" style="width: 16.66%;"></div>
+      </div>
+
+      <!-- Stepper Pills (Accessible quick jumping) -->
+      <div class="grid grid-cols-6 gap-1.5 sm:gap-2 mt-4 text-center">
+        <button type="button" onclick="goToStep(1)" class="stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-emerald-50 border-emerald-200 text-emerald-800" data-step="1">
+          <span class="hidden sm:inline">1. </span><span data-i18n="step_1_tab">Welcome</span>
+        </button>
+        <button type="button" onclick="goToStep(2)" class="stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100" data-step="2">
+          <span class="hidden sm:inline">2. </span><span data-i18n="step_2_tab">Cash</span>
+        </button>
+        <button type="button" onclick="goToStep(3)" class="stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100" data-step="3">
+          <span class="hidden sm:inline">3. </span><span data-i18n="step_3_tab">Gold/Silver</span>
+        </button>
+        <button type="button" onclick="goToStep(4)" class="stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100" data-step="4">
+          <span class="hidden sm:inline">4. </span><span data-i18n="step_4_tab">Business</span>
+        </button>
+        <button type="button" onclick="goToStep(5)" class="stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100" data-step="5">
+          <span class="hidden sm:inline">5. </span><span data-i18n="step_5_tab">Debts</span>
+        </button>
+        <button type="button" onclick="goToStep(6)" class="stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100" data-step="6">
+          <span class="hidden sm:inline">6. </span><span data-i18n="step_6_tab">Result</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= STEP 1: WELCOME & SETTINGS ================= -->
+    <div id="step-1" class="wizard-step active no-print">
+      <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-8">
         
-        <!-- CARD 1: NISAB THRESHOLD SETTINGS -->
-        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
+        <!-- Welcome Banner -->
+        <div class="text-center max-w-2xl mx-auto space-y-3">
+          <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100 shadow-sm">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-display" data-i18n="welcome_title">
+            Welcome to ZakatFlow
+          </h2>
+          <p class="text-base sm:text-lg text-slate-600 leading-relaxed font-medium" data-i18n="welcome_desc">
+            A serene, simple, and spiritually precise calculator. We guide you step by step with plain everyday words.
+          </p>
+        </div>
+
+        <!-- Language Choice -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" data-i18n="choose_language_label">
+            1. Choose Language / زبان منتخب کریں
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button type="button" onclick="setLanguage('ur')" class="lang-card tap-target-48 p-4 rounded-2xl border text-center transition-all duration-200 flex items-center justify-center gap-2 font-bold text-base bg-emerald-50 border-emerald-300 text-emerald-900 shadow-sm" data-lang="ur">
+              <span>اردو (Urdu)</span>
+              <span class="text-xs bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full font-bold">بنیادی</span>
+            </button>
+            <button type="button" onclick="setLanguage('en')" class="lang-card tap-target-48 p-4 rounded-2xl border text-center transition-all duration-200 flex items-center justify-center gap-2 font-bold text-base bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100" data-lang="en">
+              <span>English</span>
+            </button>
+            <button type="button" onclick="setLanguage('ar')" class="lang-card tap-target-48 p-4 rounded-2xl border text-center transition-all duration-200 flex items-center justify-center gap-2 font-bold text-base bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100" data-lang="ar">
+              <span>العربية</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Currency Choice -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" data-i18n="choose_currency_label">
+            2. Choose Currency / کرنسی منتخب کریں
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+            <button type="button" onclick="setCurrency('PKR')" class="curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-emerald-600 text-white border-emerald-600 shadow-sm" data-curr="PKR">
+              <span class="block text-base">PKR (Rs)</span>
+              <span class="text-[11px] opacity-90">پاکستان</span>
+            </button>
+            <button type="button" onclick="setCurrency('USD')" class="curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100" data-curr="USD">
+              <span class="block text-base">USD ($)</span>
+              <span class="text-[11px] text-slate-500">US Dollar</span>
+            </button>
+            <button type="button" onclick="setCurrency('SAR')" class="curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100" data-curr="SAR">
+              <span class="block text-base">SAR (SR)</span>
+              <span class="text-[11px] text-slate-500">سعودی ریال</span>
+            </button>
+            <button type="button" onclick="setCurrency('AED')" class="curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100" data-curr="AED">
+              <span class="block text-base">AED</span>
+              <span class="text-[11px] text-slate-500">درہم</span>
+            </button>
+            <button type="button" onclick="setCurrency('GBP')" class="curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100" data-curr="GBP">
+              <span class="block text-base">GBP (£)</span>
+              <span class="text-[11px] text-slate-500">Pound</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Nisab Settings & Rates Box -->
+        <div class="p-5 sm:p-6 bg-slate-50 rounded-3xl border border-slate-200/80 space-y-4">
           
-          <!-- Live Price Status & Fallback Notification Banner -->
-          <div id="price-status-banner" class="mb-5 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-3 animate-fade-in-up hidden">
-            <svg class="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
+          <!-- Live/Fallback Notice -->
+          <div id="price-status-banner" class="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium flex items-center gap-3 hidden">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             <div class="flex-1">
-              <span id="price-status-message" class="font-bold block" data-i18n="price_banner_fallback">Live price unavailable. Please check the price below.</span>
+              <strong id="price-status-message" class="block font-bold" data-i18n="price_banner_fallback">Live price unavailable. Please check the price below.</strong>
               <span class="text-amber-700 text-[11px]" data-i18n="price_banner_fallback_sub">Using verified seed rates from 18 Nov 2026. You can edit the prices to match your local market.</span>
             </div>
           </div>
 
-          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-5">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                <!-- Scales / Balance Icon -->
-                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
-              </div>
-              <div>
-                <h2 class="text-lg font-bold text-slate-800 font-display" data-i18n="nisab_card_title">Nisab Threshold</h2>
-                <div class="flex items-center gap-2 mt-0.5">
-                  <span id="price-live-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                    <span id="price-live-badge-text">18 Nov 2026 Rates</span>
-                  </span>
-                  <span class="text-[11px] text-slate-400">
-                    <span data-i18n="price_last_updated">Prices last updated:</span>
-                    <strong id="price-last-updated-text" class="text-slate-600 font-semibold">18 Nov 2026</strong>
-                  </span>
-                </div>
-              </div>
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
+            <div class="flex items-center gap-2">
+              <span id="price-live-badge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                <span id="price-live-badge-text">18 Nov 2026 Rates</span>
+              </span>
+              <span class="text-xs text-slate-500">
+                <span data-i18n="price_last_updated">Prices last updated:</span>
+                <strong id="price-last-updated-text" class="text-slate-700 font-semibold">18 Nov 2026</strong>
+              </span>
             </div>
 
-            <!-- Active Standard Badge (Always Visible) -->
-            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-100/70 border border-emerald-200 text-emerald-900 text-xs font-bold">
+              <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
               <span data-i18n="active_standard_label">Active Standard:</span>
-              <span id="active-standard-name" class="font-extrabold text-emerald-900">Silver (Hanafi / Pakistan)</span>
+              <span id="active-standard-name" class="font-extrabold text-emerald-950">Silver (Hanafi / Pakistan)</span>
             </div>
           </div>
 
           <!-- Price inputs -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
-            <!-- Silver Input (First, as Silver is the default Hanafi standard) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <div class="flex items-center justify-between mb-2">
-                <label for="silver-price-input" class="block text-xs font-bold text-slate-600 uppercase tracking-wider" data-i18n="silver_price_label">
-                  Silver Price (per gram)
-                </label>
-                <button type="button" onclick="openModal('nisab-modal')" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-0.5" title="Help on Silver Nisab">
-                  <span>?</span> <span data-i18n="help_link">Help</span>
-                </button>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="silver-price-input" class="text-xs font-bold text-slate-700 uppercase" data-i18n="silver_price_label">Silver Price (per gram)</label>
+                <button type="button" onclick="showHelp('silver-nisab')" class="text-xs text-emerald-700 font-bold hover:underline">? Help</button>
               </div>
               <div class="relative">
-                <span class="absolute start-3.5 top-2.5 text-sm font-semibold text-slate-400 currency-symbol">Rs</span>
-                <input 
-                  type="number" 
-                  id="silver-price-input" 
-                  step="0.01" 
-                  min="0"
-                  inputmode="decimal"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-xl ps-10 pe-4 py-2.5 text-sm text-slate-800 font-semibold input-focus-ring transition-all-300"
-                  aria-describedby="silver-price-hint"
-                />
+                <span class="absolute start-3.5 top-3 text-sm font-bold text-slate-400 currency-symbol">Rs</span>
+                <input type="number" id="silver-price-input" step="0.01" min="0" inputmode="decimal" class="w-full bg-white border border-slate-300 rounded-xl ps-10 pe-4 py-2.5 text-base text-slate-900 font-bold input-focus-ring">
               </div>
-              <p id="silver-price-hint" class="text-[11px] text-slate-400 mt-1.5" data-i18n="silver_price_hint">
-                Editable. About Rs 5,048 per tola (52.5 tolas = 612.36g)
-              </p>
-              <div class="flex justify-between items-center mt-2 px-1 text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <span data-i18n="threshold_silver_label">Silver Nisab (612.36g):</span>
-                <strong id="nisab-silver-value" class="font-bold text-slate-800">Rs 265,029.41</strong>
+              <p class="text-[11px] text-slate-500 mt-1" data-i18n="silver_price_hint">Editable. Silver Nisab: 52.5 tolas = 612.36 grams</p>
+              <div class="mt-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 flex justify-between">
+                <span data-i18n="threshold_silver_label">Silver Nisab Threshold:</span>
+                <strong id="nisab-silver-value" class="text-emerald-700">Rs 265,029.41</strong>
               </div>
             </div>
 
-            <!-- Gold Input -->
             <div>
-              <div class="flex items-center justify-between mb-2">
-                <label for="gold-price-input" class="block text-xs font-bold text-slate-600 uppercase tracking-wider" data-i18n="gold_price_label">
-                  24K Gold Price (per gram)
-                </label>
-                <button type="button" onclick="openModal('nisab-modal')" class="text-xs text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-0.5" title="Help on Gold Nisab">
-                  <span>?</span> <span data-i18n="help_link">Help</span>
-                </button>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="gold-price-input" class="text-xs font-bold text-slate-700 uppercase" data-i18n="gold_price_label">24K Gold Price (per gram)</label>
+                <button type="button" onclick="showHelp('gold-nisab')" class="text-xs text-emerald-700 font-bold hover:underline">? Help</button>
               </div>
               <div class="relative">
-                <span class="absolute start-3.5 top-2.5 text-sm font-semibold text-slate-400 currency-symbol">Rs</span>
-                <input 
-                  type="number" 
-                  id="gold-price-input" 
-                  step="0.01" 
-                  min="0"
-                  inputmode="decimal"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-xl ps-10 pe-4 py-2.5 text-sm text-slate-800 font-semibold input-focus-ring transition-all-300"
-                  aria-describedby="gold-price-hint"
-                />
+                <span class="absolute start-3.5 top-3 text-sm font-bold text-slate-400 currency-symbol">Rs</span>
+                <input type="number" id="gold-price-input" step="0.01" min="0" inputmode="decimal" class="w-full bg-white border border-slate-300 rounded-xl ps-10 pe-4 py-2.5 text-base text-slate-900 font-bold input-focus-ring">
               </div>
-              <p id="gold-price-hint" class="text-[11px] text-slate-400 mt-1.5" data-i18n="gold_price_hint">
-                Editable. About Rs 412,000 per tola (7.5 tolas = 87.48g)
-              </p>
-              <div class="flex justify-between items-center mt-2 px-1 text-[11px] text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <span data-i18n="threshold_gold_label">Gold Nisab (87.48g):</span>
-                <strong id="nisab-gold-value" class="font-bold text-slate-800">Rs 3,089,968.56</strong>
+              <p class="text-[11px] text-slate-500 mt-1" data-i18n="gold_price_hint">Editable. Gold Nisab: 7.5 tolas = 87.48 grams</p>
+              <div class="mt-2 text-xs font-bold text-slate-700 bg-white p-2 rounded-lg border border-slate-200 flex justify-between">
+                <span data-i18n="threshold_gold_label">Gold Nisab Threshold:</span>
+                <strong id="nisab-gold-value" class="text-slate-800">Rs 3,089,968.56</strong>
               </div>
             </div>
           </div>
 
-          <!-- Active Threshold Status Banner -->
-          <div class="flex items-start gap-3 bg-emerald-50/70 border border-emerald-100 p-4 rounded-2xl mb-4">
-            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5 text-emerald-700 font-bold text-xs">
-              ✓
-            </div>
-            <p id="active-nisab-banner-text" class="text-xs text-emerald-900 leading-relaxed font-medium">
-              <!-- Replaced via JS translate -->
-            </p>
+          <!-- Active Banner text -->
+          <div class="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200/60 text-xs font-medium text-emerald-950 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-emerald-200 text-emerald-800 flex items-center justify-center font-bold text-xs flex-shrink-0">✓</span>
+            <p id="active-nisab-banner-text" class="leading-relaxed"></p>
           </div>
 
-          <!-- ADVANCED OPTION: Switch Nisab Standard (Plain explanation) -->
-          <details id="advanced-nisab-details" class="group border-t border-slate-100 pt-4">
+          <!-- Advanced Switch Standard Option -->
+          <details id="advanced-nisab-details" class="group border-t border-slate-200 pt-3">
             <summary class="flex items-center justify-between text-xs font-bold text-slate-600 hover:text-emerald-700 cursor-pointer list-none select-none py-1">
               <span class="flex items-center gap-2">
                 <svg class="w-4 h-4 text-slate-400 group-open:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -319,30 +386,15 @@
               <span class="text-[11px] text-slate-400 hidden group-open:inline" data-i18n="advanced_hide">Hide</span>
             </summary>
 
-            <div class="mt-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-600 space-y-3">
+            <div class="mt-3 p-4 bg-white rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-3">
               <p class="leading-relaxed" data-i18n="nisab_switch_explanation">
                 <strong>Why Silver is default:</strong> The Silver standard (612.36g) gives a lower threshold (about Rs 265,000 vs Rs 3,000,000 for gold). Most scholars in Pakistan advise using Silver so more families in need can receive help. If you own only gold and no cash or silver, some scholars allow using the Gold standard.
               </p>
-              
-              <div class="flex flex-wrap items-center gap-3 pt-2">
-                <span class="text-xs font-bold text-slate-700" data-i18n="choose_standard_prompt">Choose Standard:</span>
-                <div class="inline-flex bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-                  <button 
-                    type="button"
-                    id="nisab-silver-toggle" 
-                    class="px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-emerald-600 text-white shadow-sm"
-                    data-i18n="nisab_toggle_silver"
-                  >
-                    Silver (612.36g) — Recommended
-                  </button>
-                  <button 
-                    type="button"
-                    id="nisab-gold-toggle" 
-                    class="px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-white text-slate-700 hover:text-slate-900"
-                    data-i18n="nisab_toggle_gold"
-                  >
-                    Gold (87.48g)
-                  </button>
+              <div class="flex items-center gap-3 pt-1">
+                <span class="font-bold text-slate-700" data-i18n="choose_standard_prompt">Choose Standard:</span>
+                <div class="inline-flex bg-slate-100 p-1 rounded-xl">
+                  <button type="button" id="nisab-silver-toggle" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm" data-i18n="nisab_toggle_silver">Silver (Recommended)</button>
+                  <button type="button" id="nisab-gold-toggle" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 hover:text-slate-900" data-i18n="nisab_toggle_gold">Gold Standard</button>
                 </div>
               </div>
             </div>
@@ -350,176 +402,572 @@
 
         </div>
 
-        <!-- CARD 2: ZAKATABLE ASSETS -->
-        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-5 mb-5">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                <!-- Cash/Safe Icon -->
-                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-              </div>
-              <div>
-                <h2 class="text-lg font-bold text-slate-800 font-display" data-i18n="assets_card_title">Zakatable Assets</h2>
-                <p class="text-xs text-slate-400" data-i18n="assets_card_subtitle">Declare eligible assets you possess (gold, silver, cash, shares, etc.).</p>
-              </div>
-            </div>
-            <button 
-              type="button" 
-              id="add-asset-btn"
-              onclick="addAsset()"
-              class="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs px-3.5 py-2 rounded-xl border border-emerald-100 transition-all-300"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-              <span data-i18n="btn_add_asset">Add Asset</span>
-            </button>
-          </div>
-
-          <!-- Dynamic Asset Inputs List -->
-          <div id="assets-container" class="flex flex-col gap-4">
-            <!-- Asset rows generated dynamically via app.js -->
-          </div>
-        </div>
-
-        <!-- CARD 3: DEDUCTIBLE LIABILITIES -->
-        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
-          <div class="flex items-center justify-between border-b border-slate-100 pb-5 mb-5">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                <!-- Subtract / Bill Icon -->
-                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l2-2 4 4m0-7l3 3m-3-3l-3 3M3 21h18M3 10h18M3 7l9-4 9 4v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /></svg>
-              </div>
-              <div>
-                <h2 class="text-lg font-bold text-slate-800 font-display" data-i18n="liabs_card_title">Deductible Liabilities</h2>
-                <p class="text-xs text-slate-400" data-i18n="liabs_card_subtitle">Declare short-term loans, bills, or immediate essential expenses to exclude.</p>
-              </div>
-            </div>
-            <button 
-              type="button" 
-              onclick="addLiability()"
-              class="inline-flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold text-xs px-3.5 py-2 rounded-xl border border-emerald-100 transition-all-300"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-              <span data-i18n="btn_add_liability">Add Liability</span>
-            </button>
-          </div>
-
-          <!-- Dynamic Liabilities List -->
-          <div id="liabilities-container" class="flex flex-col gap-4">
-            <!-- Liabilities rows generated dynamically via app.js -->
-          </div>
-          
-          <div class="mt-4 px-1 text-[11px] text-slate-400 leading-normal" data-i18n="liabs_note">
-            <strong>Advisory Note:</strong> According to Islamic jurisprudence, only outstanding debts due immediately or within the current lunar year can be deducted from your zakatable assets.
-          </div>
-        </div>
-
-        <!-- CARD 4: AL-HAWL CONFIRMATION -->
-        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
-          <div class="flex items-start gap-4">
-            <div class="flex items-center h-6">
-              <input 
-                id="hawl-checkbox" 
-                name="hawl-checkbox" 
-                type="checkbox" 
-                class="h-5 w-5 rounded-lg border-slate-300 text-emerald-600 focus:ring-emerald-500/20 cursor-pointer"
-              >
-            </div>
-            <div>
-              <label for="hawl-checkbox" class="font-semibold text-slate-800 text-sm block cursor-pointer select-none" data-i18n="hawl_title">
-                I confirm Al-Hawl (Lunar Year Completion)
-              </label>
-              <p class="text-xs text-slate-400 mt-1 leading-relaxed" data-i18n="hawl_subtitle">
-                I attest that I have possessed this minimum amount of wealth (Nisab) for one complete lunar year.
-              </p>
-              
-              <!-- Citations -->
-              <div class="flex flex-wrap gap-2.5 mt-3">
-                <span class="tooltip-trigger inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 cursor-help">
-                  <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                  <span data-i18n="citation_ibn_majah">Sunan Ibn Majah</span>
-                  <span class="tooltip-content bg-slate-800 text-white text-[11px] p-2 rounded-lg shadow-xl font-normal leading-normal" data-i18n="tooltip_ibn_majah">
-                    "No Zakat is due on wealth until a year has passed over it." (Sunan Ibn Majah, Hadith 1792)
-                  </span>
-                </span>
-
-                <span class="tooltip-trigger inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 cursor-help">
-                  <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                  <span data-i18n="citation_tawbah">Surah At-Tawbah 9:60</span>
-                  <span class="tooltip-content bg-slate-800 text-white text-[11px] p-2 rounded-lg shadow-xl font-normal leading-normal" data-i18n="tooltip_tawbah">
-                    Ordinance describing the eight categories of eligible Zakat recipients.
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
+        <!-- Primary Action Button: Start Calculation -->
+        <div class="pt-2">
+          <button type="button" onclick="goToStep(2)" class="w-full tap-target-48 bg-emerald-700 hover:bg-emerald-800 text-white text-lg font-bold py-4 px-6 rounded-2xl shadow-lg shadow-emerald-700/20 flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01]">
+            <span data-i18n="btn_start_wizard">Start Calculation: Cash & Bank →</span>
+          </button>
         </div>
 
       </div>
-
-      <!-- RIGHT COLUMN (CALCULATION SUMMARY) - Spans 4/12 -->
-      <div class="lg:col-span-4 sticky top-24 flex flex-col gap-6 no-print">
-        
-        <!-- CARD: SUMMARY RESULTS -->
-        <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-premium transition-all-300 hover:shadow-premium-lg">
-          <h2 class="text-base font-bold text-slate-800 font-display mb-4 border-b border-slate-100 pb-3" data-i18n="summary_title">Calculation Summary</h2>
-          
-          <div class="flex flex-col gap-3.5 mb-6 text-sm text-slate-600 font-medium">
-            <div class="flex items-center justify-between">
-              <span data-i18n="summary_assets">Total Assets</span>
-              <span id="summary-total-assets" class="text-slate-800 font-bold">$0.00</span>
-            </div>
-            
-            <div class="flex items-center justify-between">
-              <span data-i18n="summary_liabilities">Total Liabilities</span>
-              <span id="summary-total-liabilities" class="text-rose-600 font-bold">-$0.00</span>
-            </div>
-
-            <div class="border-t border-dashed border-slate-100 my-1"></div>
-
-            <div class="flex items-center justify-between text-base font-bold text-slate-800">
-              <span data-i18n="summary_net_wealth">Net Zakatable Wealth</span>
-              <span id="summary-net-wealth" class="text-emerald-700 font-extrabold">$0.00</span>
-            </div>
-          </div>
-
-          <!-- Total Zakat Due display box -->
-          <div id="zakat-result-box" class="calculation-box p-6 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 shadow-sm animate-scale-in transition-all duration-300 mb-6">
-            <span class="text-xs uppercase tracking-wider font-extrabold opacity-80" data-i18n="zakat_box_header">Total Zakat Due (2.5%)</span>
-            <div id="zakat-due-value" class="text-4xl font-extrabold tracking-tight text-sky-700 mt-1 mb-2">$0.00</div>
-            <p id="zakat-result-message" class="text-xs font-medium leading-relaxed">
-              <!-- Populated via JS calculations i18n -->
-            </p>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex flex-col gap-3">
-            <button 
-              type="button" 
-              onclick="exportReport()"
-              class="w-full bg-slate-900 hover:bg-slate-850 text-white font-semibold text-sm py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all duration-200 hover:scale-[1.01]"
-            >
-              <!-- Print/Download Icon -->
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm5-17V7a4 4 0 00-4-4H8a4 4 0 00-4 4v2m12 0a2 2 0 100-4 2 2 0 000 4z" /></svg>
-              <span data-i18n="btn_export">Export Report PDF</span>
-            </button>
-            
-            <button 
-              type="button" 
-              onclick="saveDraft()"
-              class="w-full bg-white hover:bg-slate-50 text-slate-600 font-semibold text-sm py-3 px-4 rounded-xl border border-slate-200 flex items-center justify-center gap-2 transition-all-300"
-            >
-              <!-- Save Icon -->
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-              <span data-i18n="btn_save">Save Draft</span>
-            </button>
-          </div>
-
-        </div>
-
-
-      </div>
-
     </div>
+
+    <!-- ================= STEP 2: CASH & SAVINGS ================= -->
+    <div id="step-2" class="wizard-step no-print">
+      <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
+        
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="cash_step_title">
+            Cash at home and in the bank
+          </h2>
+          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="cash_step_subtitle">
+            Enter all paper currency, bank balances, and reliable money owed to you.
+          </p>
+        </div>
+
+        <div class="space-y-5">
+          <!-- 1. Cash at home -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-cash-in-hand" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_cash_in_hand">
+                Cash at home or in wallet
+              </label>
+              <button type="button" onclick="showHelp('cash-in-hand')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-cash-in-hand" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="cashInHand">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_cash_in_hand">All cash in pockets, safe, wallet, or drawers.</p>
+          </div>
+
+          <!-- 2. Bank Accounts -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-bank-accounts" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_bank_accounts">
+                Bank accounts (Current and Savings)
+              </label>
+              <button type="button" onclick="showHelp('bank-accounts')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-bank-accounts" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="bankAccounts">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_bank_accounts">Total current balance across all checking and savings accounts.</p>
+          </div>
+
+          <!-- 3. Other savings -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-other-savings" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_other_savings">
+                Other savings, committees, prize bonds
+              </label>
+              <button type="button" onclick="showHelp('other-savings')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-other-savings" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="otherSavings">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_other_savings">BC/committees saved, National Savings certificates, or foreign currency cash.</p>
+          </div>
+
+          <!-- 4. Money owed to me -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-money-owed-to-me" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_money_owed_to_me">
+                Money others owe me (expected to receive)
+              </label>
+              <button type="button" onclick="showHelp('money-owed-to-me')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-money-owed-to-me" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="moneyOwedToMe">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_money_owed_to_me">Only count good loans you expect to be repaid. Doubtful bad debts are not counted.</p>
+          </div>
+        </div>
+
+        <!-- Cash Subtotal Display -->
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between font-bold text-emerald-950">
+          <span data-i18n="subtotal_cash_label">Total Cash & Savings:</span>
+          <span id="wizard-subtotal-cash" class="text-xl font-extrabold text-emerald-700">Rs 0.00</span>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <button type="button" onclick="goToStep(1)" class="tap-target-48 px-6 py-3 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-base transition-all">
+            <span data-i18n="btn_back">← Back</span>
+          </button>
+          <button type="button" onclick="goToStep(3)" class="tap-target-48 px-8 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base shadow-lg shadow-emerald-700/20 transition-all">
+            <span data-i18n="btn_next_gold">Next: Gold & Silver →</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= STEP 3: GOLD & SILVER ================= -->
+    <div id="step-3" class="wizard-step no-print">
+      <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
+        
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="gold_step_title">
+            Gold and Silver
+          </h2>
+          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="gold_step_subtitle">
+            Enter gold and silver in any weight (tolas, grams, or ounces) and select its carat purity.
+          </p>
+        </div>
+
+        <!-- Neutral Note on Jewelry -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed space-y-1">
+          <strong class="text-slate-800 font-bold block" data-i18n="note_jewelry_title">Scholarly Note on Jewelry:</strong>
+          <p data-i18n="note_jewelry_body">
+            In the Hanafi school (practiced widely in Pakistan), Zakat is due on all gold and silver, including worn personal jewelry. Some other schools exempt personal use jewelry. If you follow that view, you may enter only investment gold/silver.
+          </p>
+        </div>
+
+        <!-- GOLD CARD -->
+        <div class="p-5 rounded-2xl border border-amber-200 bg-amber-50/30 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-bold text-amber-950 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+              <span data-i18n="section_gold_title">Gold Holdings</span>
+            </span>
+            <button type="button" onclick="showHelp('gold-carat')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+              <span>?</span> <span data-i18n="help_link">Help</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Weight Input -->
+            <div class="sm:col-span-1">
+              <label for="wizard-gold-weight" class="block text-xs font-bold text-slate-600 uppercase mb-1" data-i18n="label_weight">Weight</label>
+              <input type="text" id="wizard-gold-weight" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-lg font-extrabold text-slate-900 input-focus-ring" data-wizard-field="goldWeight">
+            </div>
+
+            <!-- Unit Selector -->
+            <div>
+              <label for="wizard-gold-unit" class="block text-xs font-bold text-slate-600 uppercase mb-1" data-i18n="col_unit">Unit</label>
+              <select id="wizard-gold-unit" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-base font-bold text-slate-800 input-focus-ring cursor-pointer" data-wizard-field="goldUnit">
+                <option value="tola" selected>Tolas (1 tola = 11.664g)</option>
+                <option value="gram">Grams (g)</option>
+                <option value="ounce">Ounces (oz)</option>
+              </select>
+            </div>
+
+            <!-- Carat Purity Selector -->
+            <div>
+              <label for="wizard-gold-carat" class="block text-xs font-bold text-slate-600 uppercase mb-1" data-i18n="label_carat">Carat / Purity</label>
+              <select id="wizard-gold-carat" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-base font-bold text-slate-800 input-focus-ring cursor-pointer" data-wizard-field="goldCarat">
+                <option value="24">24K (Pure Bullion / 99.9%)</option>
+                <option value="22" selected>22K (Standard Jewelry / 91.6%)</option>
+                <option value="21">21K (Arabian Jewelry / 87.5%)</option>
+                <option value="18">18K (Gemstone Jewelry / 75%)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dynamic Pure Gold Math Display -->
+          <div class="p-3 bg-white rounded-xl border border-amber-200 text-xs font-semibold text-slate-700 flex flex-wrap items-center justify-between gap-2">
+            <span>
+              <span data-i18n="pure_gold_equiv">Pure Gold Equivalent:</span>
+              <strong id="wizard-pure-gold-display" class="text-amber-800 font-bold">0.00 grams</strong>
+            </span>
+            <span>
+              <span data-i18n="assessed_value">Assessed Value:</span>
+              <strong id="wizard-gold-val-display" class="text-emerald-700 font-extrabold text-sm">Rs 0.00</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- SILVER CARD -->
+        <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-slate-400"></span>
+              <span data-i18n="section_silver_title">Silver Holdings</span>
+            </span>
+            <button type="button" onclick="showHelp('silver-nisab')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+              <span>?</span> <span data-i18n="help_link">Help</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="wizard-silver-weight" class="block text-xs font-bold text-slate-600 uppercase mb-1" data-i18n="label_weight">Weight</label>
+              <input type="text" id="wizard-silver-weight" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-lg font-extrabold text-slate-900 input-focus-ring" data-wizard-field="silverWeight">
+            </div>
+
+            <div>
+              <label for="wizard-silver-unit" class="block text-xs font-bold text-slate-600 uppercase mb-1" data-i18n="col_unit">Unit</label>
+              <select id="wizard-silver-unit" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-base font-bold text-slate-800 input-focus-ring cursor-pointer" data-wizard-field="silverUnit">
+                <option value="tola" selected>Tolas (1 tola = 11.664g)</option>
+                <option value="gram">Grams (g)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 flex justify-between items-center">
+            <span data-i18n="assessed_value">Assessed Value:</span>
+            <strong id="wizard-silver-val-display" class="text-emerald-700 font-extrabold text-sm">Rs 0.00</strong>
+          </div>
+        </div>
+
+        <!-- Gold & Silver Subtotal -->
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between font-bold text-emerald-950">
+          <span data-i18n="subtotal_precious_label">Total Gold & Silver:</span>
+          <span id="wizard-subtotal-metals" class="text-xl font-extrabold text-emerald-700">Rs 0.00</span>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <button type="button" onclick="goToStep(2)" class="tap-target-48 px-6 py-3 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-base transition-all">
+            <span data-i18n="btn_back">← Back</span>
+          </button>
+          <button type="button" onclick="goToStep(4)" class="tap-target-48 px-8 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base shadow-lg shadow-emerald-700/20 transition-all">
+            <span data-i18n="btn_next_business">Next: Business & Investments →</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= STEP 4: BUSINESS & INVESTMENTS ================= -->
+    <div id="step-4" class="wizard-step no-print">
+      <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
+        
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="business_step_title">
+            Business goods and investments
+          </h2>
+          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="business_step_subtitle">
+            Enter trade inventory, business cash, shares, and real estate purchased for resale.
+          </p>
+        </div>
+
+        <!-- Essential Exclusion Note -->
+        <div class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-xs text-emerald-950 leading-relaxed font-medium">
+          <strong class="font-extrabold block text-emerald-900 mb-0.5" data-i18n="note_exempt_title">✓ Exempt from Zakat (Do NOT include):</strong>
+          <span data-i18n="note_exempt_body">
+            The house you live in, your personal family car, household furniture, personal appliances, and tools of trade are completely exempt from Zakat.
+          </span>
+        </div>
+
+        <div class="space-y-5">
+          <!-- 1. Shop stock -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-shop-stock" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_shop_stock">
+                Shop merchandise and inventory for sale
+              </label>
+              <button type="button" onclick="showHelp('shop-stock')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-shop-stock" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="shopStock">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_shop_stock">Valued at wholesale cost on calculation date. Do not count store fixtures or shelves.</p>
+          </div>
+
+          <!-- 2. Business Cash -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-business-cash" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_business_cash">
+                Business cash and business bank accounts
+              </label>
+              <button type="button" onclick="showHelp('business-cash')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-business-cash" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="businessCash">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_business_cash">Cash held for operating expenses, payroll, or supplier payments.</p>
+          </div>
+
+          <!-- 3. Shares & Mutual Funds -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-shares-funds" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_shares_funds">
+                Shares, stocks, and mutual funds
+              </label>
+              <button type="button" onclick="showHelp('shares-funds')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-shares-funds" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="sharesFunds">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_shares_funds">Active trading shares at current market value; long-term dividend shares on their zakatable liquid assets proportion.</p>
+          </div>
+
+          <!-- 4. Property Held for Resale -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-property-for-sale" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_property_for_sale">
+                Plots or property purchased to resell
+              </label>
+              <button type="button" onclick="showHelp('property-for-sale')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <input type="text" id="wizard-property-for-sale" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="propertyForSale">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_property_for_sale">Only property purchased with active intention to resell for commercial profit.</p>
+          </div>
+        </div>
+
+        <!-- Business Subtotal -->
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between font-bold text-emerald-950">
+          <span data-i18n="subtotal_business_label">Total Business & Investments:</span>
+          <span id="wizard-subtotal-business" class="text-xl font-extrabold text-emerald-700">Rs 0.00</span>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <button type="button" onclick="goToStep(3)" class="tap-target-48 px-6 py-3 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-base transition-all">
+            <span data-i18n="btn_back">← Back</span>
+          </button>
+          <button type="button" onclick="goToStep(5)" class="tap-target-48 px-8 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base shadow-lg shadow-emerald-700/20 transition-all">
+            <span data-i18n="btn_next_debts">Next: Money You Owe →</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= STEP 5: MONEY I OWE OTHERS ================= -->
+    <div id="step-5" class="wizard-step no-print">
+      <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
+        
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="debts_step_title">
+            Money you owe others
+          </h2>
+          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="debts_step_subtitle">
+            Only subtract debts and bills due right now or within the current lunar year.
+          </p>
+        </div>
+
+        <!-- Advisory Note -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed font-medium">
+          <strong class="font-bold text-slate-800 block mb-0.5" data-i18n="note_debts_title">Important Islamic Rule on Debts:</strong>
+          <span data-i18n="note_debts_body">
+            You may only deduct debts due immediately or within the current 12-month lunar year. Long-term loans (like a 20-year mortgage balance) cannot be deducted in full.
+          </span>
+        </div>
+
+        <div class="space-y-5">
+          <!-- 1. Personal Debts Due Now -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-debts-due-now" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_debts_due_now">
+                Personal loans and debts due immediately
+              </label>
+              <button type="button" onclick="showHelp('debts-due-now')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-rose-500 currency-symbol">-Rs</span>
+              <input type="text" id="wizard-debts-due-now" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-14 pe-4 py-3 text-xl text-rose-700 font-extrabold input-focus-ring transition-all" data-wizard-field="debtsDueNow">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_debts_due_now">Money you borrowed from relatives, friends, or lenders that must be paid back now.</p>
+          </div>
+
+          <!-- 2. Unpaid Bills and Rent -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-unpaid-bills" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_unpaid_bills">
+                Unpaid rent, utility bills, or staff salaries due now
+              </label>
+              <button type="button" onclick="showHelp('unpaid-bills')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-rose-500 currency-symbol">-Rs</span>
+              <input type="text" id="wizard-unpaid-bills" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-14 pe-4 py-3 text-xl text-rose-700 font-extrabold input-focus-ring transition-all" data-wizard-field="unpaidBills">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_unpaid_bills">Overdue house rent, pending electricity/gas bills, or due salaries of home/office staff.</p>
+          </div>
+
+          <!-- 3. Installments due within this year -->
+          <div class="p-4 sm:p-5 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label for="wizard-installments-this-year" class="text-base sm:text-lg font-bold text-slate-800" data-i18n="label_installments_this_year">
+                Loan installments due within this lunar year (next 12 months)
+              </label>
+              <button type="button" onclick="showHelp('installments-this-year')" class="tap-target-48 px-2 text-sm font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1" title="Explanation">
+                <span>?</span> <span data-i18n="help_link">Help</span>
+              </button>
+            </div>
+            <div class="relative">
+              <span class="absolute start-4 top-3 text-lg font-bold text-rose-500 currency-symbol">-Rs</span>
+              <input type="text" id="wizard-installments-this-year" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-14 pe-4 py-3 text-xl text-rose-700 font-extrabold input-focus-ring transition-all" data-wizard-field="installmentsThisYear">
+            </div>
+            <p class="text-xs text-slate-500 font-medium" data-i18n="hint_installments_this_year">Only the sum of installments falling due in the next 12 months.</p>
+          </div>
+        </div>
+
+        <!-- Debts Subtotal -->
+        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-between font-bold text-rose-950">
+          <span data-i18n="subtotal_debts_label">Total Deductible Debts:</span>
+          <span id="wizard-subtotal-debts" class="text-xl font-extrabold text-rose-700">-Rs 0.00</span>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="flex items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <button type="button" onclick="goToStep(4)" class="tap-target-48 px-6 py-3 rounded-2xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-base transition-all">
+            <span data-i18n="btn_back">← Back</span>
+          </button>
+          <button type="button" onclick="goToStep(6)" class="tap-target-48 px-8 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-base shadow-lg shadow-emerald-700/20 transition-all">
+            <span data-i18n="btn_view_result">View Zakat Result →</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= STEP 6: CLEAR RESULT ================= -->
+    <div id="step-6" class="wizard-step no-print">
+      <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
+        
+        <div>
+          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="result_step_title">
+            Your Zakat Calculation Result
+          </h2>
+          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="result_step_subtitle">
+            Complete spiritual assessment of your wealth purification obligation.
+          </p>
+        </div>
+
+        <!-- Al-Hawl Question Card -->
+        <div class="p-5 rounded-2xl border border-slate-200 bg-slate-50 space-y-3">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <h3 class="text-base font-bold text-slate-900" data-i18n="hawl_question">
+                Have you owned this much wealth for a full Islamic lunar year?
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5" data-i18n="hawl_question_sub">
+                Zakat only becomes obligatory after 1 full lunar year (354 days) has passed over wealth above Nisab.
+              </p>
+            </div>
+            <button type="button" onclick="showHelp('hawl-ruling')" class="text-xs font-bold text-emerald-700 hover:underline">? Explain</button>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5 pt-1">
+            <button type="button" onclick="setHawlAnswer(true)" id="hawl-btn-yes" class="tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-emerald-600 text-white border-emerald-600 shadow-sm" data-i18n="hawl_yes">
+              Yes (ہاں)
+            </button>
+            <button type="button" onclick="setHawlAnswer(false)" id="hawl-btn-no" class="tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100" data-i18n="hawl_no">
+              No (نہیں)
+            </button>
+            <button type="button" onclick="showHelp('hawl-notsure')" id="hawl-btn-notsure" class="tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100" data-i18n="hawl_notsure">
+              Not Sure (یقین نہیں)
+            </button>
+          </div>
+        </div>
+
+        <!-- MAIN RESULT BANNER -->
+        <div id="wizard-result-box" class="p-6 sm:p-8 rounded-3xl bg-emerald-600 text-white shadow-xl space-y-3 text-center transition-all duration-300">
+          <span class="text-xs sm:text-sm font-extrabold uppercase tracking-widest opacity-90" data-i18n="result_headline">
+            Total Zakat Obligation (2.5%)
+          </span>
+          <div id="wizard-zakat-due-display" class="text-4xl sm:text-5xl font-black tracking-tight text-white my-2">
+            Rs 0.00
+          </div>
+          <p id="wizard-result-plain-message" class="text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto opacity-95">
+            <!-- Plain sentence inserted dynamically -->
+          </p>
+        </div>
+
+        <!-- PLAIN STORY BREAKDOWN -->
+        <div class="p-5 sm:p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700" data-i18n="story_title">
+            The Short Story of Your Calculation
+          </h3>
+          <p id="wizard-story-text" class="text-sm sm:text-base text-slate-800 leading-relaxed font-medium">
+            <!-- Formatted story sentence -->
+          </p>
+        </div>
+
+        <!-- 4-CATEGORY BREAKDOWN CARDS -->
+        <div>
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-700 mb-3" data-i18n="breakdown_heading">
+            Wealth & Deductions Breakdown
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <!-- Cash -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
+              <span class="flex items-center gap-2 text-slate-700 font-bold">
+                <span class="text-lg">💵</span> <span data-i18n="step_2_tab">Cash & Bank</span>
+              </span>
+              <strong id="card-breakdown-cash" class="text-slate-900 font-extrabold">Rs 0.00</strong>
+            </div>
+
+            <!-- Gold & Silver -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
+              <span class="flex items-center gap-2 text-slate-700 font-bold">
+                <span class="text-lg">🪙</span> <span data-i18n="step_3_tab">Gold & Silver</span>
+              </span>
+              <strong id="card-breakdown-metals" class="text-slate-900 font-extrabold">Rs 0.00</strong>
+            </div>
+
+            <!-- Business -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-white flex items-center justify-between">
+              <span class="flex items-center gap-2 text-slate-700 font-bold">
+                <span class="text-lg">🏬</span> <span data-i18n="step_4_tab">Business Goods</span>
+              </span>
+              <strong id="card-breakdown-business" class="text-slate-900 font-extrabold">Rs 0.00</strong>
+            </div>
+
+            <!-- Debts -->
+            <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/50 flex items-center justify-between">
+              <span class="flex items-center gap-2 text-rose-800 font-bold">
+                <span class="text-lg">📉</span> <span data-i18n="step_5_tab">Deductible Debts</span>
+              </span>
+              <strong id="card-breakdown-debts" class="text-rose-700 font-extrabold">-Rs 0.00</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS: EXPORT, SHARE, START AGAIN -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="exportReport()" class="tap-target-48 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 00-2 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm5-17V7a4 4 0 00-4-4H8a4 4 0 00-4 4v2m12 0a2 2 0 100-4 2 2 0 000 4z"/></svg>
+            <span data-i18n="btn_export">Download PDF Report</span>
+          </button>
+
+          <button type="button" onclick="shareOnWhatsApp()" class="tap-target-48 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all hover:scale-[1.01]">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.976.58 2.028.928 3.149.929 3.182 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.768-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.312.045-.634.085-1.29-.168-.86-.33-1.638-.853-2.285-1.503-.647-.648-1.168-1.428-1.498-2.287-.253-.656-.213-.978-.168-1.29.05-.333.42-.826.824-.97.101-.036.19-.053.25-.053.082 0 .144.004.21.012.18.018.345.05.474.364.144.348.49 1.196.533 1.284.043.088.072.19.014.305-.058.115-.087.187-.174.288-.087.101-.184.225-.262.304-.087.087-.178.182-.077.355.101.173.45.742.966 1.202.664.593 1.225.778 1.4.864.174.086.275.072.376-.044.101-.115.434-.505.55-.678.115-.174.231-.144.39-.087.159.058 1.01.477 1.183.564.174.087.29.13.333.203.044.072.044.42-.1.825z"/></svg>
+            <span data-i18n="btn_share_whatsapp">Share on WhatsApp</span>
+          </button>
+
+          <button type="button" onclick="resetWizard()" class="tap-target-48 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm py-3.5 px-4 rounded-2xl flex items-center justify-center gap-2 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span data-i18n="btn_start_again">Start Again</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
   </main>
 
   <!-- ================= PRINT ONLY OUTPUT SECTION ================= -->
@@ -782,16 +1230,55 @@
     </div>
   </div>
 
-  <!-- ================= STICKY BOTTOM BAR FOR MOBILE ================= -->
-  <div id="sticky-mobile-summary" class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 py-3.5 px-5 flex items-center justify-between shadow-2xl lg:hidden transform translate-y-full transition-transform duration-300 no-print">
-    <div class="flex flex-col text-start">
-      <span class="text-[10px] uppercase tracking-wider font-extrabold text-slate-400" data-i18n="zakat_box_header">Total Zakat Due (2.5%)</span>
-      <span id="sticky-zakat-value" class="text-lg font-bold text-sky-700">$0.00</span>
+  <!-- MODAL 4: DYNAMIC ACCESSIBLE HELP MODAL -->
+  <div id="help-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden animate-fade-in-up" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
+    <div class="bg-white rounded-3xl max-w-lg w-full mx-4 shadow-2xl overflow-hidden border border-slate-100 animate-scale-in">
+      <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">?</div>
+          <h3 id="help-modal-title" class="text-base sm:text-lg font-bold text-slate-900 font-display">Explanation</h3>
+        </div>
+        <button onclick="closeModal('help-modal')" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all" aria-label="Close help">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div id="help-modal-body" class="p-6 max-h-[60vh] overflow-y-auto text-sm sm:text-base text-slate-700 leading-relaxed space-y-3">
+        <!-- Injected dynamically via showHelp() in app.js -->
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal('help-modal')" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-all shadow-sm">
+          <span data-i18n="btn_understood">Understood</span>
+        </button>
+      </div>
     </div>
-    <a href="#calculator-section" onclick="scrollToSummary(); return false;" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-emerald-700/10">
-      <span data-i18n="summary_title">Calculation Summary</span>
-    </a>
   </div>
+
+  <!-- ================= LIVE "YOUR ZAKAT SO FAR" STICKY BAR ================= -->
+  <aside id="sticky-mobile-summary" class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/80 py-3.5 px-4 sm:px-6 shadow-2xl transition-transform duration-300 no-print" aria-label="Live Zakat summary">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-3">
+      <div class="flex flex-col text-start min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] uppercase tracking-wider font-extrabold text-slate-500" data-i18n="live_zakat_bar_title">Your Zakat so far</span>
+          <span id="live-nisab-chip" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">
+            Nisab: <span id="live-nisab-chip-val" class="ms-1 font-semibold">Rs 265,029</span>
+          </span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span id="sticky-zakat-value" class="text-xl sm:text-2xl font-black text-emerald-700 truncate">Rs 0.00</span>
+          <span id="live-net-wealth-text" class="text-xs text-slate-500 font-medium truncate hidden xs:inline">(Net: Rs 0.00)</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button type="button" onclick="goToStep(6)" class="tap-target-48 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 shadow-md shadow-emerald-700/20 flex items-center gap-1.5">
+          <span data-i18n="btn_jump_result">View Result</span>
+          <span class="rtl:rotate-180">→</span>
+        </button>
+      </div>
+    </div>
+  </aside>
 
   <!-- Core Nisab Shared Module -->
   <script src="nisab.js"></script>

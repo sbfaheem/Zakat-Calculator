@@ -139,3 +139,65 @@ test('Localized number parser handles Urdu and Arabic digits with formatting', (
   assert.equal(Nisab.parseLocalizedNumber(''), 0);
   assert.equal(Nisab.parseLocalizedNumber(null), 0);
 });
+
+test('Wizard totals calculation - Case (c): 10 tola 22K gold + Rs 50,000 cash', () => {
+  const prices = {
+    goldPricePerGram: 35322.0,
+    silverPricePerGram: 432.8
+  };
+
+  const wizardData = {
+    nisabStandard: 'silver',
+    cashInHand: '50,000',
+    goldWeight: '10',
+    goldUnit: 'tola',
+    goldCarat: 22,
+    hawlConfirmed: true
+  };
+
+  const res = Nisab.calculateWizardTotals(wizardData, prices);
+
+  // 10 tolas of 22K gold = 116.64 * (22/24) = 106.92g pure gold
+  // 106.92g * 35,322 = Rs 3,776,628.24
+  assert.equal(res.breakdown.preciousMetals.gold.pureGoldGrams, 106.92);
+  assert.equal(res.breakdown.preciousMetals.gold.total, 3776628.24);
+
+  // Total cash = 50,000
+  assert.equal(res.breakdown.cash.total, 50000);
+
+  // Total assets = 3,776,628.24 + 50,000 = 3,826,628.24
+  assert.equal(res.totalAssets, 3826628.24);
+  assert.equal(res.netWealth, 3826628.24);
+
+  // Nisab threshold (Silver @ 432.8) = 265,029.41
+  assert.equal(res.zakatResult.isEligible, true);
+  // Zakat @ 2.5% = 3,826,628.24 * 0.025 = 95,665.71
+  assert.equal(res.zakatResult.zakatDue, 95665.71);
+});
+
+test('Wizard totals calculation - Case (d): assets with debts reducing wealth below Nisab', () => {
+  const prices = {
+    goldPricePerGram: 35322.0,
+    silverPricePerGram: 432.8
+  };
+
+  // Silver threshold = 612.36 * 432.8 = Rs 265,029.41
+  // Assets: Rs 300,000 (initially above Nisab)
+  // Debts due now: Rs 100,000
+  // Net wealth = Rs 200,000 (drops below Nisab threshold!)
+  const wizardData = {
+    nisabStandard: 'silver',
+    bankAccounts: '300,000',
+    debtsDueNow: '100,000',
+    hawlConfirmed: true
+  };
+
+  const res = Nisab.calculateWizardTotals(wizardData, prices);
+
+  assert.equal(res.totalAssets, 300000);
+  assert.equal(res.totalLiabilities, 100000);
+  assert.equal(res.netWealth, 200000);
+  assert.equal(res.zakatResult.isBelowNisab, true);
+  assert.equal(res.zakatResult.isEligible, false);
+  assert.equal(res.zakatResult.zakatDue, 0, 'No zakat due when net wealth after deductible debts is below Nisab');
+});

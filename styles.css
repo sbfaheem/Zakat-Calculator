@@ -89,11 +89,94 @@ html[lang="ur"] h6 {
   box-shadow: 0 10px 40px rgba(4, 120, 87, 0.04), 0 2px 10px rgba(0, 0, 0, 0.02);
 }
 
-/* Dynamic Active Highlight */
-.input-focus-ring:focus {
+/* Dynamic Active Highlight & Accessible Focus */
+.input-focus-ring:focus,
+.input-focus-ring:focus-visible {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible,
+a:focus-visible {
+  outline: 2px solid #059669 !important;
+  outline-offset: 2px !important;
+}
+
+/* Wizard Specific SaaS Styles */
+.wizard-step {
+  display: none;
+}
+
+.wizard-step.active {
+  display: block;
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Accessible tap targets & generous sizing */
+.tap-target-48 {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.wizard-input-field {
+  min-height: 52px;
+  font-size: 1.125rem; /* 18px */
+}
+
+/* Prefers-reduced-motion compliance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark Mode support (Calm dark SaaS palette) */
+@media (prefers-color-scheme: dark) {
+  body.theme-auto {
+    background-color: #090d16;
+    color: #f1f5f9;
+  }
+  body.theme-auto .bg-white {
+    background-color: #111827;
+    color: #f8fafc;
+    border-color: #1f2937;
+  }
+  body.theme-auto .bg-slate-50,
+  body.theme-auto .bg-slate-50\/50 {
+    background-color: #172033;
+    color: #f8fafc;
+  }
+  body.theme-auto .text-slate-800,
+  body.theme-auto .text-slate-900 {
+    color: #f8fafc;
+  }
+  body.theme-auto .text-slate-500,
+  body.theme-auto .text-slate-600 {
+    color: #94a3b8;
+  }
+  body.theme-auto .border-slate-100,
+  body.theme-auto .border-slate-200 {
+    border-color: #1f2937;
+  }
+  body.theme-auto input,
+  body.theme-auto select {
+    background-color: #172033;
+    color: #f8fafc;
+    border-color: #334155;
+  }
+  body.theme-auto header {
+    background-color: rgba(17, 24, 39, 0.85);
+    border-color: #1f2937;
+  }
 }
 
 /* Smooth Transitions */

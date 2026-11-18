@@ -1,23 +1,21 @@
-// ZakatFlow Core Logic with Trilingual and RTL Support
-// Powered by shared Nisab single source of truth module
+// ZakatFlow Core Logic - SaaS Quality Interactive Experience
+// Single source of truth: NisabModule (nisab.js)
+// Default audience: Pakistan (Hanafi), default currency PKR, default language Urdu (ur)
 
-// Resolve Nisab module in browser or Node environment
 const NisabModule = (typeof Nisab !== 'undefined') ? Nisab : (typeof require !== 'undefined' ? require('./nisab.js') : null);
 
-// Helper to generate unique IDs
+// Unique ID helper
 function generateId() {
   return 'id_' + Math.random().toString(36).substr(2, 9);
 }
 
-// Canonical Constants from shared Nisab module
-const TOLA_TO_GRAMS = NisabModule ? NisabModule.CONSTANTS.TOLA_TO_GRAMS : 11.664; // 1 tola = 11.664g
-const SILVER_NISAB_GRAMS = NisabModule ? NisabModule.CONSTANTS.SILVER_NISAB_GRAMS : 612.36; // 52.5 tolas
-const GOLD_NISAB_GRAMS = NisabModule ? NisabModule.CONSTANTS.GOLD_NISAB_GRAMS : 87.48; // 7.5 tolas
-const ZAKAT_RATE = NisabModule ? NisabModule.CONSTANTS.ZAKAT_RATE : 0.025; // 2.5%
+// Canonical Constants
+const TOLA_TO_GRAMS = NisabModule ? NisabModule.CONSTANTS.TOLA_TO_GRAMS : 11.664;
+const SILVER_NISAB_GRAMS = NisabModule ? NisabModule.CONSTANTS.SILVER_NISAB_GRAMS : 612.36;
+const GOLD_NISAB_GRAMS = NisabModule ? NisabModule.CONSTANTS.GOLD_NISAB_GRAMS : 87.48;
+const ZAKAT_RATE = NisabModule ? NisabModule.CONSTANTS.ZAKAT_RATE : 0.025;
 
-// Seed fallback prices (editable, benchmarked from 18 Nov 2026 for Pakistan market)
-// Silver: about Rs 5,048 per tola (about Rs 432.8 per gram)
-// 24K Gold: about Rs 412,000 per tola (about Rs 35,322 per gram)
+// Supported Currencies with localized symbols and fallback rates (18 Nov 2026 baseline)
 const CURRENCIES = {
   PKR: { symbol: 'Rs', name: 'Pakistani Rupee', gold: 35322.0, silver: 432.8, locale: 'ur-PK' },
   USD: { symbol: '$', name: 'US Dollar', gold: 120.0, silver: 1.44, locale: 'en-US' },
@@ -26,381 +24,156 @@ const CURRENCIES = {
   GBP: { symbol: '£', name: 'British Pound', gold: 94.0, silver: 1.13, locale: 'en-GB' }
 };
 
-// State Management - Default audience: Pakistan (Hanafi), default currency PKR, default language Urdu
+// Storage Key for seamless auto-save
+const AUTOSAVE_KEY = 'zakatflow_wizard_v2';
+
+// Global Application State
 const STATE = {
-  language: 'ur',
-  currency: 'PKR',
-  nisabStandard: 'silver', // 'silver' is default Hanafi consensus for Pakistan
+  language: 'ur',          // Urdu is default
+  currency: 'PKR',         // PKR is default
+  nisabStandard: 'silver', // Hanafi silver standard default
   goldPrice: CURRENCIES.PKR.gold,
   silverPrice: CURRENCIES.PKR.silver,
   isLivePrice: false,
   pricesLastUpdated: '18 Nov 2026',
-  livePriceNotice: '',
   isUserCustomPrices: false,
-  assets: [
-    { id: generateId(), type: 'Cash', unit: 'Currency', amount: 0, price: 1, total: 0, isPriceCustom: false }
-  ],
-  liabilities: [
-    { id: generateId(), description: '', amount: 0 }
-  ],
-  alHawlConfirmed: true,
+  currentStep: 1,
+  wizard: {
+    cashInHand: '',
+    bankAccounts: '',
+    otherSavings: '',
+    moneyOwedToMe: '',
+    goldWeight: '',
+    goldUnit: 'tola',
+    goldCarat: '22',
+    silverWeight: '',
+    silverUnit: 'tola',
+    shopStock: '',
+    businessCash: '',
+    sharesFunds: '',
+    propertyForSale: '',
+    debtsDueNow: '',
+    unpaidBills: '',
+    installmentsThisYear: '',
+    hawlAnswer: 'yes' // 'yes' | 'no' | 'notsure'
+  },
   history: []
 };
 
-const ASSET_TYPES = [
-  'Cash',
-  'Gold',
-  'Silver',
-  'Shares/Investments',
-  'Business Merchandise',
-  'Agricultural Produce',
-  'Livestock'
-];
-
-// Translation Dictionary
+// Trilingual Translations Dictionary
 const TRANSLATIONS = {
-  en: {
-    brand_name: 'Zakat<span class="text-emerald-600">Flow</span>',
-    brand_name_footer: 'Zakat<span class="text-emerald-500">Flow</span>',
-    nav_calculator: 'Calculator',
-    nav_principles: 'Principles',
-    nav_nisab: 'Nisab Info',
-    nav_history: 'History',
-    nav_drafts_badge: 'Drafts',
-    hero_title: 'Purify Your Wealth with Precision',
-    hero_subtitle: 'A serene, accurate, and dignified calculation experience honoring the spiritual obligation of Zakat. Clear your debts to society and purify your remaining wealth.',
-    hero_badge: 'Calculated using the Hanafi silver nisab by default.',
-    nisab_card_title: 'Nisab Threshold',
-    nisab_card_subtitle: 'Determine the minimum wealth required for Zakat obligation.',
-    price_banner_fallback: 'Live price unavailable. Please check the price below.',
-    price_banner_fallback_sub: 'Using verified seed rates from 18 Nov 2026. You can edit the prices to match your local market.',
-    price_last_updated: 'Prices last updated:',
-    active_standard_label: 'Active Standard:',
-    active_standard_silver: 'Silver (Hanafi / Pakistan — 612.36g)',
-    active_standard_gold: 'Gold Standard (87.48g)',
-    threshold_silver_label: 'Silver Nisab (612.36g):',
-    threshold_gold_label: 'Gold Nisab (87.48g):',
-    silver_price_hint: 'Editable. About Rs 5,048 per tola (52.5 tolas = 612.36g)',
-    gold_price_hint: 'Editable. About Rs 412,000 per tola (7.5 tolas = 87.48g)',
-    advanced_nisab_title: '⚙️ Advanced: Change Nisab Standard (Gold / Silver)',
-    advanced_show: 'Show details',
-    advanced_hide: 'Hide',
-    choose_standard_prompt: 'Choose Standard:',
-    nisab_switch_explanation: '<strong>Why Silver is default:</strong> The Silver standard (612.36g) gives a lower threshold (about Rs 265,000 vs Rs 3,000,000 for gold). Most scholars in Pakistan advise using Silver so more families in need can receive help. If you own only gold and no cash or silver, some scholars allow using the Gold standard.',
-    help_link: 'Help',
-    nisab_toggle_gold: 'Gold (87.48g)',
-    nisab_toggle_silver: 'Silver (612.36g) — Recommended',
-    gold_price_label: 'Current Gold Price (per gram)',
-    silver_price_label: 'Current Silver Price (per gram)',
-    threshold_val_label: 'Threshold Value:',
-    active_nisab_text: 'Active Standard: <strong>{standard}</strong>. Your net wealth must exceed <strong>{val}</strong> ({weight}) to be eligible for Zakat.',
-    assets_card_title: 'Zakatable Assets',
-    assets_card_subtitle: 'Declare eligible assets you possess (gold, silver, cash, shares, etc.).',
-    btn_add_asset: 'Add Asset',
-    col_asset_category: 'Asset Category',
-    col_unit: 'Unit',
-    col_weight: 'Weight / Amount',
-    col_price: 'Price per Unit',
-    col_total: 'Total Value',
-    unit_currency: 'Currency',
-    unit_grams: 'Grams (g)',
-    unit_tolas: 'Tolas',
-    'asset_Cash': 'Cash in Hand/Bank',
-    'asset_Gold': 'Gold',
-    'asset_Silver': 'Silver',
-    'asset_Shares/Investments': 'Shares/Investments',
-    'asset_Business Merchandise': 'Business Merchandise',
-    'asset_Agricultural Produce': 'Agricultural Produce',
-    'asset_Livestock': 'Livestock',
-    liabs_card_title: 'Deductible Liabilities',
-    liabs_card_subtitle: 'Declare short-term loans, bills, or immediate essential expenses to exclude.',
-    btn_add_liability: 'Add Liability',
-    liabs_description: 'Description',
-    liabs_amount: 'Amount Due',
-    liabs_placeholder: 'e.g. Credit Card Bills, Rent Due',
-    liabs_note: '<strong>Advisory Note:</strong> According to Islamic jurisprudence, only outstanding debts due immediately or within the current lunar year can be deducted from your zakatable assets.',
-    hawl_title: 'I confirm Al-Hawl (Lunar Year Completion)',
-    hawl_subtitle: 'I attest that I have possessed this minimum amount of wealth (Nisab) for one complete lunar year.',
-    citation_ibn_majah: 'Sunan Ibn Majah',
-    citation_tawbah: 'Surah At-Tawbah 9:60',
-    tooltip_ibn_majah: '"No Zakat is due on wealth until a year has passed over it." (Sunan Ibn Majah, Hadith 1792)',
-    tooltip_tawbah: 'Ordinance describing the eight categories of eligible Zakat recipients.',
-    summary_title: 'Calculation Summary',
-    summary_assets: 'Total Assets',
-    summary_liabilities: 'Total Liabilities',
-    summary_net_wealth: 'Net Zakatable Wealth',
-    zakat_box_header: 'Total Zakat Due (2.5%)',
-    zakat_msg_met: 'Your wealth meets the Nisab threshold.',
-    zakat_msg_below: 'Your wealth does not meet the Nisab threshold this year. No Zakat is due, but voluntary charity (Sadaqah) is highly rewarded.',
-    zakat_msg_hawl: 'Al-Hawl (lunar year possession) must be confirmed to make Zakat obligatory.',
-    btn_export: 'Export Report PDF',
-    btn_save: 'Save Draft',
-    btn_close: 'Close',
-    btn_understood: 'Understood',
-    btn_close_guide: 'Close Guide',
-    insights_title: 'Benefits of Paying Zakat',
-    insight_1_quote: '"Indeed, those who believe and do righteous deeds and establish prayer and give Zakat will have their reward with their Lord, and there will be no fear concerning them, nor will they grieve."',
-    insight_1_source: '— Surah Al-Baqarah 2:277',
-    insight_2_quote: '"There is not a day upon which the servants wake up except that two angels descend. One of them says: \'O Allah, give recompense to the one who spends!\'"',
-    insight_2_source: '— Sahih al-Bukhari 1442',
-    insight_3_quote: '"Take, [O Muhammad], from their wealth a charity by which you purify them and cause them increase, and invoke [Allah\'s blessings] upon them."',
-    insight_3_source: '— Surah At-Tawbah 9:103',
-    insight_4_quote: '"Charity extinguishes sin as water extinguishes fire."',
-    insight_4_source: '— Sunan at-Tirmidhi 614',
-    footer_desc: 'A modern digital experience supporting the accurate distribution and purification of wealth. Dedicated to spiritual precision and communal growth.',
-    footer_categories_title: 'Eight Categories of Zakat',
-    footer_categories_text: '"Zakat expenditures are only for the poor and for the needy and for those employed to collect it and for bringing hearts together and for freeing captives and for those in debt and for the cause of Allah and for the [stranded] traveler..."',
-    footer_categories_source: '— Surah At-Tawbah 9:60',
-    footer_resources: 'Resources',
-    footer_terms: 'Terms of Service',
-    footer_privacy: 'Privacy Policy',
-    footer_contact: 'Contact Support',
-    footer_copyright: '&copy; 2026 ZakatFlow. Dedicated to spiritual precision and communal growth.',
-    print_title: 'ZakatFlow Calculation Report',
-    print_subtitle: 'Spiritual precision, financial clarity. Computed on ',
-    print_heading_summary: 'Report Summary',
-    print_heading_assets: 'Reportable Assets',
-    print_heading_liabs: 'Deductible Liabilities',
-    print_asset_item: 'Asset Item',
-    print_val_assessed: 'Value Assessed',
-    print_liab_desc: 'Liability Description',
-    print_amount_deducted: 'Amount Deducted',
-    print_total_eligible: 'Total Eligible Assets:',
-    print_final_due: 'Final Zakat Obligation (2.5%):',
-    print_declaration: '"Purify your wealth through the calculation and timely payment of Zakat. This report has been verified under standard Islamic calculations and is correct to the best of user knowledge."',
-    modal_principles_title: 'Islamic Zakat Principles',
-    modal_principles_p1_title: '1. The Principle of Nisab (Obligation Threshold)',
-    modal_principles_p1_body: 'Zakat is only due if your total net wealth exceeds the Nisab threshold. The standard is calculated as the market price of either 87.48 grams of pure Gold or 612.36 grams of pure Silver. If your net wealth is below the threshold, no Zakat is due, but voluntary charity (Sadaqah) is highly encouraged.',
-    modal_principles_p2_title: '2. The Principle of Al-Hawl (Lunar Year Possession)',
-    modal_principles_p2_body: 'The assets must remain in your possession for one complete lunar year (354 days) to qualify for Zakat. If your wealth fluctuates but stays above the Nisab standard during the year, Zakat is due at your calculation date. Citing Sunan Ibn Majah: "No Zakat is due on wealth until a year has passed over it."',
-    modal_principles_p3_title: '3. Rate of Zakat (2.5%)',
-    modal_principles_p3_body: 'The Zakat due is calculated at exactly 2.5% (1/40th) of your total net assets. This rate applies specifically to monetary wealth, business merchandise, shares, and gold/silver.',
-    modal_principles_p4_title: '4. Deductible Liabilities',
-    modal_principles_p4_body: 'According to Islamic jurisprudence, you may subtract outstanding debts due immediately or within the current lunar year from your assets. Long-term parts of mortgage payments or future interest are typically not deductible.',
-    modal_principles_p5_title: '5. The Eight Recipients (Surah At-Tawbah 9:60)',
-    modal_principles_p5_body: 'Zakat cannot be spent on building mosques or public infrastructure. It must be paid to the eight groups of people ordained in the Quran: the poor, the needy, those employed to collect it, those whose hearts are to be reconciled, for freeing captives, those in debt, in the cause of Allah, and for the stranded traveler.',
-    modal_nisab_title: 'Nisab Threshold Details',
-    modal_nisab_p1: 'The term Nisab defines the minimum wealth a Muslim must own for a full lunar year before Zakat becomes obligatory.',
-    modal_nisab_f1: 'Formula Calculations',
-    modal_nisab_f_gold: 'Gold standard Nisab: 87.48 grams (7.5 Tolas)',
-    modal_nisab_f_silver: 'Silver standard Nisab: 612.36 grams (52.5 Tolas)',
-    modal_nisab_rec: 'Scholarly Recommendation: While both thresholds are religiously valid, contemporary scholars strongly recommend calculating Zakat using the Silver Nisab standard. Since silver price is lower, it reduces the threshold, allowing more individuals to contribute and maximizing the assistance provided to the poor and needy.',
-    modal_history_title: 'Saved Calculation Drafts',
-    history_empty_title: 'No saved drafts found.',
-    history_empty_body: 'Calculations you save will appear here.',
-    history_net: 'Net Wealth',
-    history_curr: 'Currency'
-  },
-  ar: {
-    brand_name: 'زكاة<span class="text-emerald-600"> فلو</span>',
-    brand_name_footer: 'زكاة<span class="text-emerald-500"> فلو</span>',
-    nav_calculator: 'الحاسبة',
-    nav_principles: 'المبادئ الشرعية',
-    nav_nisab: 'نصاب الزكاة',
-    nav_history: 'المسودات المحفوظة',
-    nav_drafts_badge: 'مسودات',
-    hero_title: 'طهّر مالك بدقة وإخلاص',
-    hero_subtitle: 'تجربة حسابية هادئة، دقيقة ومحترمة تلتزم بفرائض الزكاة الشرعية. قم بتصفية ديونك للمجتمع وتطهير ما تبقى من ثروتك.',
-    hero_badge: 'محسوب وفقاً لنصاب الفضة المعتمد في المذهب الحنفي',
-    nisab_card_title: 'حد النصاب الشرعي',
-    nisab_card_subtitle: 'تحديد الحد الأدنى من المال الذي تجب فيه الزكاة.',
-    price_banner_fallback: 'الأسعار الحية غير متوفرة حالياً. يرجى مراجعة الأسعار أدناه.',
-    price_banner_fallback_sub: 'باستخدام الأسعار المعيارية لشهر نوفمبر 2026. يمكنك تعديل الأسعار لتناسب السوق المحلي.',
-    price_last_updated: 'آخر تحديث للأسعار:',
-    active_standard_label: 'المعيار المعتمد:',
-    active_standard_silver: 'الفضة (المذهب الحنفي — 612.36 جرام)',
-    active_standard_gold: 'معيار الذهب (87.48 جرام)',
-    threshold_silver_label: 'نصاب الفضة (612.36 جرام):',
-    threshold_gold_label: 'نصاب الذهب (87.48 جرام):',
-    silver_price_hint: 'قابل للتعديل. نصاب الفضة 52.5 تولة = 612.36 جرام',
-    gold_price_hint: 'قابل للتعديل. نصاب الذهب 7.5 تولة = 87.48 جرام',
-    advanced_nisab_title: '⚙️ خيارات متقدمة: تغيير معيار النصاب (ذهب / فضة)',
-    advanced_show: 'عرض التفاصيل',
-    advanced_hide: 'إخفاء',
-    choose_standard_prompt: 'اختر المعيار:',
-    nisab_switch_explanation: '<strong>لماذا الفضة هي المعيار الافتراضي:</strong> معيار الفضة يعطي حداً أدنى أقل لوجوب الزكاة مقارنة بالذهب. يوصي معظم علماء العصر باعتماد الفضة لأن ذلك يعود بالنفع الأكبر على الفقراء والمحتاجين.',
-    help_link: 'مساعدة',
-    nisab_toggle_gold: 'الذهب (87.48 جرام)',
-    nisab_toggle_silver: 'الفضة (612.36 جرام) — الموصى به',
-    gold_price_label: 'سعر الذهب الحالي (للجرام الواحدة)',
-    silver_price_label: 'سعر الفضة الحالي (للجرام الواحدة)',
-    threshold_val_label: 'قيمة النصاب الحالية:',
-    active_nisab_text: 'النصاب المعتمد حالياً: <strong>{standard}</strong>. يجب أن يتجاوز صافي ثروتك <strong>{val}</strong> ({weight}) لتجب عليك الزكاة.',
-    assets_card_title: 'الأصول والأموال الزكوية',
-    assets_card_subtitle: 'الإقرار بالأموال والأصول المؤهلة للزكاة (الذهب، الفضة، السيولة النقدية، الأسهم، إلخ).',
-    btn_add_asset: 'إضافة أصل',
-    col_asset_category: 'فئة الأصول',
-    col_unit: 'الوحدة',
-    col_weight: 'الوزن / القيمة',
-    col_price: 'السعر للوحدة',
-    col_total: 'القيمة الإجمالية',
-    unit_currency: 'عملة نقدية',
-    unit_grams: 'جرام (g)',
-    unit_tolas: 'تولة',
-    'asset_Cash': 'سيولة نقدية في اليد/البنك',
-    'asset_Gold': 'ذهب',
-    'asset_Silver': 'فضة',
-    'asset_Shares/Investments': 'الأسهم والاستثمارات',
-    'asset_Business Merchandise': 'بضائع تجارية',
-    'asset_Agricultural Produce': 'المحاصيل الزراعية',
-    'asset_Livestock': 'الماشية والأنعام',
-    liabs_card_title: 'الخصومات والالتزامات المالية',
-    liabs_card_subtitle: 'الإقرار بالديون قصيرة الأجل، الفواتير، أو النفقات الأساسية الحالية لاستبعادها.',
-    btn_add_liability: 'إضافة دين',
-    liabs_description: 'الوصف أو بيان الدين',
-    liabs_amount: 'المبلغ المستحق',
-    liabs_placeholder: 'مثال: فواتير البطاقة الائتمانية، إيجار مستحق',
-    liabs_note: '<strong>ملاحظة فقهية:</strong> وفقاً للشريعة الإسلامية، يجوز فقط خصم الديون العاجلة المستحقة حالاً أو خلال العام الهجري الحالي من الأموال الخاضعة للزكاة.',
-    hawl_title: 'أؤكد مرور حول كامل (سنة هجرية)',
-    hawl_subtitle: 'أقر بأنني ملكت هذا الحد الأدنى من الثروة (النصاب) لمدة عام هجري كامل دون انقطاع.',
-    citation_ibn_majah: 'سنن ابن ماجه',
-    citation_tawbah: 'سورة التوبة ٩:٦٠',
-    tooltip_ibn_majah: '"لَيْسَ فِي مَالٍ زَكَاةٌ حَتَّى يَحُولَ عَلَيْهِ الْحَوْلُ" (سنن ابن ماجه، حديث ١٧٩٢)',
-    tooltip_tawbah: 'الفريضة الإلهية التي تبين الأصناف الثمانية لمستحقي الزكاة.',
-    summary_title: 'ملخص العملية الحسابية',
-    summary_assets: 'إجمالي الأصول',
-    summary_liabilities: 'إجمالي الخصومات والديون',
-    summary_net_wealth: 'صافي الوعاء الزكوي',
-    zakat_box_header: 'إجمالي الزكاة الواجبة (2.5%)',
-    zakat_msg_met: 'لقد بلغت ثروتك حد النصاب الشرعي وتجب عليها الزكاة.',
-    zakat_msg_below: 'لم تبلغ ثروتك حد النصاب الشرعي هذا العام. لا تجب عليك الزكاة، ولكن الصدقة الطوعية عظيمة الأجر عند الله.',
-    zakat_msg_hawl: 'يجب تأكيد مرور الحول (ملك المال لسنة كاملة) لتصبح الزكاة فرضاً واجباً.',
-    btn_export: 'تصدير التقرير كـ PDF',
-    btn_save: 'حفظ كمسودة',
-    btn_close: 'إغلاق',
-    btn_understood: 'فهمت',
-    btn_close_guide: 'إغلاق الدليل',
-    insights_title: 'إشراقات وحكم الزكاة',
-    insight_1_quote: '"بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ... وَإِقَامِ الصَّلاَةِ، وَإِيتَاءِ الزَّكَاةِ..."',
-    insight_1_source: '— صحيح البخاري ٨',
-    insight_2_quote: '"خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا..."',
-    insight_2_source: '— سورة التوبة ٩:١٠٣',
-    insight_3_quote: '"إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا..."',
-    insight_3_source: '— سورة التوبة ٩:٦٠',
-    insight_4_quote: '"لَا زَكَاةَ فِي مَالٍ حَتَّى يَحُولَ عَلَيْهِ الْحَوْلُ"',
-    insight_4_source: '— سنن ابن ماجه',
-    footer_desc: 'منصة رقمية حديثة تهدف إلى تسهيل التوزيع الدقيق وتطهير الثروات. مكرسة للدقة الروحية والتنمية المجتمعية.',
-    footer_categories_title: 'مصارف الزكاة الثمانية',
-    footer_categories_text: '"إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا وَالْمُؤَلَّفَةِ قُلُوبُهُمْ وَفِي الرِّقَابِ وَالْغَارِمِينَ وَفِي سَبِيلِ اللَّهِ وَابْنِ السَّبِيلِ فَرِيضَةً مِّنَ اللَّهِ..."',
-    footer_categories_source: '— سورة التوبة ٩:٦٠',
-    footer_resources: 'مصادر ومراجع',
-    footer_terms: 'شروط الخدمة',
-    footer_privacy: 'سياسة الخصوصية',
-    footer_contact: 'الدعم الفني',
-    footer_copyright: '&copy; ٢٠٢٦ زكاة فلو. مكرس للدقة الروحية والتنمية المجتمعية.',
-    print_title: 'تقرير حساب الزكاة الشرعي',
-    print_subtitle: 'دقة روحية، ووضوح مالي. تم الحساب في تاريخ ',
-    print_heading_summary: 'ملخص التقرير',
-    print_heading_assets: 'بيان الأصول والأموال',
-    print_heading_liabs: 'الخصومات والديون المستبعدة',
-    print_asset_item: 'بند الأصول',
-    print_val_assessed: 'القيمة المقدرة',
-    print_liab_desc: 'بيان الالتزامات',
-    print_amount_deducted: 'المبلغ المخصوم',
-    print_total_eligible: 'إجمالي الأصول الخاضعة للزكاة:',
-    print_final_due: 'مبلغ الزكاة النهائي المستحق (2.5%):',
-    print_declaration: '"طهّر ثروتك من خلال الحساب الدقيق والدفع الفوري للزكاة. تم إعداد هذا التقرير وتدقيقه وفقاً للمعايير الحسابية الشرعية المعتمدة."',
-    modal_principles_title: 'المبادئ والأحكام الفقهية للزكاة',
-    modal_principles_p1_title: '١. مبدأ النصاب (حد الوجوب الشرعي)',
-    modal_principles_p1_body: 'لا تجب الزكاة في مال إلا إذا بلغ حد النصاب الشرعي. ويُقدر النصاب بوزن 87.48 جراماً من الذهب الخالص أو 612.36 جراماً من الفضة الخالصة. إذا كان صافي مالك أقل من هذا النصاب، فلا تجب الزكاة عليك، وتُستحب الصدقة الطوعية.',
-    modal_principles_p2_title: '٢. مبدأ الحول (ملك المال سنة هجرية)',
-    modal_principles_p2_body: 'يشترط لوجوب الزكاة في الأصول أن تمكث في حوزتك وتحت ملكك لعام قمري كامل (حول). وإذا تذبذبت الثروة لكنها ظلت فوق النصاب طوال العام، تجب الزكاة كاملة في تاريخ حسابها. لقوله ﷺ: "لا زكاة في مال حتى يحول عليه الحول".',
-    modal_principles_p3_title: '٣. مقدار الزكاة (النسبة المفروضة 2.5%)',
-    modal_principles_p3_body: 'تُحسب الزكاة بنسبة ثابتة تبلغ 2.5% (ربع العشر) من إجمالي وعائك الزكوي الصافي. تسري هذه النسبة على السيولة النقدية، السندات والأسهم، السلع التجارية، والذهب والفضة.',
-    modal_principles_p4_title: '٤. الخصومات المستبعدة (الديون العاجلة)',
-    modal_principles_p4_body: 'وفقاً للإجماع الفقهي، يُسمح بطرح وخصم الديون قصيرة الأجل والمستحقة فوراً من أصولك قبل حساب الزكاة. أما الأجزاء الآجلة من القروض طويلة الأمد (كالتمويل العقاري) فلا تُخصم بالكامل عادةً.',
-    modal_principles_p5_title: '٥. مصارف الزكاة الثمانية (سورة التوبة 9:60)',
-    modal_principles_p5_body: 'لا يصح صرف الزكاة في إعمار المساجد أو المشاريع العامة، بل يجب دفعها حصراً للأصناف الثمانية المذكورة في القرآن الكريم: الفقراء، المساكين، العاملين عليها، المؤلفة قلوبهم، في الرقاب (عتق العبيد)، الغارمين (المدينين العاجزين)، في سبيل الله، وابن السبيل (المسافر المنقطع).',
-    modal_nisab_title: 'تفاصيل حد النصاب الشرعي',
-    modal_nisab_p1: 'النصاب هو المقدار الذي إذا ملكه الشخص وجبت عليه الزكاة إذا استوفى بقية الشروط الشرعية كمرور الحول.',
-    modal_nisab_f1: 'معادلة حساب حد النصاب',
-    modal_nisab_f_gold: '• نصاب الذهب: 87.48 جراماً (ما يعادل 7.5 تولة)',
-    modal_nisab_f_silver: '• نصاب الفضة: 612.36 جراماً (ما يعادل 52.5 تولة)',
-    modal_nisab_rec: 'توصية العلماء: على الرغم من أن كلا النصابين صحيحان شرعاً، إلا أن المجامع الفقهية المعاصرة توصي بشدة بحساب الزكاة بناءً على نصاب الفضة. لأن سعر الفضة منخفض، مما يجعل حد النصاب متيسراً لعدد أكبر من المزكين، وهو ما يصب في مصلحة الفقراء والمساكين ويعظم نفعهم.',
-    modal_history_title: 'المسودات المحفوظة محلياً',
-    history_empty_title: 'لا توجد مسودات محفوظة.',
-    history_empty_body: 'المسودات الحسابية التي تقوم بحفظها ستظهر هنا.',
-    history_net: 'صافي الوعاء',
-    history_curr: 'العملة'
-  },
   ur: {
     brand_name: 'زکوٰۃ<span class="text-emerald-600"> فلو</span>',
     brand_name_footer: 'زکوٰۃ<span class="text-emerald-500"> فلو</span>',
     nav_calculator: 'کیلکولیٹر',
     nav_principles: 'شرعی اصول',
     nav_nisab: 'نصاب کی معلومات',
-    nav_history: 'محفوظ مسودات',
-    nav_drafts_badge: 'ڈرافٹس',
-    hero_title: 'اپنے مال کو درستگی کے ساتھ پاک کریں',
-    hero_subtitle: 'زکوٰۃ کے شرعی فریضے کی ادائیگی کے لیے ایک پرسکون، درست اور باوقار کیلکولیٹر۔ معاشرے کے تئیں اپنے واجبات کو ادا کریں اور اپنے باقی مال کو پاک کریں۔',
+    nav_history: 'محفوظ ڈرافٹس',
+    nav_drafts_badge: 'آٹو سیو فعال ہے',
+    hero_title: 'اپنے مال کو درستگی اور آسانی کے ساتھ پاک کریں',
+    hero_subtitle: 'ایک پرسکون اور آسان زکوٰۃ کیلکولیٹر۔ ہر مرحلے پر آسان عام فہم الفاظ میں رہنمائی، تاکہ بزرگ اور بچے بھی آسانی سے سمجھ سکیں۔',
     hero_badge: 'بنیادی طور پر حنفی چاندی کے نصاب کے مطابق حساب شدہ',
-    nisab_card_title: 'حدِ نصاب',
-    nisab_card_subtitle: 'زکوٰۃ کی فرضیت کے لیے مطلوبہ کم از کم دولت کا تعین کریں۔',
-    price_banner_fallback: 'لائیو ریٹس دستیاب نہیں ہیں۔ برائے مہربانی نیچے دیے گئے ریٹس چیک کر لیں۔',
+    badge_autosaved: 'خودکار محفوظ (Auto-saved)',
+    step_1_tab: 'تعارف',
+    step_2_tab: 'نقد رقم',
+    step_3_tab: 'سونا چاندی',
+    step_4_tab: 'کاروبار',
+    step_5_tab: 'قرضے',
+    step_6_tab: 'نتیجہ',
+    welcome_title: 'خوش آمدید — زکوٰۃ فلو',
+    welcome_desc: 'ایک آسان اور پرسکون زکوٰۃ کیلکولیٹر۔ ہم آپ سے ایک وقت میں صرف ایک سوال پوچھیں گے اور آسان الفاظ میں رہنمائی کریں گے۔',
+    choose_language_label: '1. زبان منتخب کریں / Choose Language',
+    choose_currency_label: '2. اپنی کرنسی منتخب کریں',
+    price_banner_fallback: 'لائیو مارکیٹ ریٹ دستیاب نہیں ہے۔ نیچے دیے گئے ریٹس چیک کر لیں۔',
     price_banner_fallback_sub: '18 نومبر 2026 کے تصدیق شدہ ریٹس استعمال کیے جا رہے ہیں۔ آپ اپنے مقامی صرافہ بازار کے مطابق قیمت تبدیل کر سکتے ہیں۔',
-    price_last_updated: 'قیمتوں کی تاریخ:',
+    price_last_updated: 'ریٹس کی تاریخ:',
     active_standard_label: 'فعال معیار:',
-    active_standard_silver: 'چاندی (حنفی / پاکستان — 612.36 گرام)',
-    active_standard_gold: 'سونے کا نصاب (87.48 گرام)',
-    threshold_silver_label: 'چاندی کا نصاب (612.36 گرام):',
-    threshold_gold_label: 'سونے کا نصاب (87.48 گرام):',
-    silver_price_hint: 'تبدیل کیا جا سکتا ہے۔ تقریباً 5,048 روپے فی تولہ (52.5 تولہ = 612.36 گرام)',
-    gold_price_hint: 'تبدیل کیا جا سکتا ہے۔ تقریباً 412,000 روپے فی تولہ (7.5 تولہ = 87.48 گرام)',
+    active_standard_silver: 'چاندی (حنفی / پاکستان)',
+    active_standard_gold: 'سونے کا معیار',
+    silver_price_label: 'چاندی کی موجودہ قیمت (فی گرام)',
+    gold_price_label: 'خالص 24K سونے کی قیمت (فی گرام)',
+    silver_price_hint: 'تبدیل کیا جا سکتا ہے۔ چاندی کا نصاب: 52.5 تولہ = 612.36 گرام',
+    gold_price_hint: 'تبدیل کیا جا سکتا ہے۔ سونے کا نصاب: 7.5 تولہ = 87.48 گرام',
+    threshold_silver_label: 'چاندی کے نصاب کی حد:',
+    threshold_gold_label: 'سونے کے نصاب کی حد:',
     advanced_nisab_title: '⚙️ ایڈوانسڈ: نصاب کا معیار تبدیل کریں (سونا / چاندی)',
     advanced_show: 'تفصیل دیکھیں',
     advanced_hide: 'چھپائیں',
+    nisab_switch_explanation: '<strong>چاندی کا نصاب کیوں بنیادی ہے؟</strong> چاندی کا نصاب (612.36 گرام) کم مالیت پر بنتا ہے (تقریباً 2 لاکھ 65 ہزار روپے بمقابلہ سونے کے 30 لاکھ روپے)۔ پاکستان کے علماء چاندی کے نصاب کی پرزور سفارش کرتے ہیں تاکہ زیادہ ضرورت مندوں کی مدد ہو سکے۔ اگر آپ کے پاس صرف سونا ہو تو بعض علماء سونے کے نصاب کی اجازت دیتے ہیں۔',
     choose_standard_prompt: 'معیار منتخب کریں:',
-    nisab_switch_explanation: '<strong>چاندی کا نصاب کیوں ترجیحی ہے؟</strong> چاندی کا نصاب (612.36 گرام / 52.5 تولہ) کم مالیت پر فرض ہوتا ہے (تقریباً 2 لاکھ 65 ہزار روپے بمقابلہ سونے کے 30 لاکھ روپے)۔ پاکستان کے علماء چاندی کے نصاب کی پرزور سفارش کرتے ہیں تاکہ زیادہ سے زیادہ ضرورت مندوں کی مدد ہو سکے۔ اگر آپ کے پاس صرف سونا ہو اور کوئی نقد رقم یا چاندی نہ ہو، تو بعض علماء سونے کے نصاب کی اجازت دیتے ہیں۔',
-    help_link: 'رہنمائی',
-    nisab_toggle_gold: 'سونا (87.48 گرام)',
-    nisab_toggle_silver: 'چاندی (612.36 گرام) — سفارش شدہ',
-    gold_price_label: 'سونے کی موجودہ قیمت (فی گرام)',
-    silver_price_label: 'چاندی کی موجودہ قیمت (فی گرام)',
-    threshold_val_label: 'نصاب کی موجودہ مالیت:',
-    active_nisab_text: 'فعال نصاب: <strong>{standard}</strong>۔ زکوٰۃ کے اہل ہونے کے لیے آپ کی خالص دولت کا <strong>{val}</strong> ({weight}) سے زیادہ ہونا ضروری ہے۔',
-    assets_card_title: 'زکوٰۃ کے قابل اثاثے',
-    assets_card_subtitle: 'اپنے زیرِ ملکیت زکوٰۃ کے قابل اثاثوں کا اعلان کریں (سونا، چاندی، نقدی، شیئرز وغیرہ)۔',
-    btn_add_asset: 'اثاثہ شامل کریں',
-    col_asset_category: 'اثاثہ کی قسم',
+    nisab_toggle_silver: 'چاندی (سفارش شدہ)',
+    nisab_toggle_gold: 'سونے کا معیار',
+    btn_start_wizard: 'حساب شروع کریں: نقد رقم اور بینک ←',
+    cash_step_title: 'گھر اور بینک میں موجود نقد رقم',
+    cash_step_subtitle: 'وہ تمام نقدی، بینک بیلنس اور یقینی ملنے والی رقم درج کریں جو آپ کے پاس ہے۔',
+    label_cash_in_hand: 'گھر پر یا بٹوے میں موجود نقد رقم',
+    hint_cash_in_hand: 'جیب، گھر کی الماری، تجوری یا دراز میں پڑی کل رقم۔',
+    label_bank_accounts: 'بینک اکاؤنٹس (کرنٹ اور سیونگز)',
+    hint_bank_accounts: 'تمام بینک کھاتوں میں آج کی تاریخ کا موجودہ بیلنس۔',
+    label_other_savings: 'دیگر بچت، کمیٹیاں، پرائز بانڈز',
+    hint_other_savings: 'بی سی/کمیٹیوں کی جمع رقم، قومی بچت اسکیم کے سرٹیفکیٹ، یا غیر ملکی کرنسی۔',
+    label_money_owed_to_me: 'وہ رقم جو دوسروں سے مجھے واپس ملنی ہے',
+    hint_money_owed_to_me: 'صرف وہ قرض جو آپ کو واپس ملنے کی پکی امید ہے۔ ڈوبے ہوئے قرضے شامل نہ کریں۔',
+    subtotal_cash_label: 'کل نقد رقم اور بچت:',
+    btn_back: '← واپسی',
+    btn_next_gold: 'اگلا مرحلہ: سونا اور چاندی →',
+    gold_step_title: 'سونا اور چاندی',
+    gold_step_subtitle: 'تولہ، گرام یا اونس میں وزن درج کریں اور کیرٹ (خالص پن) منتخب کریں۔',
+    note_jewelry_title: 'زیورات کے متعلق شرعی رہنمائی:',
+    note_jewelry_body: 'حنفی مسلک (جو پاکستان میں عام ہے) کے مطابق پہننے والے زیورات پر بھی زکوٰۃ فرض ہے۔ دیگر بعض فقہاء کے نزدیک صرف سرمایہ کاری والے سونے پر ہے۔ اگر آپ کے پاس صرف استعمالی زیور ہے اور آپ دوسرا موقف اختیار کرنا چاہتے ہیں تو آپ آزاد ہیں۔',
+    section_gold_title: 'سونے کی ملکیت',
+    section_silver_title: 'چاندی کی ملکیت',
+    label_weight: 'وزن',
     col_unit: 'اکائی',
-    col_weight: 'وزن / رقم',
-    col_price: 'فی اکائی قیمت',
-    col_total: 'کل مالیت',
-    unit_currency: 'کرنسی',
-    unit_grams: 'گرام (g)',
-    unit_tolas: 'تولہ',
-    'asset_Cash': 'نقد رقم پاس یا بینک میں',
-    'asset_Gold': 'سونا',
-    'asset_Silver': 'چاندی',
-    'asset_Shares/Investments': 'شیئرز اور سرمایہ کاری',
-    'asset_Business Merchandise': 'تجاری سامانِ تجارت',
-    'asset_Agricultural Produce': 'زرعی پیداوار (عشر)',
-    'asset_Livestock': 'مویشی / مالِ مویشی',
-    liabs_card_title: 'منہا ہونے والے واجبات',
-    liabs_card_subtitle: 'اپنے قلیل مدتی قرضے، واجب الادا بل، یا ضروری اخراجات درج کریں تاکہ انہیں منہا کیا جا سکے۔',
-    btn_add_liability: 'واجبات شامل کریں',
-    liabs_description: 'تفصیل',
-    liabs_amount: 'واجب الادا رقم',
-    liabs_placeholder: 'مثال: کریڈٹ کارڈ بلز، گھر کا کرایہ',
-    liabs_note: '<strong>شرعی وضاحت:</strong> اسلامی فقہ کے مطابق، صرف وہی قرضے منہا کیے جا سکتے ہیں جو فوری طور پر یا موجودہ قمری سال کے اندر واجب الادا ہوں۔',
-    hawl_title: 'میں سال گزرنے (الحول) کی تصدیق کرتا ہوں',
-    hawl_subtitle: 'میں تصدیق کرتا ہوں کہ یہ دولت (نصاب کے برابر یا زائد) ایک مکمل قمری سال سے میری ملکیت میں رہی ہے۔',
-    citation_ibn_majah: 'سنن ابن ماجہ',
-    citation_tawbah: 'سورہ التوبہ 9:60',
-    tooltip_ibn_majah: '"کسی مال پر زکوٰۃ فرض نہیں جب تک کہ اس پر ایک سال نہ گزر جائے۔" (سنن ابن ماجہ، حدیث 1792)',
-    tooltip_tawbah: 'قرآن مجید کا وہ حکم جس میں زکوٰۃ کے آٹھ حقدار مصارف بیان کیے گئے ہیں۔',
-    summary_title: 'حساب کتاب کا خلاصہ',
-    summary_assets: 'کل اثاثے',
-    summary_liabilities: 'کل منہا واجبات',
-    summary_net_wealth: 'خالص مالِ زکوٰۃ',
-    zakat_box_header: 'کل واجب الادا زکوٰۃ (2.5%)',
-    zakat_msg_met: 'آپ کی دولت نصاب کی حد تک پہنچ چکی ہے اور زکوٰۃ فرض ہے۔',
-    zakat_msg_below: 'آپ کی دولت اس سال نصاب کی حد تک نہیں پہنچی۔ زکوٰۃ واجب الادا نہیں ہے، لیکن نفلی صدقہ و خیرات اللہ کے ہاں بہت اجر کا باعث ہے۔',
-    zakat_msg_hawl: 'زکوٰۃ کی فرضیت کے لیے مال پر ایک سال گزرنے (الحول) کی تصدیق لازمی ہے۔',
+    label_carat: 'کیرٹ / خالص پن',
+    pure_gold_equiv: 'خالص 24K سونے کے برابر:',
+    assessed_value: 'معینہ مالیت:',
+    subtotal_precious_label: 'کل سونا اور چاندی:',
+    btn_next_business: 'اگلا مرحلہ: کاروبار اور سرمایہ کاری →',
+    business_step_title: 'کاروباری سامان اور سرمایہ کاری',
+    business_step_subtitle: 'دکان کا تجارتی مال، شیئرز، اور فروخت کی نیت سے خریدی گئی جائیداد۔',
+    note_exempt_title: '✓ زکوٰۃ سے مستثنیٰ اشیاء (ان کو شامل نہ کریں):',
+    note_exempt_body: 'جس مکان میں آپ رہتے ہیں، آپ کی ذاتی گاڑی، گھر کا فرنیچر، برتن، کپڑے اور کام کے اوزار زکوٰۃ سے بالکل معاف ہیں۔',
+    label_shop_stock: 'دکان یا گودام میں برائے فروخت تجارتی مال',
+    hint_shop_stock: 'حساب کے دن ہول سیل لاگت پر تخمینہ لگائیں۔ دکان کے فرنیچر یا الماریوں پر زکوٰۃ نہیں ہے۔',
+    label_business_cash: 'کاروباری نقد رقم اور کاروباری بینک اکاؤنٹس',
+    hint_business_cash: 'کاروباری اخراجات، مال خریدنے یا تنخواہوں کے لیے رکھی گئی نقدی۔',
+    label_shares_funds: 'کمپنیوں کے شیئرز اور میوچل فنڈز',
+    hint_shares_funds: 'ٹریڈنگ والے شیئرز کی موجودہ مارکیٹ قیمت؛ طویل مدتی شیئرز کے نقد و مال تجارت کا تناسب۔',
+    label_property_for_sale: 'فروخت کے ارادے سے خریدے گئے پلاٹ یا جائیداد',
+    hint_property_for_sale: 'صرف وہ پلاٹ یا مکان جو خالصتاً آگے منافع پر بیچنے کی نیت سے خریدے گئے ہوں۔',
+    subtotal_business_label: 'کل کاروبار اور سرمایہ کاری:',
+    btn_next_debts: 'اگلا مرحلہ: واجب الادا قرضے →',
+    debts_step_title: 'وہ رقم جو آپ نے دوسروں کو دینی ہے',
+    debts_step_subtitle: 'صرف وہ قرضے اور بل منہا کریں جو فوری طور پر یا موجودہ سال میں واجب الادا ہیں۔',
+    note_debts_title: 'قرضوں کے متعلق شرعی اصول:',
+    note_debts_body: 'صرف وہ قرضے منہا کیے جا سکتے ہیں جو فوری طور پر یا موجودہ قمری سال (12 ماہ) میں دینے ہوں۔ لمبی مدت والے قرضوں کی کل رقم منہا نہیں کی جا سکتی۔',
+    label_debts_due_now: 'ذاتی قرضے جو ابھی واپس کرنے ہیں',
+    hint_debts_due_now: 'رشتہ داروں، دوستوں یا اداروں سے لیا گیا وہ قرض جو ابھی ادا کرنا لازم ہے۔',
+    label_unpaid_bills: 'واجب الادا گھر کا کرایہ، بجلی گیس کے بل یا تنخواہیں',
+    hint_unpaid_bills: 'پچھلے مہینے کا باقی کرایہ، واجب الادا بلز یا ملازمین کی تنخواہ۔',
+    label_installments_this_year: 'قرضے کی وہ قسطیں جو اس قمری سال کے اندر دینی ہیں',
+    hint_installments_this_year: 'صرف اگلے 12 ماہ کے اندر ادا ہونے والی قسطوں کا مجموعہ درج کریں۔',
+    subtotal_debts_label: 'کل منہا ہونے والے قرضے:',
+    btn_view_result: 'زکوٰۃ کا حتمی نتیجہ دیکھیں →',
+    result_step_title: 'آپ کا حتمی زکوٰۃ نتیجہ',
+    result_step_subtitle: 'آپ کی دولت کی تطہیر کا مکمل اور شفاف حساب۔',
+    hawl_question: 'کیا یہ دولت آپ کے پاس مکمل ایک اسلامی قمری سال رہی ہے؟',
+    hawl_question_sub: 'زکوٰۃ صرف اسی مال پر فرض ہوتی ہے جس پر نصاب کی مقدار مکمل ہونے کے بعد ایک قمری سال (354 دن) گزر چکا ہو۔',
+    hawl_yes: 'ہاں (پورا سال گزرا ہے)',
+    hawl_no: 'نہیں (سال نہیں گزرا)',
+    hawl_notsure: 'یقین نہیں ہے (?)',
+    result_headline: 'کل واجب الادا زکوٰۃ (2.5%)',
+    story_title: 'آپ کے حساب کی آسان کہانی',
+    breakdown_heading: 'مال اور اخراجات کی تفصیل',
     btn_export: 'رپورٹ PDF ڈاؤن لوڈ کریں',
-    btn_save: 'ڈرافٹ محفوظ کریں',
-    btn_close: 'بند کریں',
+    btn_share_whatsapp: 'واٹس ایپ پر شیئر کریں',
+    btn_start_again: 'دوبارہ شروع کریں',
+    live_zakat_bar_title: 'اب تک آپ کی زکوٰۃ',
+    btn_jump_result: 'نتیجہ دیکھیں',
+    help_link: 'رہنمائی',
     btn_understood: 'سمجھ گیا',
+    btn_close: 'بند کریں',
     btn_close_guide: 'گائیڈ بند کریں',
     insights_title: 'زکوٰۃ ادا کرنے کے فضائل و برکات',
     insight_1_quote: '"بے شک جو لوگ ایمان لائے اور انہوں نے نیک اعمال کیے اور نماز قائم کی اور زکوٰۃ دی، ان کا اجر ان کے رب کے پاس ہے، اور ان پر نہ کوئی خوف ہوگا اور نہ وہ غمگین ہوں گے۔"',
@@ -448,16 +221,448 @@ const TRANSLATIONS = {
     modal_nisab_f1: 'نصاب کی مقدار کا فارمولا',
     modal_nisab_f_gold: '• سونے کا نصاب: 87.48 گرام (تقریباً 7.5 تولہ)',
     modal_nisab_f_silver: '• چاندی کا نصاب: 612.36 گرام (تقریباً 52.5 تولہ)',
-    modal_nisab_rec: 'علماء کی سفارش: اگرچہ دونوں نصاب شرعی طور پر جائز ہیں، لیکن موجودہ دور کے نامور فقہاء اور مجالسِ افتاء چاندی کے نصاب کو بنیاد بنانے کی پرزور سفارش کرتے ہیں۔ چونکہ چاندی کی قیمت سونے کے مقابلے میں بہت کم ہے، اس لیے چاندی کا نصاب زکوٰۃ کی فرضیت کی حد کو نیچے لاتا ہے، جس سے زیادہ لوگ زکوٰۃ دینے کے قابل ہوتے ہیں اور غریبوں و محتاجوں کا زیادہ سے زیادہ فائدہ ہوتا ہے۔',
-    modal_history_title: 'محفوظ کردہ ڈرافٹس کی تفصیل',
-    history_empty_title: 'کوئی ڈرافٹ محفوظ نہیں ملا۔',
-    history_empty_body: 'جو ڈرافٹس آپ کیلکولیٹر میں محفوظ کریں گے وہ یہاں نظر آئیں گے۔',
-    history_net: 'خالص دولت',
-    history_curr: 'کرنسی'
+    modal_nisab_rec: 'علماء کی سفارش: اگرچہ دونوں نصاب شرعی طور پر جائز ہیں، لیکن موجودہ دور کے نامور فقہاء اور مجالسِ افتاء چاندی کے نصاب کو بنیاد بنانے کی پرزور سفارش کرتے ہیں۔ چونکہ چاندی کی قیمت سونے کے مقابلے میں بہت کم ہے، اس لیے چاندی کا نصاب زکوٰۃ کی فرضیت کی حد کو نیچے لاتا ہے، جس سے زیادہ لوگ زکوٰۃ دینے کے قابل ہوتے ہیں اور غریبوں و محتاجوں کا زیادہ سے زیادہ فائدہ ہوتا ہے۔'
+  },
+  en: {
+    brand_name: 'Zakat<span class="text-emerald-600">Flow</span>',
+    brand_name_footer: 'Zakat<span class="text-emerald-500">Flow</span>',
+    nav_calculator: 'Calculator',
+    nav_principles: 'Principles',
+    nav_nisab: 'Nisab Info',
+    nav_history: 'Saved Drafts',
+    nav_drafts_badge: 'Auto-save Active',
+    hero_title: 'Purify Your Wealth with Precision & Peace of Mind',
+    hero_subtitle: 'A serene, simple, SaaS-quality Zakat calculator designed for everyone: beginners, elders, and families.',
+    hero_badge: 'Calculated using the Hanafi silver nisab by default.',
+    badge_autosaved: 'Saved Automatically',
+    step_1_tab: 'Welcome',
+    step_2_tab: 'Cash',
+    step_3_tab: 'Gold/Silver',
+    step_4_tab: 'Business',
+    step_5_tab: 'Debts',
+    step_6_tab: 'Result',
+    welcome_title: 'Welcome to ZakatFlow',
+    welcome_desc: 'A serene, simple, and spiritually precise calculator. We guide you step by step with plain everyday words.',
+    choose_language_label: '1. Choose Language / زبان منتخب کریں',
+    choose_currency_label: '2. Choose Currency / اپنی کرنسی منتخب کریں',
+    price_banner_fallback: 'Live price unavailable. Please check the price below.',
+    price_banner_fallback_sub: 'Using verified seed rates from 18 Nov 2026. You can edit the prices to match your local market.',
+    price_last_updated: 'Prices last updated:',
+    active_standard_label: 'Active Standard:',
+    active_standard_silver: 'Silver (Hanafi / Pakistan)',
+    active_standard_gold: 'Gold Standard',
+    silver_price_label: 'Silver Price (per gram)',
+    gold_price_label: '24K Gold Price (per gram)',
+    silver_price_hint: 'Editable. Silver Nisab: 52.5 tolas = 612.36 grams',
+    gold_price_hint: 'Editable. Gold Nisab: 7.5 tolas = 87.48 grams',
+    threshold_silver_label: 'Silver Nisab Threshold:',
+    threshold_gold_label: 'Gold Nisab Threshold:',
+    advanced_nisab_title: '⚙️ Advanced: Change Nisab Standard (Gold / Silver)',
+    advanced_show: 'Show details',
+    advanced_hide: 'Hide',
+    nisab_switch_explanation: '<strong>Why Silver is default:</strong> The Silver standard (612.36g) gives a lower threshold (about Rs 265,000 vs Rs 3,000,000 for gold). Most scholars in Pakistan advise using Silver so more families in need can receive help. If you own only gold and no cash or silver, some scholars allow using the Gold standard.',
+    choose_standard_prompt: 'Choose Standard:',
+    nisab_toggle_silver: 'Silver (Recommended)',
+    nisab_toggle_gold: 'Gold Standard',
+    btn_start_wizard: 'Start Calculation: Cash & Bank →',
+    cash_step_title: 'Cash at home and in the bank',
+    cash_step_subtitle: 'Enter all paper currency, bank balances, and reliable money owed to you.',
+    label_cash_in_hand: 'Cash at home or in wallet',
+    hint_cash_in_hand: 'All cash in pockets, safe, wallet, or drawers.',
+    label_bank_accounts: 'Bank accounts (Current and Savings)',
+    hint_bank_accounts: 'Total current balance across all checking and savings accounts.',
+    label_other_savings: 'Other savings, committees, prize bonds',
+    hint_other_savings: 'BC/committees saved, National Savings certificates, or foreign currency cash.',
+    label_money_owed_to_me: 'Money others owe me (expected to receive)',
+    hint_money_owed_to_me: 'Only count good loans you expect to be repaid. Doubtful bad debts are not counted.',
+    subtotal_cash_label: 'Total Cash & Savings:',
+    btn_back: '← Back',
+    btn_next_gold: 'Next: Gold & Silver →',
+    gold_step_title: 'Gold and Silver',
+    gold_step_subtitle: 'Enter gold and silver in any weight (tolas, grams, or ounces) and select its carat purity.',
+    note_jewelry_title: 'Scholarly Note on Jewelry:',
+    note_jewelry_body: 'In the Hanafi school (practiced widely in Pakistan), Zakat is due on all gold and silver, including worn personal jewelry. Some other schools exempt personal use jewelry. If you follow that view, you may enter only investment gold/silver.',
+    section_gold_title: 'Gold Holdings',
+    section_silver_title: 'Silver Holdings',
+    label_weight: 'Weight',
+    col_unit: 'Unit',
+    label_carat: 'Carat / Purity',
+    pure_gold_equiv: 'Pure Gold Equivalent:',
+    assessed_value: 'Assessed Value:',
+    subtotal_precious_label: 'Total Gold & Silver:',
+    btn_next_business: 'Next: Business & Investments →',
+    business_step_title: 'Business goods and investments',
+    business_step_subtitle: 'Enter trade inventory, business cash, shares, and real estate purchased for resale.',
+    note_exempt_title: '✓ Exempt from Zakat (Do NOT include):',
+    note_exempt_body: 'The house you live in, your personal family car, household furniture, personal appliances, and tools of trade are completely exempt from Zakat.',
+    label_shop_stock: 'Shop merchandise and inventory for sale',
+    hint_shop_stock: 'Valued at wholesale cost on calculation date. Do not count store fixtures or shelves.',
+    label_business_cash: 'Business cash and business bank accounts',
+    hint_business_cash: 'Cash held for operating expenses, payroll, or supplier payments.',
+    label_shares_funds: 'Shares, stocks, and mutual funds',
+    hint_shares_funds: 'Active trading shares at current market value; long-term dividend shares on their zakatable liquid assets proportion.',
+    label_property_for_sale: 'Plots or property purchased to resell',
+    hint_property_for_sale: 'Only property purchased with active intention to resell for commercial profit.',
+    subtotal_business_label: 'Total Business & Investments:',
+    btn_next_debts: 'Next: Money You Owe →',
+    debts_step_title: 'Money you owe others',
+    debts_step_subtitle: 'Only subtract debts and bills due right now or within the current lunar year.',
+    note_debts_title: 'Important Islamic Rule on Debts:',
+    note_debts_body: 'You may only deduct debts due immediately or within the current 12-month lunar year. Long-term loans (like a 20-year mortgage balance) cannot be deducted in full.',
+    label_debts_due_now: 'Personal loans and debts due immediately',
+    hint_debts_due_now: 'Money you borrowed from relatives, friends, or lenders that must be paid back now.',
+    label_unpaid_bills: 'Unpaid rent, utility bills, or staff salaries due now',
+    hint_unpaid_bills: 'Overdue house rent, pending electricity/gas bills, or due salaries of home/office staff.',
+    label_installments_this_year: 'Loan installments due within this lunar year (next 12 months)',
+    hint_installments_this_year: 'Only the sum of installments falling due in the next 12 months.',
+    subtotal_debts_label: 'Total Deductible Debts:',
+    btn_view_result: 'View Zakat Result →',
+    result_step_title: 'Your Zakat Calculation Result',
+    result_step_subtitle: 'Complete spiritual assessment of your wealth purification obligation.',
+    hawl_question: 'Have you owned this much wealth for a full Islamic lunar year?',
+    hawl_question_sub: 'Zakat only becomes obligatory after 1 full lunar year (354 days) has passed over wealth above Nisab.',
+    hawl_yes: 'Yes (Full year completed)',
+    hawl_no: 'No (Not a full year yet)',
+    hawl_notsure: 'Not Sure (?)',
+    result_headline: 'Total Zakat Obligation (2.5%)',
+    story_title: 'The Short Story of Your Calculation',
+    breakdown_heading: 'Wealth & Deductions Breakdown',
+    btn_export: 'Download PDF Report',
+    btn_share_whatsapp: 'Share on WhatsApp',
+    btn_start_again: 'Start Again',
+    live_zakat_bar_title: 'Your Zakat so far',
+    btn_jump_result: 'View Result',
+    help_link: 'Help',
+    btn_understood: 'Understood',
+    btn_close: 'Close',
+    btn_close_guide: 'Close Guide',
+    insights_title: 'Benefits of Paying Zakat',
+    insight_1_quote: '"Indeed, those who believe and do righteous deeds and establish prayer and give Zakat will have their reward with their Lord, and there will be no fear concerning them, nor will they grieve."',
+    insight_1_source: '— Surah Al-Baqarah 2:277',
+    insight_2_quote: '"There is not a day upon which the servants wake up except that two angels descend. One of them says: \'O Allah, give recompense to the one who spends!\'"',
+    insight_2_source: '— Sahih al-Bukhari 1442',
+    insight_3_quote: '"Take, [O Muhammad], from their wealth a charity by which you purify them and cause them increase, and invoke [Allah\'s blessings] upon them."',
+    insight_3_source: '— Surah At-Tawbah 9:103',
+    insight_4_quote: '"Charity extinguishes sin as water extinguishes fire."',
+    insight_4_source: '— Sunan at-Tirmidhi 614',
+    footer_desc: 'A modern digital experience supporting the accurate distribution and purification of wealth. Dedicated to spiritual precision and communal growth.',
+    footer_categories_title: 'Eight Categories of Zakat',
+    footer_categories_text: '"Zakat expenditures are only for the poor and for the needy and for those employed to collect it and for bringing hearts together and for freeing captives and for those in debt and for the cause of Allah and for the [stranded] traveler..."',
+    footer_categories_source: '— Surah At-Tawbah 9:60',
+    footer_resources: 'Resources',
+    footer_terms: 'Terms of Service',
+    footer_privacy: 'Privacy Policy',
+    footer_contact: 'Contact Support',
+    footer_copyright: '&copy; 2026 ZakatFlow. Dedicated to spiritual precision and communal growth.',
+    print_title: 'ZakatFlow Calculation Report',
+    print_subtitle: 'Spiritual precision, financial clarity. Computed on ',
+    print_heading_summary: 'Report Summary',
+    print_heading_assets: 'Reportable Assets',
+    print_heading_liabs: 'Deductible Liabilities',
+    print_asset_item: 'Asset Item',
+    print_val_assessed: 'Value Assessed',
+    print_liab_desc: 'Liability Description',
+    print_amount_deducted: 'Amount Deducted',
+    print_total_eligible: 'Total Eligible Assets:',
+    print_final_due: 'Final Zakat Obligation (2.5%):',
+    print_declaration: '"Purify your wealth through the calculation and timely payment of Zakat. This report has been verified under standard Islamic calculations and is correct to the best of user knowledge."',
+    modal_principles_title: 'Islamic Zakat Principles',
+    modal_principles_p1_title: '1. The Principle of Nisab (Obligation Threshold)',
+    modal_principles_p1_body: 'Zakat is only due if your total net wealth exceeds the Nisab threshold. The standard is calculated as the market price of either 87.48 grams of pure Gold or 612.36 grams of pure Silver. If your net wealth is below the threshold, no Zakat is due, but voluntary charity (Sadaqah) is highly encouraged.',
+    modal_principles_p2_title: '2. The Principle of Al-Hawl (Lunar Year Possession)',
+    modal_principles_p2_body: 'The assets must remain in your possession for one complete lunar year (354 days) to qualify for Zakat. If your wealth fluctuates but stays above the Nisab standard during the year, Zakat is due at your calculation date. Citing Sunan Ibn Majah: "No Zakat is due on wealth until a year has passed over it."',
+    modal_principles_p3_title: '3. Rate of Zakat (2.5%)',
+    modal_principles_p3_body: 'The Zakat due is calculated at exactly 2.5% (1/40th) of your total net assets. This rate applies specifically to monetary wealth, business merchandise, shares, and gold/silver.',
+    modal_principles_p4_title: '4. Deductible Liabilities',
+    modal_principles_p4_body: 'According to Islamic jurisprudence, you may subtract outstanding debts due immediately or within the current lunar year from your assets. Long-term parts of mortgage payments or future interest are typically not deductible.',
+    modal_principles_p5_title: '5. The Eight Recipients (Surah At-Tawbah 9:60)',
+    modal_principles_p5_body: 'Zakat cannot be spent on building mosques or public infrastructure. It must be paid to the eight groups of people ordained in the Quran: the poor, the needy, those employed to collect it, those whose hearts are to be reconciled, for freeing captives, those in debt, in the cause of Allah, and for the stranded traveler.',
+    modal_nisab_title: 'Nisab Threshold Details',
+    modal_nisab_p1: 'The term Nisab defines the minimum wealth a Muslim must own for a full lunar year before Zakat becomes obligatory.',
+    modal_nisab_f1: 'Formula Calculations',
+    modal_nisab_f_gold: '• Gold standard Nisab: 87.48 grams (7.5 Tolas)',
+    modal_nisab_f_silver: '• Silver standard Nisab: 612.36 grams (52.5 Tolas)',
+    modal_nisab_rec: 'Scholarly Recommendation: While both thresholds are religiously valid, contemporary scholars strongly recommend calculating Zakat using the Silver Nisab standard. Since silver price is lower, it reduces the threshold, allowing more individuals to contribute and maximizing the assistance provided to the poor and needy.'
+  },
+  ar: {
+    brand_name: 'زكاة<span class="text-emerald-600"> فلو</span>',
+    brand_name_footer: 'زكاة<span class="text-emerald-500"> فلو</span>',
+    nav_calculator: 'الحاسبة',
+    nav_principles: 'المبادئ الشرعية',
+    nav_nisab: 'نصاب الزكاة',
+    nav_history: 'المسودات المحفوظة',
+    nav_drafts_badge: 'الحفظ التلقائي مفعّل',
+    hero_title: 'طهّر مالك بدقة وسكينة واطمئنان',
+    hero_subtitle: 'حاسبة زكاة حديثة وبسيطة ترشدك خطوة بخطوة بلغة سهلة ومفهومة للجميع.',
+    hero_badge: 'محسوب وفقاً لنصاب الفضة المعتمد في المذهب الحنفي',
+    badge_autosaved: 'تم الحفظ تلقائياً',
+    step_1_tab: 'مقدمة',
+    step_2_tab: 'السيولة',
+    step_3_tab: 'الذهب والفضة',
+    step_4_tab: 'التجارة',
+    step_5_tab: 'الديون',
+    step_6_tab: 'النتيجة',
+    welcome_title: 'مرحباً بكم في زكاة فلو',
+    welcome_desc: 'حاسبة هادئة ودقيقة شرعاً ترشدك خطوة بخطوة بالكلمات الواضحة.',
+    choose_language_label: '١. اختر اللغة / Choose Language',
+    choose_currency_label: '٢. اختر العملة المعتمدة',
+    price_banner_fallback: 'الأسعار الحية غير متوفرة حالياً. يرجى مراجعة الأسعار أدناه.',
+    price_banner_fallback_sub: 'باستخدام الأسعار المعيارية لشهر نوفمبر 2026. يمكنك تعديل الأسعار لتناسب السوق المحلي.',
+    price_last_updated: 'آخر تحديث للأسعار:',
+    active_standard_label: 'المعيار المعتمد:',
+    active_standard_silver: 'الفضة (المذهب الحنفي)',
+    active_standard_gold: 'معيار الذهب',
+    silver_price_label: 'سعر الفضة الحالي (للجرام الواحدة)',
+    gold_price_label: 'سعر الذهب 24K (للجرام الواحدة)',
+    silver_price_hint: 'قابل للتعديل. نصاب الفضة: 52.5 تولة = 612.36 جرام',
+    gold_price_hint: 'قابل للتعديل. نصاب الذهب: 7.5 تولة = 87.48 جرام',
+    threshold_silver_label: 'قيمة نصاب الفضة:',
+    threshold_gold_label: 'قيمة نصاب الذهب:',
+    advanced_nisab_title: '⚙️ خيارات متقدمة: تغيير معيار النصاب (ذهب / فضة)',
+    advanced_show: 'عرض التفاصيل',
+    advanced_hide: 'إخفاء',
+    nisab_switch_explanation: '<strong>لماذا الفضة هي المعيار الافتراضي:</strong> معيار الفضة يعطي حداً أدنى أقل لوجوب الزكاة مقارنة بالذهب. يوصي معظم علماء العصر باعتماد الفضة لأن ذلك يعود بالنفع الأكبر على الفقراء والمحتاجين.',
+    choose_standard_prompt: 'اختر المعيار:',
+    nisab_toggle_silver: 'الفضة (الموصى به)',
+    nisab_toggle_gold: 'معيار الذهب',
+    btn_start_wizard: 'بدء الحساب: النقد والسيولة ←',
+    cash_step_title: 'السيولة النقدية في اليد والحسابات البنكية',
+    cash_step_subtitle: 'أدخل جميع العملات الورقية وأرصدة الحسابات والديون الجيدة المرجو سدادها.',
+    label_cash_in_hand: 'السيولة في البيت أو المحفظة',
+    hint_cash_in_hand: 'جميع النقود الموجودة في المحفظة، الخزنة، أو المنزل.',
+    label_bank_accounts: 'الحسابات البنكية (الجارية والتوفير)',
+    hint_bank_accounts: 'إجمالي الرصيد الحالي في جميع الحسابات المصرفية.',
+    label_other_savings: 'المدخرات الأخرى وصناديق التوفير',
+    hint_other_savings: 'شهادات الاستثمار، الجمعيات المالية، والعملات الأجنبية.',
+    label_money_owed_to_me: 'الديون التي لي عند الآخرين (المرجو أداؤها)',
+    hint_money_owed_to_me: 'فقط الديون التي ترجو استردادها من المقتدرين. الديون الميؤوس منها لا تحسب.',
+    subtotal_cash_label: 'إجمالي النقد والمدخرات:',
+    btn_back: '← رجوع',
+    btn_next_gold: 'التالي: الذهب والفضة →',
+    gold_step_title: 'الذهب والفضة',
+    gold_step_subtitle: 'أدخل الوزن بالتولة أو الجرام أو الأونصة وحدد عيار الذهب.',
+    note_jewelry_title: 'ملاحظة فقهية حول الحلي والذهب الملبوس:',
+    note_jewelry_body: 'وفقاً للمذهب الحنفي تجب الزكاة في مطلق الذهب والفضة بما في ذلك الحلي الملبوس، بينما يرى جمهور الفقهاء إعفاء الحلي المعد للاستعمال الشخصي.',
+    section_gold_title: 'حيازة الذهب',
+    section_silver_title: 'حيازة الفضة',
+    label_weight: 'الوزن',
+    col_unit: 'الوحدة',
+    label_carat: 'العيار / درجة النقاء',
+    pure_gold_equiv: 'ما يعادله من الذهب الخالص (24K):',
+    assessed_value: 'القيمة المقدرة:',
+    subtotal_precious_label: 'إجمالي الذهب والفضة:',
+    btn_next_business: 'التالي: التجارة والاستثمار →',
+    business_step_title: 'البضائع التجارية والاستثمارات',
+    business_step_subtitle: 'بضائع المحل المعدة للبيع، نقد التجارة، الأسهم، والعقارات المشتراة لإعادة البيع.',
+    note_exempt_title: '✓ المعفى من الزكاة (لا تدخله هنا):',
+    note_exempt_body: 'المنزل الذي تسكنه، سيارتك الخاصة، الأثاث المنزلي، والأدوات المهنية معفاة تماماً من الزكاة.',
+    label_shop_stock: 'بضائع وسلع التجارة المعدة للبيع',
+    hint_shop_stock: 'تُقدر بسعر الجملة في تاريخ الحساب. لا تشمل أرفف وديكورات المحل.',
+    label_business_cash: 'السيولة النقدية للتجارة وأرصدة حسابات العمل',
+    hint_business_cash: 'الأموال النقدية المخصصة للمصاريف التشغيلية وشراء البضائع.',
+    label_shares_funds: 'الأسهم وصناديق الاستثمار',
+    hint_shares_funds: 'الأسهم المضارب بها تُحسب بقيمتها السوقية؛ أما الأسهم الاستثمارية فتحسب بنسبة أصولها الزكوية.',
+    label_property_for_sale: 'العقارات والأراضي المشتراة بنية التجارة والبيع',
+    hint_property_for_sale: 'فقط الأراضي أو العقارات المشتراة بنية واضحة للبيع والربح التجاري.',
+    subtotal_business_label: 'إجمالي التجارة والاستثمار:',
+    btn_next_debts: 'التالي: الديون والالتزامات →',
+    debts_step_title: 'الأموال والديون المستحقة عليك للآخرين',
+    debts_step_subtitle: 'اخصم فقط الديون والفواتير الحالة الواجبة فوراً أو خلال العام الهجري الحالي.',
+    note_debts_title: 'القاعدة الشرعية في خصم الديون:',
+    note_debts_body: 'يجوز خصم الديون العاجلة المستحقة حالاً أو خلال السنة الهجرية (12 شهراً). أما الديون طويلة الأجل (كالتمويل العقاري الكامل) فلا يخصم منها إلا قسط العام الحالي.',
+    label_debts_due_now: 'الديون الشخصية المستحقة السداد فوراً',
+    hint_debts_due_now: 'أموال اقترضتها من الأقارب أو الأصدقاء وحان موعد سدادها الآن.',
+    label_unpaid_bills: 'فواتير متأخرة، إيجار البيت، أو رواتب العمال المستحقة',
+    hint_unpaid_bills: 'إيجار المنزل المستحق، فواتير الكهرباء المتأخرة، أو مستحقات العاملين.',
+    label_installments_this_year: 'أقساط القروض المستحقة خلال العام الهجري (12 شهراً قادمة)',
+    hint_installments_this_year: 'فقط مجموع الأقساط التي يحل سدادها خلال الأشهر الاثني عشر القادمة.',
+    subtotal_debts_label: 'إجمالي الديون القابلة للخصم:',
+    btn_view_result: 'عرض نتيجة الزكاة النهائية →',
+    result_step_title: 'نتيجة حساب الزكاة الشرعية',
+    result_step_subtitle: 'التقييم الشامل والواضح لفريضة تطهير أموالك.',
+    hawl_question: 'هل ملكت هذا القدر من المال لعام قمري هجري كامل؟',
+    hawl_question_sub: 'تشترط الشريعة لوجوب الزكاة مضي حول كامل (354 يوماً) على المال الزائد عن النصاب.',
+    hawl_yes: 'نعم (اكتمل الحول)',
+    hawl_no: 'لا (لم يكتمل الحول بعد)',
+    hawl_notsure: 'لست متأكداً (?)',
+    result_headline: 'إجمالي الزكاة الواجبة (2.5%)',
+    story_title: 'ملخص الحساب بكلمات بسيطة',
+    breakdown_heading: 'بيان الأصول والخصومات',
+    btn_export: 'تصدير التقرير كـ PDF',
+    btn_share_whatsapp: 'مشاركة عبر واتساب',
+    btn_start_again: 'بدء الحساب من جديد',
+    live_zakat_bar_title: 'زكاتك حتى الآن',
+    btn_jump_result: 'عرض النتيجة',
+    help_link: 'مساعدة',
+    btn_understood: 'فهمت',
+    btn_close: 'إغلاق',
+    btn_close_guide: 'إغلاق الدليل',
+    insights_title: 'إشراقات وحكم الزكاة',
+    insight_1_quote: '"بُنِيَ الإِسْلاَمُ عَلَى خَمْسٍ... وَإِقَامِ الصَّلاَةِ، وَإِيتَاءِ الزَّكَاةِ..."',
+    insight_1_source: '— صحيح البخاري ٨',
+    insight_2_quote: '"خُذْ مِنْ أَمْوَالِهِمْ صَدَقَةً تُطَهِّرُهُمْ وَتُزَكِّيهِم بِهَا..."',
+    insight_2_source: '— سورة التوبة ٩:١٠٣',
+    insight_3_quote: '"إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا..."',
+    insight_3_source: '— سورة التوبة ٩:٦٠',
+    insight_4_quote: '"لَا زَكَاةَ فِي مَالٍ حَتَّى يَحُولَ عَلَيْهِ الْحَوْلُ"',
+    insight_4_source: '— سنن ابن ماجه',
+    footer_desc: 'منصة رقمية حديثة تهدف إلى تسهيل التوزيع الدقيق وتطهير الثروات. مكرسة للدقة الروحية والتنمية المجتمعية.',
+    footer_categories_title: 'مصارف الزكاة الثمانية',
+    footer_categories_text: '"إِنَّمَا الصَّدَقَاتُ لِلْفُقَرَاءِ وَالْمَسَاكِينِ وَالْعَامِلِينَ عَلَيْهَا وَالْمُؤَلَّفَةِ قُلُوبُهُمْ وَفِي الرِّقَابِ وَالْغَارِمِينَ وَفِي سَبِيلِ اللَّهِ وَابْنِ السَّبِيلِ فَرِيضَةً مِّنَ اللَّهِ..."',
+    footer_categories_source: '— سورة التوبة ٩:٦٠',
+    footer_resources: 'مصادر ومراجع',
+    footer_terms: 'شروط الخدمة',
+    footer_privacy: 'سياسة الخصوصية',
+    footer_contact: 'الدعم الفني',
+    footer_copyright: '&copy; ٢٠٢٦ زكاة فلو. مكرس للدقة الروحية والتنمية المجتمعية.',
+    print_title: 'تقرير حساب الزكاة الشرعي',
+    print_subtitle: 'دقة روحية، ووضوح مالي. تم الحساب في تاريخ ',
+    print_heading_summary: 'ملخص التقرير',
+    print_heading_assets: 'بيان الأصول والأموال',
+    print_heading_liabs: 'الخصومات والديون المستبعدة',
+    print_asset_item: 'بند الأصول',
+    print_val_assessed: 'القيمة المقدرة',
+    print_liab_desc: 'بيان الالتزامات',
+    print_amount_deducted: 'المبلغ المخصوم',
+    print_total_eligible: 'إجمالي الأصول الخاضعة للزكاة:',
+    print_final_due: 'مبلغ الزكاة النهائي المستحق (2.5%):',
+    print_declaration: '"طهّر ثروتك من خلال الحساب الدقيق والدفع الفوري للزكاة. تم إعداد هذا التقرير وتدقيقه وفقاً للمعايير الحسابية الشرعية المعتمدة."'
   }
 };
 
-// Helper to format money cleanly with currency symbol and localized number
+// Friendly Help Modal Database (plain language, no jargon)
+const HELP_TOPICS = {
+  'cash-in-hand': {
+    title: { ur: 'گھر اور بٹوے میں موجود نقد رقم', en: 'Cash at Home or in Wallet', ar: 'السيولة النقدية في المنزل أو المحفظة' },
+    body: {
+      ur: '<p>اس میں وہ تمام نقد روپے شامل ہیں جو آپ کے بٹوے، جیب، گھر کی الماری، تجوری یا درازوں میں محفوظ ہیں۔ اگر آپ کے پاس غیر ملکی کرنسی (جیسے ڈالر یا ریال) موجود ہے تو اس کی پاکستانی روپے میں موجودہ قیمت بھی شامل کر لیں۔</p>',
+      en: '<p>This includes all physical currency in your wallet, pockets, drawers, or home safe. If you keep foreign currencies (like USD, SAR, or AED), convert them to your chosen currency at today\'s exchange rate and add them here.</p>',
+      ar: '<p>يشمل ذلك جميع الأموال النقدية الورقية الموجودة في محفظتك، جيوبك، أدراجك أو خزنتك المنزلية. وإذا كان لديك عملات أجنبية فتحول إلى عملتك المعتمدة وتضاف هنا.</p>'
+    }
+  },
+  'bank-accounts': {
+    title: { ur: 'بینک کھاتوں کی تفصیل', en: 'Bank Accounts', ar: 'الحسابات البنكية' },
+    body: {
+      ur: '<p>تمام بینک کھاتوں (کرنٹ، سیونگز یا آسان اکاؤنٹس) میں حساب کے دن موجود کل بیلنس درج کریں۔ اگر آپ کے کسی سیونگ اکاؤنٹ میں سود شامل ہے تو اس سودی رقم کو الگ کر کے کسی ضرورت مند کو بلا نیتِ ثواب دے دیں، اور اصل رقم پر زکوٰۃ کا حساب لگائیں۔</p>',
+      en: '<p>Enter the total current balance across all your bank accounts (checking, savings, digital wallets like Nayapay/Sadapay). If any interest has accrued, scholars advise disposing of the interest without intention of reward, and calculating Zakat only on your principal wealth.</p>',
+      ar: '<p>أدخل الرصيد الإجمالي الحالي في جميع حساباتك المصرفية (الجارية أو الاستثمارية أو التوفير). وإذا كانت هناك فوائد ربوية فيجب التخلص منها دون نية الأجر وحساب الزكاة على أصل المال فقط.</p>'
+    }
+  },
+  'other-savings': {
+    title: { ur: 'کمیٹیاں اور دیگر بچت اسکیمیں', en: 'Other Savings & Committees', ar: 'المدخرات والجمعيات المالية' },
+    body: {
+      ur: '<p><strong>کمیٹی / بی سی:</strong> اگر آپ نے کوئی کمیٹی ڈالی ہوئی ہے اور وہ ابھی تک آپ کو نہیں ملی، تو جتنی قسطیں آپ جمع کروا چکے ہیں وہ آپ کی ملکیت ہیں اور ان پر زکوٰۃ ہے۔ جو کمیٹی آپ کو مل چکی ہے اس میں سے جو رقم بچی ہے وہ کیش میں لکھیں۔</p><p class="mt-2"><strong>پرائز بانڈز:</strong> ان کی اصل قیمت پر زکوٰۃ ہے۔</p>',
+      en: '<p><strong>Rotating Committees (BC):</strong> If you have contributed to an ongoing committee and haven\'t received the pot yet, the total installments you have paid in so far are your wealth and subject to Zakat. If you already received the pot, enter whatever remains of it under cash.</p><p class="mt-2"><strong>Prize Bonds / Certificates:</strong> Subject to Zakat on their face value.</p>',
+      ar: '<p><strong>الجمعيات المالية الشهرية:</strong> الأقساط التي دفعتها ولم تستلم حصتك بعد تعتبر من مالك وتجب فيها الزكاة. أما إذا استلمت الجمعية فما بقي منها يحسب مع السيولة النقدية.</p>'
+    }
+  },
+  'money-owed-to-me': {
+    title: { ur: 'وہ رقم جو دوسروں سے واپس ملنی ہے', en: 'Money Others Owe Me', ar: 'الديون المرجوة عند الآخرين' },
+    body: {
+      ur: '<p>اگر آپ نے کسی دوست، رشتہ دار یا گاہک کو قرض دیا ہوا ہے اور آپ کو پکا یقین ہے کہ وہ واپس کر دے گا، تو اسے یہاں درج کریں۔ اگر کوئی قرض ڈوب چکا ہو یا ملنے کی کوئی امید نہ ہو، تو اسے شامل نہ کریں؛ جب وہ وصول ہو جائے تو اس وقت کا حکم دیکھیں۔</p>',
+      en: '<p>Only include loans you gave to solvent friends, relatives, or clients that you genuinely expect to receive back. If a loan is doubtful, disputed, or likely uncollectible, do not count it until it is actually repaid.</p>',
+      ar: '<p>أدخل فقط الديون التي أقرضتها لأشخاص مقتدرين وترجو استردادها منهم بيقين. أما الديون المشكوك فيها أو الميؤوس من استردادها فلا تحسب حتى تقبضها فعلياً.</p>'
+    }
+  },
+  'gold-carat': {
+    title: { ur: 'سونے کا کیرٹ اور خالص پن', en: 'Gold Carats & Pure Gold', ar: 'عيار الذهب والنقاء' },
+    body: {
+      ur: '<p>سونے کے زیورات میں دوسری دھاتیں بھی شامل ہوتی ہیں۔ 24 کیرٹ سونا 99.9٪ خالص ہوتا ہے۔ پاکستان میں عام زیورات 22 کیرٹ (91.6٪ خالص) ہوتے ہیں۔ خلیجی ممالک میں 21 کیرٹ اور نگینوں والے زیورات 18 کیرٹ کے ہوتے ہیں۔</p><p class="mt-2 text-emerald-800 font-bold">ہم خودکار طریقے سے آپ کے سونے کا خالص وزن نکالتے ہیں تاکہ آپ صرف حقیقی سونے پر ہی زکوٰۃ ادا کریں اور زائد بوجھ نہ پڑے۔</p>',
+      en: '<p>Gold jewelry contains alloy metals for strength. 24K is 99.9% pure bullion. 22K (standard jewelry in Pakistan and South Asia) is 91.6% pure. 21K (popular in Arab regions) is 87.5% pure, and 18K is 75% pure.</p><p class="mt-2 text-emerald-800 font-bold">ZakatFlow automatically converts your weight to pure gold so you only pay Zakat on real gold, never on alloy metals.</p>',
+      ar: '<p>يحتوي الذهب المشغول على معادن أخرى لتقويته. عيار 24 نقي بنسبة 99.9٪، وعيار 22 نقي بنسبة 91.6٪، وعيار 21 نقي بنسبة 87.5٪، وعيار 18 نقي بنسبة 75٪. يقوم البرنامج بحساب الوزن الصافي الخالص للذهب بدقة.</p>'
+    }
+  },
+  'silver-nisab': {
+    title: { ur: 'چاندی کا نصاب (52.5 تولہ)', en: 'Silver Nisab Standard', ar: 'نصاب الفضة (52.5 تولة)' },
+    body: {
+      ur: '<p>چاندی کا نصاب 52.5 تولہ (612.36 گرام) ہے۔ چونکہ چاندی کی قیمت مناسب ہے، اس لیے اس معیار کے تحت زکوٰۃ کا دائرہ کار وسیع ہو جاتا ہے اور معاشرے کے غریب، بیوہ اور یتیم افراد کو زیادہ مالی مدد ملتی ہے۔ اسی لیے پاکستان کے تمام بڑے دارالافتاء چاندی کے نصاب کی پرزور سفارش کرتے ہیں۔</p>',
+      en: '<p>The Silver Nisab standard is 52.5 tolas (612.36 grams). Because silver has a lower market threshold, it allows more wealth owners to contribute, maximizing direct assistance to poor families, widows, and orphans. Islamic scholars in Pakistan consistently recommend this standard.</p>',
+      ar: '<p>نصاب الفضة هو 52.5 تولة (612.36 جرام). ونظراً لانخفاض عتبة الفضة، يوصي العلماء المعاصرون باعتماده لأنه يحقق المصلحة الأكبر للفقراء والمساكين.</p>'
+    }
+  },
+  'gold-nisab': {
+    title: { ur: 'سونے کا نصاب (7.5 تولہ)', en: 'Gold Nisab Standard', ar: 'نصاب الذهب (7.5 تولة)' },
+    body: {
+      ur: '<p>سونے کا نصاب 7.5 تولہ (87.48 گرام) خالص سونا ہے۔ اگر کسی شخص کے پاس صرف سونا ہو اور کوئی نقد رقم یا چاندی بالکل نہ ہو تو بعض فقہاء سونے کے نصاب پر عمل کرنے کی اجازت دیتے ہیں۔</p>',
+      en: '<p>The Gold Nisab standard is 7.5 tolas (87.48 grams) of pure 24K gold. If a person owns only gold and absolutely no cash, bank savings, or silver, some classical jurists allow evaluating against the gold threshold.</p>',
+      ar: '<p>نصاب الذهب هو 7.5 تولة (87.48 جرام) من الذهب الخالص. إذا كان الشخص يملك الذهب فقط دون أي نقد أو فضة فيجوز له عند بعض الفقهاء اعتماد نصاب الذهب.</p>'
+    }
+  },
+  'shop-stock': {
+    title: { ur: 'دکان کا تجارتی مال', en: 'Shop Merchandise & Stock', ar: 'عروض التجارة وبضائع المحل' },
+    body: {
+      ur: '<p>اس سے مراد وہ تمام اشیاء ہیں جو آپ نے بیچنے کی نیت سے خریدی ہوئی ہیں۔ حساب کے دن ان اشیاء کی موجودہ ہول سیل لاگت (خریداری قیمت) لگائیں، ریٹیل یا منافع والی قیمت نہ لگائیں۔ دکان کا فرنیچر، لائٹس، کمپیوٹر اور عمارت زکوٰۃ سے مستثنیٰ ہیں۔</p>',
+      en: '<p>This covers all finished goods, raw materials, and inventory held for resale. Value your stock at its current wholesale cost on your calculation date, not the retail selling price. Store shelves, counters, computers, and delivery vehicles are not subject to Zakat.</p>',
+      ar: '<p>يشمل جميع البضائع والسلع المشتراة بقصد البيع والربح. تُقوم بسعر الجملة في يوم الحساب. أما أثاث المحل ووسائل النقل والديكورات فمعفاة من الزكاة.</p>'
+    }
+  },
+  'business-cash': {
+    title: { ur: 'کاروباری نقد رقم اور اکاؤنٹس', en: 'Business Cash & Accounts', ar: 'سيولة النشاط التجاري' },
+    body: {
+      ur: '<p>کاروبار کے بینک اکاؤنٹس، دراز یا تجوری میں موجود وہ نقد رقم جو آپریشنل اخراجات یا سپلائرز کو ادائیگی کے لیے رکھی گئی ہے۔ یہ رقم بھی قابلِ زکوٰۃ اثاثوں میں شمار ہوتی ہے۔</p>',
+      en: '<p>All liquid cash kept in business checking accounts, petty cash, or registers. Even if allocated for upcoming inventory purchases, liquid cash in hand is part of your zakatable pool on calculation day.</p>',
+      ar: '<p>السيولة النقدية المتوفرة في حسابات المؤسسة أو خزينة المحل المعدة لشراء البضائع أو المصاريف التشغيلية تخضع للزكاة.</p>'
+    }
+  },
+  'shares-funds': {
+    title: { ur: 'شیئرز اور میوچل فنڈز', en: 'Shares & Mutual Funds', ar: 'الأسهم والصناديق الاستثمارية' },
+    body: {
+      ur: '<p><strong>روزمرہ ٹریڈنگ (شارٹ ٹرم):</strong> شیئرز کی موجودہ مارکیٹ ویلیو پر پوری زکوٰۃ ہے۔</p><p class="mt-2"><strong>طویل مدتی ڈیویڈنڈ کے لیے:</strong> اگر شیئرز منافع کے لیے رکھے ہیں تو کمپنی کے قابلِ زکوٰۃ اثاثوں (کیش اور تجارتی مال) کا تناسب دیکھا جاتا ہے، جو عموماً 20٪ سے 30٪ کے قریب بنتا ہے۔</p>',
+      en: '<p><strong>Short-Term Day Trading:</strong> Value shares at full market price on calculation day.</p><p class="mt-2"><strong>Long-Term Dividend Investing:</strong> Only the company\'s underlying liquid and trading assets are zakatable (often around 20% to 30% of market value depending on company balance sheet).</p>',
+      ar: '<p><strong>أسهم المضاربة السريعة:</strong> تُزكى بقيمتها السوقية الكاملة في يوم الحساب.</p><p class="mt-2"><strong>أسهم الاستثمار طويل الأجل:</strong> تُزكى بنسبة الأصول الزكوية (السيولة والبضائع) في ميزانية الشركة.</p>'
+    }
+  },
+  'property-for-sale': {
+    title: { ur: 'فروخت کے لیے جائیداد / پلاٹ', en: 'Real Estate for Resale', ar: 'العقارات المعدة للتجارة' },
+    body: {
+      ur: '<p>صرف وہی پلاٹ، دکان یا مکان یہاں درج کریں جو آپ نے خالصتاً بیچ کر منافع کمانے کے ارادے سے خریدا تھا۔ جس مکان میں آپ خود رہتے ہیں یا جو پلاٹ مستقبل میں اپنا گھر بنانے کے لیے رکھا ہے، اس پر کوئی زکوٰۃ نہیں ہے۔ اگر جائیداد کرائے پر دی ہے تو صرف وصول شدہ کرائے پر زکوٰۃ ہے، جائیداد کی مالیت پر نہیں۔</p>',
+      en: '<p>Only include land, plots, or housing units purchased with the clear commercial intent of reselling them for a trading profit. The house you reside in, or a plot kept to build your future family home, has zero Zakat. If you own rental property, Zakat is due on the saved rental income, not the property itself.</p>',
+      ar: '<p>أدخل فقط الأراضي أو العقارات التي تم شراؤها بنية واضحة لإعادة بيعها والتربح منها. أما بيتك السكني، أو الأرض المخصصة لبناء سكنك، أو العقارات المؤجرة فلا زكاة في أصل قيمتها وإنما في الإيجار المحصل الفائض فقط.</p>'
+    }
+  },
+  'debts-due-now': {
+    title: { ur: 'ذاتی قرضے جو ابھی ادا کرنے ہیں', en: 'Debts Due Immediately', ar: 'الديون الشخصية الحالة' },
+    body: {
+      ur: '<p>وہ قرض جو آپ نے کسی عزیز، دوست یا بینک سے لیا ہوا ہے اور جس کی ادائیگی کا وقت آ چکا ہے، وہ آپ کی دولت سے منہا ہو جائے گا کیونکہ وہ حقیقت میں آپ کا مال نہیں بلکہ آپ کے ذمہ قرض ہے۔</p>',
+      en: '<p>Debts you borrowed from friends, family, or lenders that have matured and must be paid back now can be deducted from your assets, as this money is encumbered by an immediate liability.</p>',
+      ar: '<p>الديون التي اقترضتها من الأقارب أو الأصدقاء أو البنوك وحان موعد سدادها فوراً تُخصم من مجموع أموالك الزكوية.</p>'
+    }
+  },
+  'unpaid-bills': {
+    title: { ur: 'واجب الادا بلز، کرایہ اور تنخواہیں', en: 'Unpaid Bills, Rent & Salaries', ar: 'الفواتير والإيجارات المستحقة' },
+    body: {
+      ur: '<p>گزشتہ مہینے کا واجب الادا گھر یا دکان کا کرایہ، بجلی، پانی، گیس کے بل جو موصول ہو چکے ہوں لیکن ابھی ادا نہ کیے ہوں، اور گھر یا دفتر کے ملازمین کی وہ تنخواہیں جو واجب الادا ہو چکی ہوں، انہیں منہا کیا جا سکتا ہے۔</p>',
+      en: '<p>Overdue or received rent notices, utility invoices (electricity, water, gas, internet) due immediately, and earned salaries of household or office staff that are due now can be deducted.</p>',
+      ar: '<p>إيجار المسكن أو المحل المتأخر، فواتير الخدمات العامة الصادرة المستحقة، ورواتب الموظفين والعمال المستحقة السداد تُخصم من وعاء الزكاة.</p>'
+    }
+  },
+  'installments-this-year': {
+    title: { ur: 'قرضے کی قسطیں (ایک سال کی)', en: 'Upcoming 12-Month Loan Installments', ar: 'أقساط القروض للعام القادم' },
+    body: {
+      ur: '<p>اگر آپ پر کوئی بڑا قرض ہے (جیسے گاڑی یا ہاؤسنگ فنانس)، تو شریعت کے مطابق صرف وہی قسطیں منہا کی جا سکتی ہیں جو اگلے بارہ مہینوں (ایک قمری سال) کے اندر واجب الادا ہیں۔ پورے 10 یا 20 سال کے قرض کو ایک ساتھ منہا نہیں کیا جا سکتا۔</p>',
+      en: '<p>Under classical Islamic jurisprudence, if you have a multi-year loan (e.g. car lease or home financing), you may only deduct the installments coming due within the next 12 lunar months. You cannot deduct the entire multi-decade principal at once.</p>',
+      ar: '<p>وفقاً للضوابط الفقهية، إذا كان عليك قرض طويل الأجل (كالتمويل العقاري)، يجوز فقط خصم الأقساط التي يحل أجلها خلال الأشهر الاثني عشر القادمة (سنة الحول)، ولا يجوز خصم كامل أصل القرض المستقبلي دفعة واحدة.</p>'
+    }
+  },
+  'hawl-ruling': {
+    title: { ur: 'الحول (ایک سال گزرنے کی شرط)', en: 'The Principle of Al-Hawl (1 Lunar Year)', ar: 'شرط مرور الحول (سنة هجرية كاملة)' },
+    body: {
+      ur: '<p>رسول اللہ ﷺ کا فرمان ہے: <em>"کسی مال پر اس وقت تک زکوٰۃ نہیں جب تک کہ اس پر ایک سال نہ گزر جائے۔"</em> (سنن ابن ماجہ)</p><p class="mt-2">اس کا مطلب یہ ہے کہ جب پہلی بار آپ کی بچت نصاب کے برابر پہنچی تھی، اس دن سے لے کر 354 دن (ایک قمری سال) تک اگر وہ نصاب سے اوپر رہی ہے تو اس سال زکوٰۃ فرض ہوگی۔</p>',
+      en: '<p>Prophet Muhammad (peace be upon him) said: <em>"No Zakat is due on wealth until a year has passed over it."</em> (Sunan Ibn Majah)</p><p class="mt-2">This means your net wealth must have equaled or exceeded the Nisab threshold for a full continuous lunar year (354 days). If your wealth fluctuates during the year but remains above Nisab at the start and end of your annual Zakat date, full Zakat is due on the closing balance.</p>',
+      ar: '<p>قال رسول الله ﷺ: <em>"لَيْسَ فِي مَالٍ زَكَاةٌ حَتَّى يَحُولَ عَلَيْهِ الْحَوْلُ"</em> (سنن ابن ماجه).</p><p class="mt-2">يشترط لوجوب الزكاة مضي سنة قمرية (354 يوماً) على ملكية النصاب دون انقطاع.</p>'
+    }
+  },
+  'hawl-notsure': {
+    title: { ur: 'اگر سال گزرنے کا یقین نہ ہو؟', en: 'Not Sure About the Lunar Year?', ar: 'إذا لم تكن متأكداً من اكتمال الحول؟' },
+    body: {
+      ur: '<p>اگر آپ کو اپنی زکوٰۃ کی پرانی تاریخ یاد نہیں ہے، تو فقہاء کرام یہ مشورہ دیتے ہیں کہ آپ سال کا کوئی بھی ایک بابرکت اسلامی دن (مثلاً یکم رمضان یا یکم محرم) اپنے لیے زکوٰۃ کی سالانہ تاریخ مقرر کر لیں۔ اس دن آپ کے پاس جتنا مال موجود ہو، اس کی زکوٰۃ ادا کر دیں؛ اس سے آپ کا فریضہ ادا ہو جائے گا اور آئندہ کے لیے ایک مستقل تاریخ مقرر ہو جائے گی۔</p>',
+      en: '<p>If you don\'t recall the exact historical date your wealth first reached Nisab, scholars advise fixing a convenient Islamic calendar date every year (such as the 1st of Ramadan or 1st of Muharram) as your personal Zakat assessment day. Calculate and pay Zakat on whatever net wealth you possess on that chosen day, which fulfills your obligation and fixes your future annual date.</p>',
+      ar: '<p>إذا لم تكن تذكر التاريخ الدقيق لبلوغ مالك النصاب، فينصح العلماء بتحديد يوم هجري ثابت سنوياً (مثل الأول من رمضان أو الأول من محرم) ليكون موعداً لحساب زكاتك، وتزكي عن جميع ما تملكه في ذلك اليوم.</p>'
+    }
+  }
+};
+
+// Format currency cleanly with localized digits and symbol
 function formatMoney(amount) {
   const curr = CURRENCIES[STATE.currency] || CURRENCIES.PKR;
   const num = parseFloat(amount) || 0;
@@ -468,51 +673,114 @@ function formatMoney(amount) {
   return `${curr.symbol} ${formatted}`;
 }
 
-// Initialize the Application
-document.addEventListener('DOMContentLoaded', () => {
-  loadHistory();
-  initLanguageSelector();
-  initCurrencySelector();
-  initNisabPrices();
-  initCarousel();
-  setupEventListeners();
-  renderAssets();
-  renderLiabilities();
-  calculateAll();
-  fetchLivePrices(); // Query serverless endpoint for live rates with caching
-});
-
-// Setup Language Selector
-function initLanguageSelector() {
-  const selector = document.getElementById('language-select');
-  if (!selector) return;
-
-  selector.addEventListener('change', (e) => {
-    STATE.language = e.target.value;
-    translateUI();
-    renderAssets();
-    renderLiabilities();
-    calculateAll();
-  });
-
-  // Set default language (Urdu for Pakistan)
-  selector.value = STATE.language;
-  translateUI();
+// Convert plain number into thousands-separated string
+function formatNumberWithCommas(num) {
+  if (isNaN(num) || num === null || num === undefined || num === '') return '';
+  const parts = num.toString().split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
 }
 
-// Translate UI Elements
-function translateUI() {
-  const lang = STATE.language;
-  
-  // Set html document attributes for language and direction
-  document.documentElement.lang = lang;
-  if (lang === 'ar' || lang === 'ur') {
-    document.documentElement.dir = 'rtl';
-  } else {
-    document.documentElement.dir = 'ltr';
+// Core Initialization
+document.addEventListener('DOMContentLoaded', () => {
+  loadWizardState();
+  initStep1Controls();
+  initWizardTypingListeners();
+  initCarousel();
+  translateUI();
+  updateWizardCalculations();
+  fetchLivePrices();
+});
+
+// Setup Step 1 Language & Currency Card Selectors
+function initStep1Controls() {
+  // Sync initial card states
+  updateLanguageCards();
+  updateCurrencyCards();
+  initNisabPriceInputs();
+}
+
+function updateLanguageCards() {
+  document.querySelectorAll('.lang-card').forEach(card => {
+    const lang = card.getAttribute('data-lang');
+    if (lang === STATE.language) {
+      card.className = "lang-card tap-target-48 p-4 rounded-2xl border text-center transition-all duration-200 flex items-center justify-center gap-2 font-bold text-base bg-emerald-50 border-emerald-300 text-emerald-900 shadow-sm";
+    } else {
+      card.className = "lang-card tap-target-48 p-4 rounded-2xl border text-center transition-all duration-200 flex items-center justify-center gap-2 font-bold text-base bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
+    }
+  });
+
+  const topSelect = document.getElementById('language-select');
+  if (topSelect) topSelect.value = STATE.language;
+}
+
+function updateCurrencyCards() {
+  document.querySelectorAll('.curr-card').forEach(card => {
+    const curr = card.getAttribute('data-curr');
+    if (curr === STATE.currency) {
+      card.className = "curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-emerald-600 text-white border-emerald-600 shadow-sm";
+    } else {
+      card.className = "curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
+    }
+  });
+
+  const topSelect = document.getElementById('currency-select');
+  if (topSelect) topSelect.value = STATE.currency;
+
+  updateCurrencySymbols();
+}
+
+function updateCurrencySymbols() {
+  const sym = CURRENCIES[STATE.currency] ? CURRENCIES[STATE.currency].symbol : 'Rs';
+  document.querySelectorAll('.currency-symbol').forEach(el => {
+    // Preserve negative prefixes if present (e.g. -Rs)
+    if (el.textContent.startsWith('-')) {
+      el.textContent = `-${sym}`;
+    } else {
+      el.textContent = sym;
+    }
+  });
+}
+
+// User Action: Change Language
+window.setLanguage = function(lang) {
+  if (!TRANSLATIONS[lang]) return;
+  STATE.language = lang;
+  updateLanguageCards();
+  translateUI();
+  updateWizardCalculations();
+  saveWizardState();
+};
+
+// User Action: Change Currency
+window.setCurrency = function(currCode) {
+  if (!CURRENCIES[currCode]) return;
+  const prevCode = STATE.currency;
+  STATE.currency = currCode;
+
+  // Auto-switch to standard rates for the new currency unless user explicitly customized prices
+  if (!STATE.isUserCustomPrices) {
+    STATE.goldPrice = CURRENCIES[currCode].gold;
+    STATE.silverPrice = CURRENCIES[currCode].silver;
+    const goldInput = document.getElementById('gold-price-input');
+    const silverInput = document.getElementById('silver-price-input');
+    if (goldInput) goldInput.value = STATE.goldPrice;
+    if (silverInput) silverInput.value = STATE.silverPrice;
   }
 
-  // Update translatable elements
+  updateCurrencyCards();
+  updateWizardCalculations();
+  saveWizardState();
+  fetchLivePrices();
+};
+
+// Translation Renderer
+function translateUI() {
+  const lang = STATE.language;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === 'ur' || lang === 'ar') ? 'rtl' : 'ltr';
+
+  // Translate all [data-i18n] nodes
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
@@ -520,77 +788,15 @@ function translateUI() {
     }
   });
 
-  // Update translatable placeholders
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    if (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) {
-      el.placeholder = TRANSLATIONS[lang][key];
-    }
-  });
-
-  // Update currency labels
-  updateCurrencyLabels();
+  // Update dynamic banner and step titles
+  updateStepHeader();
 }
 
-// Setup Currency Dropdown
-function initCurrencySelector() {
-  const selector = document.getElementById('currency-select');
-  if (!selector) return;
-
-  selector.innerHTML = Object.keys(CURRENCIES).map(code => 
-    `<option value="${code}" ${code === STATE.currency ? 'selected' : ''}>${code} (${CURRENCIES[code].symbol})</option>`
-  ).join('');
-
-  selector.value = STATE.currency;
-  selector.addEventListener('change', (e) => {
-    const prevCurrency = STATE.currency;
-    STATE.currency = e.target.value;
-    
-    const prevDefaults = CURRENCIES[prevCurrency];
-    const newDefaults = CURRENCIES[STATE.currency];
-    
-    // Auto-update prices to new currency defaults if user hadn't typed custom prices
-    if (!STATE.isUserCustomPrices) {
-      STATE.goldPrice = newDefaults.gold;
-      STATE.silverPrice = newDefaults.silver;
-      const goldInp = document.getElementById('gold-price-input');
-      const silverInp = document.getElementById('silver-price-input');
-      if (goldInp) goldInp.value = STATE.goldPrice;
-      if (silverInp) silverInp.value = STATE.silverPrice;
-    }
-
-    updateCurrencyLabels();
-    
-    // Sync assets list prices
-    STATE.assets.forEach(asset => {
-      if (!asset.isPriceCustom) {
-        if (asset.type === 'Gold') {
-          asset.price = asset.unit === 'Tolas' ? STATE.goldPrice * TOLA_TO_GRAMS : STATE.goldPrice;
-        } else if (asset.type === 'Silver') {
-          asset.price = asset.unit === 'Tolas' ? STATE.silverPrice * TOLA_TO_GRAMS : STATE.silverPrice;
-        }
-      }
-    });
-
-    renderAssets();
-    calculateAll();
-    fetchLivePrices(); // Refresh rates for newly selected currency
-  });
-
-  updateCurrencyLabels();
-}
-
-function updateCurrencyLabels() {
-  const symbol = CURRENCIES[STATE.currency].symbol;
-  document.querySelectorAll('.currency-symbol').forEach(el => {
-    el.textContent = symbol;
-  });
-}
-
-function initNisabPrices() {
+// Nisab Price inputs and Standard Toggles
+function initNisabPriceInputs() {
   const goldInput = document.getElementById('gold-price-input');
   const silverInput = document.getElementById('silver-price-input');
-  
+
   if (goldInput && silverInput) {
     goldInput.value = STATE.goldPrice;
     silverInput.value = STATE.silverPrice;
@@ -598,56 +804,53 @@ function initNisabPrices() {
     goldInput.addEventListener('input', (e) => {
       STATE.isUserCustomPrices = true;
       STATE.goldPrice = NisabModule ? NisabModule.parseLocalizedNumber(e.target.value) : (parseFloat(e.target.value) || 0);
-      syncNisabPricesToAssets();
-      calculateAll();
+      updateWizardCalculations();
+      saveWizardState();
     });
 
     silverInput.addEventListener('input', (e) => {
       STATE.isUserCustomPrices = true;
       STATE.silverPrice = NisabModule ? NisabModule.parseLocalizedNumber(e.target.value) : (parseFloat(e.target.value) || 0);
-      syncNisabPricesToAssets();
-      calculateAll();
+      updateWizardCalculations();
+      saveWizardState();
     });
   }
 
-  const goldToggle = document.getElementById('nisab-gold-toggle');
   const silverToggle = document.getElementById('nisab-silver-toggle');
+  const goldToggle = document.getElementById('nisab-gold-toggle');
 
-  if (goldToggle && silverToggle) {
-    goldToggle.addEventListener('click', () => {
-      STATE.nisabStandard = 'gold';
-      goldToggle.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
-      goldToggle.classList.remove('bg-white', 'text-slate-700');
-      silverToggle.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
-      silverToggle.classList.add('bg-white', 'text-slate-700');
-      calculateAll();
-    });
-
+  if (silverToggle && goldToggle) {
     silverToggle.addEventListener('click', () => {
       STATE.nisabStandard = 'silver';
-      silverToggle.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
-      silverToggle.classList.remove('bg-white', 'text-slate-700');
-      goldToggle.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
-      goldToggle.classList.add('bg-white', 'text-slate-700');
-      calculateAll();
+      silverToggle.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm';
+      goldToggle.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 hover:text-slate-900';
+      updateWizardCalculations();
+      saveWizardState();
+    });
+
+    goldToggle.addEventListener('click', () => {
+      STATE.nisabStandard = 'gold';
+      goldToggle.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-sm';
+      silverToggle.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 hover:text-slate-900';
+      updateWizardCalculations();
+      saveWizardState();
     });
   }
 }
 
-// Fetch live bullion prices via server-side route (/api/prices)
+// Fetch live rates from /api/prices
 async function fetchLivePrices() {
   const curr = STATE.currency;
   try {
     const res = await fetch(`/api/prices?currency=${curr}`);
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     const data = await res.json();
-    
+
     if (data && data.currencies && data.currencies[curr]) {
       const curRates = data.currencies[curr];
       STATE.isLivePrice = Boolean(data.isLive);
       STATE.pricesLastUpdated = data.updatedAtReadable || '18 Nov 2026';
-      
-      // If user hasn't explicitly customized prices, sync with latest rates
+
       if (!STATE.isUserCustomPrices) {
         STATE.goldPrice = curRates.goldPricePerGram;
         STATE.silverPrice = curRates.silverPricePerGram;
@@ -655,22 +858,21 @@ async function fetchLivePrices() {
         const silverInput = document.getElementById('silver-price-input');
         if (goldInput) goldInput.value = STATE.goldPrice;
         if (silverInput) silverInput.value = STATE.silverPrice;
-        syncNisabPricesToAssets();
       }
 
       updatePriceStatusUI(data.isLive, data.updatedAtReadable, data.notice);
-      calculateAll();
+      updateWizardCalculations();
       return;
     }
   } catch (err) {
-    console.warn('Live metal prices could not be fetched from /api/prices:', err.message);
+    console.warn('Could not fetch live metal prices:', err.message);
   }
 
   // Graceful offline fallback
   STATE.isLivePrice = false;
   STATE.pricesLastUpdated = '18 Nov 2026';
   updatePriceStatusUI(false, '18 Nov 2026', 'Live price unavailable. Please check the price below.');
-  calculateAll();
+  updateWizardCalculations();
 }
 
 function updatePriceStatusUI(isLive, dateStr, notice) {
@@ -688,7 +890,7 @@ function updatePriceStatusUI(isLive, dateStr, notice) {
   if (isLive) {
     if (banner) banner.classList.add('hidden');
     if (badge) {
-      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800';
+      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
     }
     if (badgeText) {
       badgeText.textContent = lang === 'ur' ? 'لائیو مارکیٹ ریٹس' : (lang === 'ar' ? 'أسعار السوق الحية' : 'Live Market Rates');
@@ -699,7 +901,7 @@ function updatePriceStatusUI(isLive, dateStr, notice) {
       if (messageEl && notice) messageEl.textContent = notice;
     }
     if (badge) {
-      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800';
+      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800';
     }
     if (badgeText) {
       badgeText.textContent = lang === 'ur' ? '18 نومبر 2026 ریٹس (فال بیک)' : (lang === 'ar' ? 'أسعار احتياطية (18 نوفمبر 2026)' : '18 Nov 2026 Rates (Fallback)');
@@ -707,323 +909,140 @@ function updatePriceStatusUI(isLive, dateStr, notice) {
   }
 }
 
-function syncNisabPricesToAssets() {
-  STATE.assets.forEach((asset, index) => {
-    if (!asset.isPriceCustom) {
-      if (asset.type === 'Gold') {
-        asset.price = asset.unit === 'Tolas' ? STATE.goldPrice * TOLA_TO_GRAMS : STATE.goldPrice;
-        const input = document.getElementById(`asset-price-input-${index}`);
-        if (input) input.value = asset.price.toFixed(2);
-      } else if (asset.type === 'Silver') {
-        asset.price = asset.unit === 'Tolas' ? STATE.silverPrice * TOLA_TO_GRAMS : STATE.silverPrice;
-        const input = document.getElementById(`asset-price-input-${index}`);
-        if (input) input.value = asset.price.toFixed(2);
-      }
+// Dynamic Typing Listeners for Wizard Fields
+function initWizardTypingListeners() {
+  document.querySelectorAll('[data-wizard-field]').forEach(input => {
+    const fieldName = input.getAttribute('data-wizard-field');
+
+    // Handle select dropdowns
+    if (input.tagName === 'SELECT') {
+      input.addEventListener('change', (e) => {
+        STATE.wizard[fieldName] = e.target.value;
+        updateWizardCalculations();
+        saveWizardState();
+      });
+      return;
     }
+
+    // Handle text inputs with numeric normalization
+    input.addEventListener('input', (e) => {
+      const raw = e.target.value;
+      STATE.wizard[fieldName] = raw;
+      updateWizardCalculations();
+      saveWizardState();
+    });
+
+    // On blur, format cleanly with commas
+    input.addEventListener('blur', (e) => {
+      const parsed = NisabModule ? NisabModule.parseLocalizedNumber(e.target.value) : parseFloat(e.target.value);
+      if (!isNaN(parsed) && parsed > 0) {
+        e.target.value = formatNumberWithCommas(parsed);
+      }
+    });
+
+    // On focus, select text for quick editing
+    input.addEventListener('focus', (e) => {
+      if (e.target.value === '0') e.target.value = '';
+    });
   });
 }
 
-// Render dynamic assets
-function renderAssets() {
-  const container = document.getElementById('assets-container');
-  if (!container) return;
+// Wizard Navigation Engine
+window.goToStep = function(targetStep) {
+  const step = Math.max(1, Math.min(6, parseInt(targetStep) || 1));
+  STATE.currentStep = step;
 
-  const lang = STATE.language;
-
-  container.innerHTML = STATE.assets.map((asset, index) => {
-    const isCurrency = asset.unit === 'Currency';
-    
-    if (!asset.isPriceCustom) {
-      if (asset.type === 'Gold') {
-        asset.price = asset.unit === 'Tolas' ? STATE.goldPrice * TOLA_TO_GRAMS : STATE.goldPrice;
-      } else if (asset.type === 'Silver') {
-        asset.price = asset.unit === 'Tolas' ? STATE.silverPrice * TOLA_TO_GRAMS : STATE.silverPrice;
-      } else if (isCurrency) {
-        asset.price = 1;
-      }
-    }
-
-    calculateAssetTotal(asset);
-
-    return `
-      <div class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all duration-200 animate-scale-in">
-        
-        <!-- Asset Type Dropdown -->
-        <div class="col-span-2 md:col-span-3">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].col_asset_category}</label>
-          <select 
-            onchange="updateAsset(${index}, 'type', this.value)" 
-            class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 font-medium input-focus-ring transition-all-300 animate-scale-in"
-          >
-            ${ASSET_TYPES.map(type => {
-              const transKey = `asset_${type}`;
-              const displayName = TRANSLATIONS[lang][transKey] || type;
-              return `<option value="${type}" ${asset.type === type ? 'selected' : ''}>${displayName}</option>`;
-            }).join('')}
-          </select>
-        </div>
-
-        <!-- Unit Selector Toggle -->
-        <div class="col-span-1 md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].col_unit}</label>
-          <select 
-            onchange="updateAsset(${index}, 'unit', this.value)" 
-            class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 font-medium input-focus-ring transition-all-300"
-          >
-            <option value="Currency" ${asset.unit === 'Currency' ? 'selected' : ''}>${TRANSLATIONS[lang].unit_currency}</option>
-            <option value="Grams" ${asset.unit === 'Grams' ? 'selected' : ''}>${TRANSLATIONS[lang].unit_grams}</option>
-            <option value="Tolas" ${asset.unit === 'Tolas' ? 'selected' : ''}>${TRANSLATIONS[lang].unit_tolas}</option>
-          </select>
-        </div>
-
-        <!-- Amount Input -->
-        <div class="col-span-1 md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            ${isCurrency ? TRANSLATIONS[lang].col_total : TRANSLATIONS[lang].col_weight}
-          </label>
-          <div class="relative">
-            ${isCurrency ? `<span class="absolute start-3.5 top-2 text-sm font-medium text-slate-400 currency-symbol">${CURRENCIES[STATE.currency].symbol}</span>` : ''}
-            <input 
-              type="number" 
-              value="${asset.amount || ''}" 
-              placeholder="0.00" 
-              min="0"
-              oninput="updateAsset(${index}, 'amount', this.value)" 
-              class="w-full bg-white border border-slate-200 rounded-lg ${isCurrency ? 'ps-8' : 'px-3'} pe-3 py-2 text-sm text-slate-700 font-medium input-focus-ring transition-all-300"
-            />
-          </div>
-        </div>
-
-        <!-- Price per Unit Input -->
-        <div class="col-span-1 md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
-            ${TRANSLATIONS[lang].col_price}
-          </label>
-          <div class="relative">
-            <span class="absolute start-3.5 top-2 text-sm font-medium text-slate-400 currency-symbol">${CURRENCIES[STATE.currency].symbol}</span>
-            <input 
-              type="number" 
-              id="asset-price-input-${index}"
-              value="${isCurrency ? '1.00' : asset.price.toFixed(2)}" 
-              placeholder="1.00" 
-              min="0"
-              ${isCurrency ? 'disabled' : ''}
-              oninput="updateAsset(${index}, 'price', this.value)" 
-              class="w-full bg-white border border-slate-200 rounded-lg ps-8 pe-3 py-2 text-sm text-slate-700 font-medium input-focus-ring transition-all-300 ${isCurrency ? 'opacity-50 bg-slate-100 cursor-not-allowed' : ''}"
-            />
-          </div>
-        </div>
-
-        <!-- Total Value Readonly Display -->
-        <div class="col-span-1 md:col-span-2">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].col_total}</label>
-          <div class="bg-slate-100/60 border border-slate-200/50 rounded-lg px-3 py-2 text-sm font-bold text-slate-700 min-h-[38px] flex items-center" id="asset-total-display-${index}">
-            ${formatMoney(asset.total)}
-          </div>
-        </div>
-
-        <!-- Delete Row Button -->
-        <div class="col-span-2 md:col-span-1 flex justify-end md:justify-center items-center">
-          <button 
-            type="button" 
-            onclick="removeAsset('${asset.id}')"
-            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all-300 flex items-center gap-1.5"
-            title="Remove row"
-          >
-            <span class="md:hidden text-xs font-bold text-slate-400 hover:text-rose-600" data-i18n="btn_close">Delete</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-          </button>
-        </div>
-
-      </div>
-    `;
-  }).join('');
-
-  updateCurrencyLabels();
-}
-
-// Update asset field handler
-window.updateAsset = function(index, field, value) {
-  const asset = STATE.assets[index];
-  if (!asset) return;
-
-  if (field === 'type') {
-    asset.type = value;
-    asset.isPriceCustom = false;
-    
-    if (value === 'Gold') {
-      asset.unit = 'Grams';
-      asset.price = STATE.goldPrice;
-    } else if (value === 'Silver') {
-      asset.unit = 'Grams';
-      asset.price = STATE.silverPrice;
+  // Toggle active wizard-step DOM element
+  document.querySelectorAll('.wizard-step').forEach((el, index) => {
+    if (index + 1 === step) {
+      el.classList.add('active');
     } else {
-      asset.unit = 'Currency';
-      asset.price = 1;
+      el.classList.remove('active');
     }
-    renderAssets();
-  } else if (field === 'unit') {
-    asset.unit = value;
-    asset.isPriceCustom = false;
-    
-    if (value === 'Currency') {
-      asset.price = 1;
-    } else if (value === 'Grams' || value === 'Tolas') {
-      if (asset.type === 'Gold') {
-        asset.price = value === 'Tolas' ? STATE.goldPrice * TOLA_TO_GRAMS : STATE.goldPrice;
-      } else if (asset.type === 'Silver') {
-        asset.price = value === 'Tolas' ? STATE.silverPrice * TOLA_TO_GRAMS : STATE.silverPrice;
-      } else {
-        asset.price = 100;
-      }
-    }
-    renderAssets();
-  } else if (field === 'price') {
-    asset.price = parseFloat(value) || 0;
-    asset.isPriceCustom = true;
-  } else if (field === 'amount') {
-    asset.amount = parseFloat(value) || 0;
+  });
+
+  // Update Progress Track
+  const progressBar = document.getElementById('wizard-progress-bar');
+  if (progressBar) {
+    const percent = ((step / 6) * 100).toFixed(2);
+    progressBar.style.width = `${percent}%`;
   }
 
-  calculateAssetTotal(asset);
-  
-  const totalDisplay = document.getElementById(`asset-total-display-${index}`);
-  if (totalDisplay) {
-    totalDisplay.textContent = formatMoney(asset.total);
-  }
+  // Update Stepper Pill Buttons
+  document.querySelectorAll('.stepper-tab').forEach(tab => {
+    const tabStep = parseInt(tab.getAttribute('data-step'));
+    if (tabStep === step) {
+      tab.className = "stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-emerald-50 border-emerald-300 text-emerald-800 shadow-sm";
+    } else if (tabStep < step) {
+      tab.className = "stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-emerald-50/40 border-emerald-100 text-emerald-700 hover:bg-emerald-50";
+    } else {
+      tab.className = "stepper-tab py-2 px-1 rounded-xl text-xs font-bold transition-all duration-200 border bg-slate-50 border-slate-100 text-slate-500 hover:bg-slate-100";
+    }
+  });
 
-  calculateAll();
+  updateStepHeader();
+  updateWizardCalculations();
+  saveWizardState();
+
+  // Scroll to top of the calculator container smoothly
+  const calcContainer = document.getElementById('calculator-section');
+  if (calcContainer) {
+    calcContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 };
 
-function calculateAssetTotal(asset) {
-  const amount = asset.amount || 0;
-  const price = asset.price || 0;
-  
-  if (asset.unit === 'Currency') {
-    asset.total = amount;
-  } else if (asset.unit === 'Grams') {
-    asset.total = amount * price;
-  } else if (asset.unit === 'Tolas') {
-    asset.total = amount * TOLA_TO_GRAMS * price;
+function updateStepHeader() {
+  const lang = STATE.language;
+  const step = STATE.currentStep;
+
+  const badgeEl = document.getElementById('wizard-step-badge');
+  const titleEl = document.getElementById('wizard-step-title');
+
+  const stepTitles = {
+    ur: ['تعارف اور ترتیبات', 'نقد رقم اور بینک', 'سونا اور چاندی', 'کاروبار اور سرمایہ کاری', 'واجب الادا قرضے', 'حتمی زکوٰۃ کا نتیجہ'],
+    en: ['Welcome & Settings', 'Cash & Bank Accounts', 'Gold & Silver Holdings', 'Business & Investments', 'Money You Owe Others', 'Final Zakat Calculation'],
+    ar: ['المقدمة والإعدادات', 'السيولة والحسابات البنكية', 'حيازة الذهب والفضة', 'التجارة والاستثمارات', 'الديون والالتزامات', 'نتيجة الزكاة النهائية']
+  };
+
+  const badgeFormats = {
+    ur: `مرحلہ ${step} از 6`,
+    en: `Step ${step} of 6`,
+    ar: `الخطوة ${step} من ٦`
+  };
+
+  if (badgeEl) badgeEl.textContent = (badgeFormats[lang] || badgeFormats.en);
+  if (titleEl) {
+    const titles = stepTitles[lang] || stepTitles.en;
+    titleEl.textContent = titles[step - 1] || '';
   }
 }
 
-window.addAsset = function() {
-  STATE.assets.push({
-    id: generateId(),
-    type: 'Cash',
-    unit: 'Currency',
-    amount: 0,
-    price: 1,
-    total: 0,
-    isPriceCustom: false
-  });
-  renderAssets();
-  calculateAll();
-};
+// Al-Hawl Answer Handler
+window.setHawlAnswer = function(answer) {
+  STATE.wizard.hawlAnswer = answer ? 'yes' : 'no';
 
-window.removeAsset = function(id) {
-  if (STATE.assets.length <= 1) {
-    showToast(STATE.language === 'ur' ? 'کم از کم ایک قطار لازمی ہے' : (STATE.language === 'ar' ? 'يجب الاحتفاظ بصف واحد على الأقل.' : 'You must keep at least one asset row.'), 'warning');
-    return;
+  const btnYes = document.getElementById('hawl-btn-yes');
+  const btnNo = document.getElementById('hawl-btn-no');
+
+  if (btnYes && btnNo) {
+    if (answer) {
+      btnYes.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-emerald-600 text-white border-emerald-600 shadow-sm";
+      btnNo.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+    } else {
+      btnNo.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-rose-600 text-white border-rose-600 shadow-sm";
+      btnYes.className = "tap-target-48 p-3 rounded-xl border text-center font-bold text-sm transition-all duration-200 bg-white border-slate-300 text-slate-700 hover:bg-slate-100";
+    }
   }
-  STATE.assets = STATE.assets.filter(a => a.id !== id);
-  renderAssets();
-  calculateAll();
+
+  updateWizardCalculations();
+  saveWizardState();
 };
 
-// Render liabilities list
-function renderLiabilities() {
-  const container = document.getElementById('liabilities-container');
-  if (!container) return;
-
+// Main Live Calculation & Display Synchronizer
+function updateWizardCalculations() {
   const lang = STATE.language;
 
-  container.innerHTML = STATE.liabilities.map((lib, index) => {
-    return `
-      <div class="grid grid-cols-2 md:grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-xl border border-slate-100 transition-all duration-200 animate-scale-in">
-        
-        <!-- Description -->
-        <div class="col-span-2 md:col-span-7">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].liabs_description}</label>
-          <input 
-            type="text" 
-            value="${lib.description || ''}" 
-            placeholder="${TRANSLATIONS[lang].liabs_placeholder}" 
-            oninput="updateLiability(${index}, 'description', this.value)" 
-            class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 font-medium input-focus-ring transition-all-300"
-          />
-        </div>
-
-        <!-- Amount Due -->
-        <div class="col-span-1 md:col-span-4">
-          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">${TRANSLATIONS[lang].liabs_amount}</label>
-          <div class="relative">
-            <span class="absolute start-3.5 top-2 text-sm font-medium text-slate-400 currency-symbol">${CURRENCIES[STATE.currency].symbol}</span>
-            <input 
-              type="number" 
-              value="${lib.amount || ''}" 
-              placeholder="0.00" 
-              min="0"
-              oninput="updateLiability(${index}, 'amount', this.value)" 
-              class="w-full bg-white border border-slate-200 rounded-lg ps-8 pe-3 py-2 text-sm text-slate-700 font-medium input-focus-ring transition-all-300"
-            />
-          </div>
-        </div>
-
-        <!-- Delete Button -->
-        <div class="col-span-1 md:col-span-1 flex justify-end md:justify-center items-center">
-          <button 
-            type="button" 
-            onclick="removeLiability('${lib.id}')"
-            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all-300 flex items-center gap-1.5"
-            title="Remove liability"
-          >
-            <span class="md:hidden text-xs font-bold text-slate-400 hover:text-rose-600" data-i18n="btn_close">Delete</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-          </button>
-        </div>
-
-      </div>
-    `;
-  }).join('');
-
-  updateCurrencyLabels();
-}
-
-window.updateLiability = function(index, field, value) {
-  const lib = STATE.liabilities[index];
-  if (!lib) return;
-
-  if (field === 'amount') {
-    lib.amount = parseFloat(value) || 0;
-  } else {
-    lib.description = value;
-  }
-  calculateAll();
-};
-
-window.addLiability = function() {
-  STATE.liabilities.push({
-    id: generateId(),
-    description: '',
-    amount: 0
-  });
-  renderLiabilities();
-  calculateAll();
-};
-
-window.removeLiability = function(id) {
-  STATE.liabilities = STATE.liabilities.filter(l => l.id !== id);
-  renderLiabilities();
-  calculateAll();
-};
-
-// Math calculations
-function calculateAll() {
-  const lang = STATE.language;
-
-  // Update Nisab Values using shared Nisab module
+  // 1. Calculate Nisab Thresholds
   const goldNisab = NisabModule 
     ? NisabModule.calculateNisabThreshold({ standard: 'gold', goldPricePerGram: STATE.goldPrice })
     : (87.48 * STATE.goldPrice);
@@ -1036,125 +1055,415 @@ function calculateAll() {
   if (goldValEl) goldValEl.textContent = formatMoney(goldNisab);
   if (silverValEl) silverValEl.textContent = formatMoney(silverNisab);
 
-  // Active Nisab Threshold (Silver is default Hanafi consensus for Pakistan)
-  const activeNisab = STATE.nisabStandard === 'gold' ? goldNisab : silverNisab;
+  const activeNisabThreshold = STATE.nisabStandard === 'gold' ? goldNisab : silverNisab;
   const standardName = STATE.nisabStandard === 'gold' 
-    ? (TRANSLATIONS[lang].active_standard_gold || 'Gold') 
-    : (TRANSLATIONS[lang].active_standard_silver || 'Silver');
+    ? (TRANSLATIONS[lang].active_standard_gold || 'Gold Standard') 
+    : (TRANSLATIONS[lang].active_standard_silver || 'Silver (Hanafi / Pakistan)');
   const thresholdWeight = STATE.nisabStandard === 'gold' ? '87.48g (7.5 tola)' : '612.36g (52.5 tola)';
 
-  // Update Active Standard Badge
   const activeStandardNameEl = document.getElementById('active-standard-name');
-  if (activeStandardNameEl) {
-    activeStandardNameEl.textContent = standardName;
-  }
+  if (activeStandardNameEl) activeStandardNameEl.textContent = standardName;
 
-  // Update Standard Toggle Button states
-  const silverToggle = document.getElementById('nisab-silver-toggle');
-  const goldToggle = document.getElementById('nisab-gold-toggle');
-  if (silverToggle && goldToggle) {
-    if (STATE.nisabStandard === 'silver') {
-      silverToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-emerald-600 text-white shadow-sm';
-      goldToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-white text-slate-700 hover:text-slate-900';
-    } else {
-      goldToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-emerald-600 text-white shadow-sm';
-      silverToggle.className = 'px-4 py-2 rounded-lg text-xs font-bold transition-all-300 bg-white text-slate-700 hover:text-slate-900';
-    }
-  }
-
-  // Update Active Banner details
   const activeBanner = document.getElementById('active-nisab-banner-text');
   if (activeBanner) {
-    const formattedNisab = formatMoney(activeNisab);
-    let bannerText = (TRANSLATIONS[lang].active_nisab_text || '')
-      .replace('{standard}', standardName)
-      .replace('{val}', formattedNisab)
-      .replace('{weight}', thresholdWeight);
+    const formattedNisab = formatMoney(activeNisabThreshold);
+    let bannerText = (lang === 'ur')
+      ? `فعال نصاب: <strong>${standardName}</strong>۔ زکوٰۃ کے واجب ہونے کے لیے آپ کی خالص دولت کا <strong>${formattedNisab}</strong> (${thresholdWeight}) سے زائد ہونا ضروری ہے۔`
+      : (lang === 'ar'
+        ? `المعيار المعتمد: <strong>${standardName}</strong>. يجب أن يتجاوز صافي ثروتك <strong>${formattedNisab}</strong> (${thresholdWeight}) لتجب عليك الزكاة.`
+        : `Active Standard: <strong>${standardName}</strong>. Your net wealth must exceed <strong>${formattedNisab}</strong> (${thresholdWeight}) to be eligible for Zakat.`);
     activeBanner.innerHTML = bannerText;
   }
 
-  // Calculate totals
-  STATE.assets.forEach(asset => calculateAssetTotal(asset));
-  const totalAssets = STATE.assets.reduce((sum, asset) => sum + (asset.total || 0), 0);
-  const totalLiabilities = STATE.liabilities.reduce((sum, lib) => sum + (lib.amount || 0), 0);
-  const netWealth = totalAssets - totalLiabilities;
-
-  // Display outputs in right column summary
-  const summaryAssetsEl = document.getElementById('summary-total-assets');
-  const summaryLiabsEl = document.getElementById('summary-total-liabilities');
-  const netWealthEl = document.getElementById('summary-net-wealth');
-
-  if (summaryAssetsEl) summaryAssetsEl.textContent = formatMoney(totalAssets);
-  if (summaryLiabsEl) summaryLiabsEl.textContent = `-${formatMoney(totalLiabilities)}`;
-  if (netWealthEl) netWealthEl.textContent = formatMoney(netWealth);
-
-  // Compute Zakat using single source of truth
-  const zakatCalc = NisabModule ? NisabModule.calculateZakat({
-    netWealth,
-    nisabThreshold: activeNisab,
-    hawlConfirmed: STATE.alHawlConfirmed
+  // 2. Perform Comprehensive Wizard Math via Nisab Module
+  const totals = NisabModule ? NisabModule.calculateWizardTotals(STATE.wizard, {
+    goldPricePerGram: STATE.goldPrice,
+    silverPricePerGram: STATE.silverPrice,
+    nisabStandard: STATE.nisabStandard
   }) : {
-    isEligible: netWealth >= activeNisab && STATE.alHawlConfirmed,
-    meetsNisab: netWealth >= activeNisab,
-    zakatDue: (netWealth >= activeNisab && STATE.alHawlConfirmed) ? netWealth * ZAKAT_RATE : 0
+    cashTotal: 0,
+    goldPureGrams: 0,
+    goldValue: 0,
+    silverGrams: 0,
+    silverValue: 0,
+    metalsTotal: 0,
+    businessTotal: 0,
+    debtsTotal: 0,
+    grossAssets: 0,
+    netWealth: 0,
+    nisabThreshold: activeNisabThreshold,
+    meetsNisab: false,
+    hawlConfirmed: STATE.wizard.hawlAnswer === 'yes',
+    isEligible: false,
+    zakatDue: 0
   };
 
-  const resultBox = document.getElementById('zakat-result-box');
-  const dueValEl = document.getElementById('zakat-due-value');
-  const resultMessage = document.getElementById('zakat-result-message');
-  const zakatDue = zakatCalc.zakatDue;
+  // 3. Update Step Subtotals
+  const subtotalCashEl = document.getElementById('wizard-subtotal-cash');
+  const subtotalMetalsEl = document.getElementById('wizard-subtotal-metals');
+  const subtotalBusinessEl = document.getElementById('wizard-subtotal-business');
+  const subtotalDebtsEl = document.getElementById('wizard-subtotal-debts');
 
-  if (zakatCalc.meetsNisab) {
-    if (STATE.alHawlConfirmed) {
-      // Update styling to Premium Emerald Green (Met Nisab)
-      if (resultBox) resultBox.className = "calculation-box p-6 rounded-2xl bg-emerald-600 text-white shadow-lg animate-scale-in transition-all duration-300";
-      if (dueValEl) dueValEl.className = "text-4xl font-extrabold tracking-tight text-white mt-1 mb-2";
-      if (resultMessage) resultMessage.innerHTML = `<span class="flex items-center gap-1.5 text-emerald-100 text-sm font-semibold"><svg class="w-4 h-4 text-emerald-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> ${TRANSLATIONS[lang].zakat_msg_met}</span>`;
-    } else {
-      // Warning state (Al-Hawl Unconfirmed)
-      if (resultBox) resultBox.className = "calculation-box p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 shadow-sm animate-scale-in transition-all duration-300";
-      if (dueValEl) dueValEl.className = "text-4xl font-extrabold tracking-tight text-amber-700 mt-1 mb-2";
-      if (resultMessage) resultMessage.innerHTML = `<span class="text-amber-700 text-sm font-semibold">${TRANSLATIONS[lang].zakat_msg_hawl}</span>`;
+  if (subtotalCashEl) subtotalCashEl.textContent = formatMoney(totals.cashTotal);
+  if (subtotalMetalsEl) subtotalMetalsEl.textContent = formatMoney(totals.metalsTotal);
+  if (subtotalBusinessEl) subtotalBusinessEl.textContent = formatMoney(totals.businessTotal);
+  if (subtotalDebtsEl) subtotalDebtsEl.textContent = `-${formatMoney(totals.debtsTotal)}`;
+
+  // 4. Update Gold & Silver Live Math Displays
+  const pureGoldDisplay = document.getElementById('wizard-pure-gold-display');
+  const goldValDisplay = document.getElementById('wizard-gold-val-display');
+  const silverValDisplay = document.getElementById('wizard-silver-val-display');
+
+  if (pureGoldDisplay) {
+    pureGoldDisplay.textContent = `${totals.goldPureGrams.toFixed(2)} grams`;
+  }
+  if (goldValDisplay) {
+    goldValDisplay.textContent = formatMoney(totals.goldValue);
+  }
+  if (silverValDisplay) {
+    silverValDisplay.textContent = formatMoney(totals.silverValue);
+  }
+
+  // 5. Update Live Bottom Bar
+  const stickyZakatEl = document.getElementById('sticky-zakat-value');
+  const liveNetWealthEl = document.getElementById('live-net-wealth-text');
+  const liveNisabChipVal = document.getElementById('live-nisab-chip-val');
+
+  if (stickyZakatEl) stickyZakatEl.textContent = formatMoney(totals.zakatDue);
+  if (liveNetWealthEl) liveNetWealthEl.textContent = `(Net: ${formatMoney(totals.netWealth)})`;
+  if (liveNisabChipVal) liveNisabChipVal.textContent = formatMoney(activeNisabThreshold);
+
+  // 6. Update Step 6 Breakdown Cards
+  const cardCash = document.getElementById('card-breakdown-cash');
+  const cardMetals = document.getElementById('card-breakdown-metals');
+  const cardBusiness = document.getElementById('card-breakdown-business');
+  const cardDebts = document.getElementById('card-breakdown-debts');
+
+  if (cardCash) cardCash.textContent = formatMoney(totals.cashTotal);
+  if (cardMetals) cardMetals.textContent = formatMoney(totals.metalsTotal);
+  if (cardBusiness) cardBusiness.textContent = formatMoney(totals.businessTotal);
+  if (cardDebts) cardDebts.textContent = `-${formatMoney(totals.debtsTotal)}`;
+
+  // 7. Update Step 6 Main Result Card & Short Story
+  const resultBox = document.getElementById('wizard-result-box');
+  const resultDueDisplay = document.getElementById('wizard-zakat-due-display');
+  const resultPlainMsg = document.getElementById('wizard-result-plain-message');
+  const storyText = document.getElementById('wizard-story-text');
+
+  if (resultDueDisplay) resultDueDisplay.textContent = formatMoney(totals.zakatDue);
+
+  const isHawlYes = STATE.wizard.hawlAnswer === 'yes';
+
+  if (!totals.meetsNisab) {
+    // Wealth is below Nisab
+    if (resultBox) {
+      resultBox.className = "p-6 sm:p-8 rounded-3xl bg-sky-50 border border-sky-200 text-sky-950 shadow-sm space-y-3 text-center transition-all duration-300";
+    }
+    if (resultDueDisplay) resultDueDisplay.className = "text-4xl sm:text-5xl font-black tracking-tight text-sky-700 my-2";
+    if (resultPlainMsg) {
+      resultPlainMsg.className = "text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto text-sky-900";
+      resultPlainMsg.textContent = (lang === 'ur')
+        ? "اس سال آپ پر زکوٰۃ واجب نہیں ہے کیونکہ آپ کی دولت نصاب کی حد سے کم ہے۔"
+        : (lang === 'ar'
+          ? "لا تجب عليك الزكاة هذا العام لأن صافي ثروتك أقل من حد النصاب الشرعي."
+          : "No zakat is due this year because your wealth is below the nisab.");
+    }
+  } else if (!isHawlYes) {
+    // Meets Nisab but full lunar year has not completed
+    if (resultBox) {
+      resultBox.className = "p-6 sm:p-8 rounded-3xl bg-amber-50 border border-amber-200 text-amber-950 shadow-sm space-y-3 text-center transition-all duration-300";
+    }
+    if (resultDueDisplay) resultDueDisplay.className = "text-4xl sm:text-5xl font-black tracking-tight text-amber-700 my-2";
+    if (resultPlainMsg) {
+      resultPlainMsg.className = "text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto text-amber-900";
+      resultPlainMsg.textContent = (lang === 'ur')
+        ? "چونکہ اس مال پر ابھی مکمل ایک قمری سال (الحول) نہیں گزرا، اس لیے فی الوقت زکوٰۃ فرض نہیں ہے۔ جب سال مکمل ہو جائے تو حساب کیجیے گا۔"
+        : (lang === 'ar'
+          ? "نظراً لعدم اكتمال الحول (سنة هجرية كاملة) على ملكية هذا النصاب، فلا تجب الزكاة حالياً حتى يحول الحول."
+          : "No Zakat is due right now because a full Islamic lunar year (Al-Hawl) has not yet passed over this wealth.");
     }
   } else {
-    // Below Nisab state (Blue/Slate layout)
-    if (resultBox) resultBox.className = "calculation-box p-6 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 shadow-sm animate-scale-in transition-all duration-300";
-    if (dueValEl) dueValEl.className = "text-4xl font-extrabold tracking-tight text-sky-700 mt-1 mb-2";
-    if (resultMessage) resultMessage.innerHTML = `<span class="text-sky-700 text-sm font-semibold">${TRANSLATIONS[lang].zakat_msg_below}</span>`;
-  }
-
-  if (dueValEl) dueValEl.textContent = formatMoney(zakatDue);
-
-  // Update sticky bottom mobile summary value & colors
-  const stickyZakat = document.getElementById('sticky-zakat-value');
-  if (stickyZakat) {
-    stickyZakat.textContent = formatMoney(zakatDue);
-    if (zakatCalc.meetsNisab && STATE.alHawlConfirmed) {
-      stickyZakat.className = "text-lg font-extrabold text-emerald-600";
-    } else if (zakatCalc.meetsNisab) {
-      stickyZakat.className = "text-lg font-extrabold text-amber-600";
-    } else {
-      stickyZakat.className = "text-lg font-extrabold text-sky-700";
+    // Eligible: Meets Nisab and Hawl completed
+    if (resultBox) {
+      resultBox.className = "p-6 sm:p-8 rounded-3xl bg-emerald-600 text-white shadow-xl space-y-3 text-center transition-all duration-300";
+    }
+    if (resultDueDisplay) resultDueDisplay.className = "text-4xl sm:text-5xl font-black tracking-tight text-white my-2";
+    if (resultPlainMsg) {
+      resultPlainMsg.className = "text-sm sm:text-base font-semibold leading-relaxed max-w-xl mx-auto text-emerald-50";
+      resultPlainMsg.textContent = (lang === 'ur')
+        ? `آپ پر زکوٰۃ واجب الادا ہے: ${formatMoney(totals.zakatDue)}`
+        : (lang === 'ar'
+          ? `الزكاة المفروضة الواجبة عليك: ${formatMoney(totals.zakatDue)}`
+          : `Zakat is due: ${formatMoney(totals.zakatDue)}`);
     }
   }
 
-  // Sync value overlays inside print report forms
-  const printDate = document.getElementById('print-date');
-  if (printDate) {
-    printDate.textContent = new Date().toLocaleDateString(undefined, { dateStyle: 'long' });
+  // 8. Plain Short Story sentence
+  if (storyText) {
+    const assetsFormatted = formatMoney(totals.grossAssets);
+    const debtsFormatted = formatMoney(totals.debtsTotal);
+    const netFormatted = formatMoney(totals.netWealth);
+    const nisabFormatted = formatMoney(activeNisabThreshold);
+    const zakatFormatted = formatMoney(totals.zakatDue);
+
+    if (lang === 'ur') {
+      storyText.innerHTML = `آپ کے کل اثاثے <strong>${assetsFormatted}</strong> ہیں۔ آپ پر فوری و سالانہ واجب الادا قرضے <strong>${debtsFormatted}</strong> ہیں۔ آپ کی خالص دولت <strong>${netFormatted}</strong> ہے۔ اس وقت حدِ نصاب <strong>${nisabFormatted}</strong> ہے۔ آپ کی واجب الادا زکوٰۃ 2.5٪ کے حساب سے <strong>${zakatFormatted}</strong> بنتی ہے۔`;
+    } else if (lang === 'ar') {
+      storyText.innerHTML = `إجمالي أصولك وأموالك <strong>${assetsFormatted}</strong>. والديون والالتزامات المستحقة عليك <strong>${debtsFormatted}</strong>. وصافي ثروتك الزكوية <strong>${netFormatted}</strong>. وحد النصاب المعتمد <strong>${nisabFormatted}</strong>. وتبلغ الزكاة الواجبة بنسبة 2.5% مبلغ <strong>${zakatFormatted}</strong>.`;
+    } else {
+      storyText.innerHTML = `You have <strong>${assetsFormatted}</strong> in total assets. You owe <strong>${debtsFormatted}</strong> in deductible debts. Your net zakatable wealth is <strong>${netFormatted}</strong>. The active Nisab threshold is <strong>${nisabFormatted}</strong>. Your zakat is 2.5% of ${netFormatted} = <strong>${zakatFormatted}</strong>.`;
+    }
   }
 
-  // Update report overlays in state
-  document.getElementById('print-nisab-standard').textContent = `${standardName} Standard (${formatMoney(activeNisab)})`;
-  document.getElementById('print-gold-rate').textContent = formatMoney(STATE.goldPrice);
-  document.getElementById('print-silver-rate').textContent = formatMoney(STATE.silverPrice);
-  document.getElementById('print-total-assets').textContent = formatMoney(totalAssets);
-  document.getElementById('print-total-liabilities').textContent = `-${formatMoney(totalLiabilities)}`;
-  document.getElementById('print-net-wealth').textContent = formatMoney(netWealth);
-  document.getElementById('print-zakat-due').textContent = formatMoney(zakatDue);
+  // 9. Sync PDF Print Elements
+  syncPrintReport(totals, standardName, activeNisabThreshold);
 }
 
-// Carousel Functionality
+// Synchronize Wizard state into Print Report DOM for high-fidelity PDF export
+function syncPrintReport(totals, standardName, activeNisab) {
+  const printAssetsBody = document.getElementById('print-assets-table-body');
+  const printLiabsBody = document.getElementById('print-liabilities-table-body');
+  const lang = STATE.language;
+
+  if (printAssetsBody) {
+    const rows = [];
+    if (totals.cashTotal > 0) {
+      rows.push(`
+        <tr class="border-b border-slate-100">
+          <td class="py-2.5 font-medium text-slate-800 text-start">${lang === 'ur' ? 'نقد رقم اور بینک بچت' : (lang === 'ar' ? 'السيولة والحسابات البنكية' : 'Cash and Bank Savings')}</td>
+          <td class="py-2.5 text-end font-semibold text-slate-900">${formatMoney(totals.cashTotal)}</td>
+        </tr>
+      `);
+    }
+    if (totals.goldValue > 0) {
+      rows.push(`
+        <tr class="border-b border-slate-100">
+          <td class="py-2.5 font-medium text-slate-800 text-start">${lang === 'ur' ? 'سونا (خالص عیار شدہ)' : (lang === 'ar' ? 'الذهب المقوم' : 'Gold Holdings (Carat Adjusted)')} (${totals.goldPureGrams.toFixed(2)}g)</td>
+          <td class="py-2.5 text-end font-semibold text-slate-900">${formatMoney(totals.goldValue)}</td>
+        </tr>
+      `);
+    }
+    if (totals.silverValue > 0) {
+      rows.push(`
+        <tr class="border-b border-slate-100">
+          <td class="py-2.5 font-medium text-slate-800 text-start">${lang === 'ur' ? 'چاندی' : (lang === 'ar' ? 'الفضة' : 'Silver Holdings')} (${totals.silverGrams.toFixed(2)}g)</td>
+          <td class="py-2.5 text-end font-semibold text-slate-900">${formatMoney(totals.silverValue)}</td>
+        </tr>
+      `);
+    }
+    if (totals.businessTotal > 0) {
+      rows.push(`
+        <tr class="border-b border-slate-100">
+          <td class="py-2.5 font-medium text-slate-800 text-start">${lang === 'ur' ? 'کاروباری مال، حصص و سرمایہ کاری' : (lang === 'ar' ? 'عروض التجارة والاستثمارات' : 'Business Goods & Investments')}</td>
+          <td class="py-2.5 text-end font-semibold text-slate-900">${formatMoney(totals.businessTotal)}</td>
+        </tr>
+      `);
+    }
+
+    if (rows.length === 0) {
+      printAssetsBody.innerHTML = `<tr><td colspan="2" class="py-2.5 text-slate-400 italic text-sm text-start">No reportable assets declared.</td></tr>`;
+    } else {
+      printAssetsBody.innerHTML = rows.join('');
+    }
+  }
+
+  if (printLiabsBody) {
+    if (totals.debtsTotal > 0) {
+      printLiabsBody.innerHTML = `
+        <tr class="border-b border-slate-100">
+          <td class="py-2.5 text-slate-700 text-start">${lang === 'ur' ? 'فوری اور سالانہ واجب الادا قرضے و بلز' : (lang === 'ar' ? 'الديون والفواتير الحالة' : 'Debts, Overdue Bills & Current-Year Installments')}</td>
+          <td class="py-2.5 text-end font-semibold text-rose-700">-${formatMoney(totals.debtsTotal)}</td>
+        </tr>
+      `;
+    } else {
+      printLiabsBody.innerHTML = `<tr><td colspan="2" class="py-2.5 text-slate-400 italic text-sm text-start">No deductible liabilities reported.</td></tr>`;
+    }
+  }
+
+  const printDate = document.getElementById('print-date');
+  if (printDate) printDate.textContent = new Date().toLocaleDateString(undefined, { dateStyle: 'long' });
+
+  const printNisabStandard = document.getElementById('print-nisab-standard');
+  if (printNisabStandard) printNisabStandard.textContent = `${standardName} (${formatMoney(activeNisab)})`;
+
+  const printGoldRate = document.getElementById('print-gold-rate');
+  if (printGoldRate) printGoldRate.textContent = formatMoney(STATE.goldPrice);
+
+  const printSilverRate = document.getElementById('print-silver-rate');
+  if (printSilverRate) printSilverRate.textContent = formatMoney(STATE.silverPrice);
+
+  const printTotalAssets = document.getElementById('print-total-assets');
+  if (printTotalAssets) printTotalAssets.textContent = formatMoney(totals.grossAssets);
+
+  const printTotalLiabs = document.getElementById('print-total-liabilities');
+  if (printTotalLiabs) printTotalLiabs.textContent = `-${formatMoney(totals.debtsTotal)}`;
+
+  const printNetWealth = document.getElementById('print-net-wealth');
+  if (printNetWealth) printNetWealth.textContent = formatMoney(totals.netWealth);
+
+  const printZakatDue = document.getElementById('print-zakat-due');
+  if (printZakatDue) printZakatDue.textContent = formatMoney(totals.zakatDue);
+}
+
+// Help Modal Controller
+window.showHelp = function(topicId) {
+  const helpData = HELP_TOPICS[topicId];
+  if (!helpData) return;
+
+  const lang = STATE.language;
+  const title = (helpData.title && helpData.title[lang]) || helpData.title.en;
+  const body = (helpData.body && helpData.body[lang]) || helpData.body.en;
+
+  const modalTitle = document.getElementById('help-modal-title');
+  const modalBody = document.getElementById('help-modal-body');
+
+  if (modalTitle) modalTitle.textContent = title;
+  if (modalBody) modalBody.innerHTML = body;
+
+  openModal('help-modal');
+};
+
+// WhatsApp Sharing
+window.shareOnWhatsApp = function() {
+  const lang = STATE.language;
+  const curr = CURRENCIES[STATE.currency] || CURRENCIES.PKR;
+  const totals = NisabModule ? NisabModule.calculateWizardTotals(STATE.wizard, {
+    goldPricePerGram: STATE.goldPrice,
+    silverPricePerGram: STATE.silverPrice,
+    nisabStandard: STATE.nisabStandard
+  }) : { zakatDue: 0, netWealth: 0 };
+
+  let text = '';
+  if (lang === 'ur') {
+    text = `*زکوٰۃ فلو کیلکولیشن رپورٹ*\n\n` +
+      `خالص دولت: ${formatMoney(totals.netWealth)}\n` +
+      `واجب الادا زکوٰۃ (2.5%): *${formatMoney(totals.zakatDue)}*\n\n` +
+      `اپنے مال کی شرعی تطہیر کے لیے زکوٰۃ فلو استعمال کریں:\nhttps://zakat-calculator-dun-pi.vercel.app/`;
+  } else if (lang === 'ar') {
+    text = `*تقرير حساب الزكاة - زكاة فلو*\n\n` +
+      `صافي الوعاء الزكوي: ${formatMoney(totals.netWealth)}\n` +
+      `إجمالي الزكاة الواجبة: *${formatMoney(totals.zakatDue)}*\n\n` +
+      `احسب زكاتك بدقة وسهولة عبر:\nhttps://zakat-calculator-dun-pi.vercel.app/`;
+  } else {
+    text = `*ZakatFlow Calculation Summary*\n\n` +
+      `Net Zakatable Wealth: ${formatMoney(totals.netWealth)}\n` +
+      `Zakat Obligation (2.5%): *${formatMoney(totals.zakatDue)}*\n\n` +
+      `Calculate your Zakat with peace of mind:\nhttps://zakat-calculator-dun-pi.vercel.app/`;
+  }
+
+  const encoded = encodeURIComponent(text);
+  window.open(`https://wa.me/?text=${encoded}`, '_blank');
+};
+
+// Reset Wizard Operation
+window.resetWizard = function() {
+  const confirmMsg = STATE.language === 'ur'
+    ? 'کیا آپ واقعی تمام اندراجات صاف کر کے شروع سے حساب کرنا چاہتے ہیں؟'
+    : (STATE.language === 'ar' ? 'هل تريد حقاً مسح جميع البيانات والبدء من جديد؟' : 'Are you sure you want to reset all fields and start again?');
+
+  if (!confirm(confirmMsg)) return;
+
+  STATE.wizard = {
+    cashInHand: '',
+    bankAccounts: '',
+    otherSavings: '',
+    moneyOwedToMe: '',
+    goldWeight: '',
+    goldUnit: 'tola',
+    goldCarat: '22',
+    silverWeight: '',
+    silverUnit: 'tola',
+    shopStock: '',
+    businessCash: '',
+    sharesFunds: '',
+    propertyForSale: '',
+    debtsDueNow: '',
+    unpaidBills: '',
+    installmentsThisYear: '',
+    hawlAnswer: 'yes'
+  };
+
+  // Clear inputs in DOM
+  document.querySelectorAll('[data-wizard-field]').forEach(input => {
+    if (input.tagName === 'SELECT') {
+      if (input.id === 'wizard-gold-unit' || input.id === 'wizard-silver-unit') input.value = 'tola';
+      if (input.id === 'wizard-gold-carat') input.value = '22';
+    } else {
+      input.value = '';
+    }
+  });
+
+  setHawlAnswer(true);
+  localStorage.removeItem(AUTOSAVE_KEY);
+  goToStep(1);
+  showToast(STATE.language === 'ur' ? 'حساب دوبارہ شروع ہو گیا' : 'Wizard reset to start.', 'info');
+};
+
+// Auto-Save Management
+function saveWizardState() {
+  try {
+    const payload = {
+      language: STATE.language,
+      currency: STATE.currency,
+      nisabStandard: STATE.nisabStandard,
+      currentStep: STATE.currentStep,
+      wizard: STATE.wizard,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+
+    const statusEl = document.getElementById('wizard-autosave-status');
+    if (statusEl) {
+      statusEl.classList.add('text-emerald-700', 'font-bold');
+      setTimeout(() => {
+        statusEl.classList.remove('text-emerald-700', 'font-bold');
+      }, 1000);
+    }
+  } catch (e) {
+    console.warn('Auto-save unavailable:', e.message);
+  }
+}
+
+function loadWizardState() {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (!data) return;
+
+    if (data.language && TRANSLATIONS[data.language]) STATE.language = data.language;
+    if (data.currency && CURRENCIES[data.currency]) STATE.currency = data.currency;
+    if (data.nisabStandard) STATE.nisabStandard = data.nisabStandard;
+    if (data.wizard) {
+      STATE.wizard = Object.assign(STATE.wizard, data.wizard);
+    }
+    if (data.currentStep && data.currentStep >= 1 && data.currentStep <= 6) {
+      STATE.currentStep = data.currentStep;
+    }
+
+    // Hydrate DOM fields
+    document.querySelectorAll('[data-wizard-field]').forEach(input => {
+      const fieldName = input.getAttribute('data-wizard-field');
+      if (STATE.wizard[fieldName] !== undefined && STATE.wizard[fieldName] !== '') {
+        input.value = STATE.wizard[fieldName];
+      }
+    });
+
+    // Restore Hawl state
+    if (STATE.wizard.hawlAnswer) {
+      setHawlAnswer(STATE.wizard.hawlAnswer === 'yes');
+    }
+
+    // Restore step view
+    if (STATE.currentStep > 1) {
+      goToStep(STATE.currentStep);
+    }
+  } catch (e) {
+    console.warn('Failed to load auto-saved progress:', e.message);
+  }
+}
+
+// Carousel Functionality for Hadith & Quranic Verses Banner
 let carouselTimer = null;
 function initCarousel() {
   const track = document.querySelector('.carousel-track');
@@ -1162,24 +1471,24 @@ function initCarousel() {
   const dotsContainer = document.querySelector('.carousel-dots');
   const prevBtn = document.getElementById('carousel-prev-btn');
   const nextBtn = document.getElementById('carousel-next-btn');
-  
+
   if (!track || slides.length === 0) return;
 
   let currentIndex = 0;
 
   // Render Dots
-  dotsContainer.innerHTML = slides.map((_, index) => 
-    `<button class="w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === 0 ? 'bg-emerald-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'}" data-slide="${index}"></button>`
-  ).join('');
+  if (dotsContainer) {
+    dotsContainer.innerHTML = slides.map((_, index) =>
+      `<button class="w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === 0 ? 'bg-emerald-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'}" data-slide="${index}" aria-label="Go to slide ${index + 1}"></button>`
+    ).join('');
+  }
 
-  const dots = Array.from(dotsContainer.querySelectorAll('button'));
+  const dots = dotsContainer ? Array.from(dotsContainer.querySelectorAll('button')) : [];
 
   function updateCarousel() {
-    track.style.transform = `translateX(-${currentIndex * 100}%)`;
-    // For RTL layout support (translateX has direction reversed)
-    if (document.documentElement.dir === 'rtl') {
-      track.style.transform = `translateX(${currentIndex * 100}%)`;
-    }
+    const isRtl = document.documentElement.dir === 'rtl';
+    const offset = currentIndex * 100;
+    track.style.transform = isRtl ? `translateX(${offset}%)` : `translateX(-${offset}%)`;
 
     dots.forEach((dot, index) => {
       if (index === currentIndex) {
@@ -1202,7 +1511,7 @@ function initCarousel() {
 
   function startTimer() {
     stopTimer();
-    carouselTimer = setInterval(nextSlide, 15000); // Cycles every 15 seconds as requested
+    carouselTimer = setInterval(nextSlide, 15000);
   }
 
   function stopTimer() {
@@ -1234,7 +1543,7 @@ function initCarousel() {
   track.addEventListener('mouseenter', stopTimer);
   track.addEventListener('mouseleave', startTimer);
 
-  // Swipe support for mobile touchscreen sliding
+  // Touch Swipe Support
   let touchStartX = 0;
   let touchEndX = 0;
 
@@ -1244,64 +1553,61 @@ function initCarousel() {
 
   track.addEventListener('touchend', (e) => {
     touchEndX = e.changedTouches[0].screenX;
-    handleSwipe();
-  }, { passive: true });
-
-  function handleSwipe() {
-    const swipeThreshold = 40; // minimum pixels to count as swipe
+    const threshold = 40;
     const isRtl = document.documentElement.dir === 'rtl';
-    
-    if (touchEndX < touchStartX - swipeThreshold) {
-      // Swiped Left
-      if (isRtl) {
-        prevSlide();
-      } else {
-        nextSlide();
-      }
+
+    if (touchEndX < touchStartX - threshold) {
+      if (isRtl) prevSlide(); else nextSlide();
       startTimer();
-    } else if (touchEndX > touchStartX + swipeThreshold) {
-      // Swiped Right
-      if (isRtl) {
-        nextSlide();
-      } else {
-        prevSlide();
-      }
+    } else if (touchEndX > touchStartX + threshold) {
+      if (isRtl) nextSlide(); else prevSlide();
       startTimer();
     }
-  }
+  }, { passive: true });
 
   startTimer();
-
-  // Re-sync carousel alignment on window resize or layout dir shift
   window.addEventListener('resize', updateCarousel);
-  document.getElementById('language-select').addEventListener('change', () => {
-    setTimeout(updateCarousel, 50); // slight delay to wait for direction changes
-  });
 }
 
-// Event Listeners for miscellaneous toggles
-function setupEventListeners() {
-  const hawlCheckbox = document.getElementById('hawl-checkbox');
-  if (hawlCheckbox) {
-    hawlCheckbox.checked = STATE.alHawlConfirmed;
-    hawlCheckbox.addEventListener('change', (e) => {
-      STATE.alHawlConfirmed = e.target.checked;
-      calculateAll();
-    });
-  }
+// Modal System with Keyboard (Esc) and Backdrop Click Handling
+window.openModal = function(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  document.body.style.overflow = 'hidden';
 
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
-      }
-    });
-  });
-}
+  // Add Esc key listener
+  const escListener = (e) => {
+    if (e.key === 'Escape') {
+      closeModal(id);
+      document.removeEventListener('keydown', escListener);
+    }
+  };
+  document.addEventListener('keydown', escListener);
 
-// Toast System
+  // Click outside to close
+  modal.onclick = (e) => {
+    if (e.target === modal) {
+      closeModal(id);
+    }
+  };
+};
+
+window.closeModal = function(id) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('flex');
+  modal.classList.add('hidden');
+  document.body.style.overflow = '';
+};
+
+// Export PDF Report handler
+window.exportReport = function() {
+  window.print();
+};
+
+// Toast Notifications
 function showToast(message, type = 'success') {
   let container = document.getElementById('toast-container');
   if (!container) {
@@ -1319,9 +1625,8 @@ function showToast(message, type = 'success') {
     error: 'bg-rose-600 text-white'
   };
 
-  toast.className = `${colors[type] || colors.success} px-4 py-3 rounded-lg shadow-lg text-sm font-semibold flex items-center gap-2 animate-scale-in transition-all duration-300`;
+  toast.className = `${colors[type] || colors.success} px-4 py-3 rounded-xl shadow-lg text-sm font-semibold flex items-center gap-2 animate-scale-in transition-all duration-300`;
   toast.innerHTML = `<span>${message}</span>`;
-
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -1329,224 +1634,3 @@ function showToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 300);
   }, 3000);
 }
-
-// Draft/History Operations
-window.saveDraft = function() {
-  const timestamp = new Date().toISOString();
-  const lang = STATE.language;
-  const draftName = lang === 'ur' ? `ڈرافٹ - ${new Date().toLocaleTimeString()} (${new Date().toLocaleDateString()})` : (lang === 'ar' ? `مسودة - ${new Date().toLocaleTimeString()} (${new Date().toLocaleDateString()})` : `Draft - ${new Date().toLocaleTimeString()} (${new Date().toLocaleDateString()})`);
-  
-  const draft = {
-    id: generateId(),
-    name: draftName,
-    timestamp,
-    state: JSON.parse(JSON.stringify(STATE))
-  };
-
-  STATE.history.unshift(draft);
-  localStorage.setItem('zakat_calculator_history', JSON.stringify(STATE.history));
-  
-  showToast(lang === 'ur' ? 'ڈرافٹ کامیابی سے محفوظ ہو گیا!' : (lang === 'ar' ? 'تم حفظ المسودة بنجاح!' : 'Draft successfully saved to history!'));
-  loadHistory();
-};
-
-function loadHistory() {
-  const rawHistory = localStorage.getItem('zakat_calculator_history');
-  if (rawHistory) {
-    try {
-      STATE.history = JSON.parse(rawHistory);
-    } catch(e) {
-      STATE.history = [];
-    }
-  } else {
-    STATE.history = [];
-  }
-  renderHistoryModal();
-}
-
-window.loadDraftState = function(draftId) {
-  const draft = STATE.history.find(h => h.id === draftId);
-  if (!draft) return;
-
-  STATE.language = draft.state.language || 'en';
-  STATE.currency = draft.state.currency;
-  STATE.nisabStandard = draft.state.nisabStandard;
-  STATE.goldPrice = draft.state.goldPrice;
-  STATE.silverPrice = draft.state.silverPrice;
-  STATE.assets = JSON.parse(JSON.stringify(draft.state.assets));
-  STATE.liabilities = JSON.parse(JSON.stringify(draft.state.liabilities));
-  STATE.alHawlConfirmed = draft.state.alHawlConfirmed;
-
-  // Refresh inputs
-  document.getElementById('language-select').value = STATE.language;
-  document.getElementById('currency-select').value = STATE.currency;
-  document.getElementById('gold-price-input').value = STATE.goldPrice;
-  document.getElementById('silver-price-input').value = STATE.silverPrice;
-  document.getElementById('hawl-checkbox').checked = STATE.alHawlConfirmed;
-
-  // Toggle active tabs
-  const goldToggle = document.getElementById('nisab-gold-toggle');
-  const silverToggle = document.getElementById('nisab-silver-toggle');
-  if (STATE.nisabStandard === 'gold') {
-    goldToggle.classList.add('bg-emerald-600', 'text-white');
-    goldToggle.classList.remove('bg-slate-100', 'text-slate-700');
-    silverToggle.classList.remove('bg-emerald-600', 'text-white');
-    silverToggle.classList.add('bg-slate-100', 'text-slate-700');
-  } else {
-    silverToggle.classList.add('bg-emerald-600', 'text-white');
-    silverToggle.classList.remove('bg-slate-100', 'text-slate-700');
-    goldToggle.classList.remove('bg-emerald-600', 'text-white');
-    goldToggle.classList.add('bg-slate-100', 'text-slate-700');
-  }
-
-  translateUI();
-  renderAssets();
-  renderLiabilities();
-  calculateAll();
-  closeModal('history-modal');
-  showToast(STATE.language === 'ur' ? 'ڈرافٹ لوڈ ہو گیا!' : (STATE.language === 'ar' ? 'تم تحميل المسودة!' : 'Draft loaded successfully!'));
-};
-
-window.deleteDraft = function(draftId, event) {
-  if (event) event.stopPropagation();
-  STATE.history = STATE.history.filter(h => h.id !== draftId);
-  localStorage.setItem('zakat_calculator_history', JSON.stringify(STATE.history));
-  renderHistoryModal();
-  showToast(STATE.language === 'ur' ? 'ڈرافٹ خارج کر دیا گیا' : (STATE.language === 'ar' ? 'تم حذف المسودة' : 'Draft removed.'), 'info');
-};
-
-function renderHistoryModal() {
-  const container = document.getElementById('history-list');
-  if (!container) return;
-
-  const lang = STATE.language;
-
-  if (STATE.history.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-8 text-slate-400">
-        <svg class="w-12 h-12 mx-auto mb-3 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-        <p class="text-sm font-semibold">${TRANSLATIONS[lang].history_empty_title}</p>
-        <p class="text-xs mt-1">${TRANSLATIONS[lang].history_empty_body}</p>
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = STATE.history.map(draft => {
-    const totalAssets = draft.state.assets.reduce((sum, a) => sum + (a.total || 0), 0);
-    const totalLiabs = draft.state.liabilities.reduce((sum, l) => sum + (l.amount || 0), 0);
-    const net = totalAssets - totalLiabs;
-    const symbol = CURRENCIES[draft.state.currency].symbol;
-    const formattedNet = `${symbol} ${parseFloat(net).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-
-    return `
-      <div 
-        onclick="loadDraftState('${draft.id}')"
-        class="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-emerald-50/50 border border-slate-100 hover:border-emerald-200 rounded-xl cursor-pointer transition-all-300 group"
-      >
-        <div class="flex-1">
-          <h4 class="font-semibold text-slate-800 text-sm group-hover:text-emerald-800 transition-colors">${draft.name}</h4>
-          <div class="flex gap-4 mt-1 text-xs text-slate-400">
-            <span>${TRANSLATIONS[lang].history_net}: <strong class="text-slate-600">${formattedNet}</strong></span>
-            <span>${TRANSLATIONS[lang].history_curr}: <strong>${draft.state.currency}</strong></span>
-          </div>
-        </div>
-        <button 
-          onclick="deleteDraft('${draft.id}', event)"
-          class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all-300"
-          title="Delete draft"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-        </button>
-      </div>
-    `;
-  }).join('');
-}
-
-// Modal actions
-window.openModal = function(id) {
-  const modal = document.getElementById(id);
-  if (modal) {
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    document.body.style.overflow = 'hidden';
-  }
-};
-
-window.closeModal = function(id) {
-  const modal = document.getElementById(id);
-  if (modal) {
-    modal.classList.remove('flex');
-    modal.classList.add('hidden');
-    document.body.style.overflow = '';
-  }
-};
-
-// Export PDF Report
-window.exportReport = function() {
-  const printAssetsContainer = document.getElementById('print-assets-table-body');
-  const printLiabilitiesContainer = document.getElementById('print-liabilities-table-body');
-  const lang = STATE.language;
-
-  if (printAssetsContainer) {
-    printAssetsContainer.innerHTML = STATE.assets.map(asset => {
-      let unitText = '';
-      if (asset.unit !== 'Currency') {
-        const localizedUnit = asset.unit === 'Tolas' ? TRANSLATIONS[lang].unit_tolas : TRANSLATIONS[lang].unit_grams;
-        unitText = ` (${asset.amount} ${localizedUnit})`;
-      }
-      const transKey = `asset_${asset.type}`;
-      const assetName = TRANSLATIONS[lang][transKey] || asset.type;
-      
-      return `
-        <tr class="border-b border-slate-100">
-          <td class="py-2.5 font-medium text-slate-800 text-start">${assetName}${unitText}</td>
-          <td class="py-2.5 text-end font-semibold text-slate-900">${formatMoney(asset.total)}</td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  if (printLiabilitiesContainer) {
-    if (STATE.liabilities.length === 0 || (STATE.liabilities.length === 1 && !STATE.liabilities[0].description && STATE.liabilities[0].amount === 0)) {
-      printLiabilitiesContainer.innerHTML = `
-        <tr>
-          <td colspan="2" class="py-2.5 text-slate-400 italic text-sm text-start">No deductible liabilities reported.</td>
-        </tr>
-      `;
-    } else {
-      printLiabilitiesContainer.innerHTML = STATE.liabilities.map(lib => {
-        return `
-          <tr class="border-b border-slate-100">
-            <td class="py-2.5 text-slate-700 text-start">${lib.description || 'Debt'}</td>
-            <td class="py-2.5 text-end font-semibold text-slate-900">-${formatMoney(lib.amount)}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-  }
-
-  window.print();
-};
-
-// Sticky Bottom Bar scroll handler & smooth scroll helper for Mobile/Tablet responsive screens
-window.scrollToSummary = function() {
-  const resultBox = document.getElementById('zakat-result-box');
-  if (resultBox) {
-    resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-};
-
-window.addEventListener('scroll', () => {
-  const stickyBar = document.getElementById('sticky-mobile-summary');
-  const calcSection = document.getElementById('calculator-section');
-  if (!stickyBar || !calcSection) return;
-  
-  const rect = calcSection.getBoundingClientRect();
-  // Show sticky bar when user scrolls past the top of the calculator section inputs
-  if (rect.top < 0) {
-    stickyBar.classList.remove('translate-y-full');
-  } else {
-    stickyBar.classList.add('translate-y-full');
-  }
-});
