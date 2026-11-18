@@ -1,12 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;850;900&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
 
 :root {
   --font-sans: 'Inter', sans-serif;
   --font-display: 'Outfit', sans-serif;
+  --font-urdu: 'Noto Nastaliq Urdu', 'Noto Sans Arabic', 'Tajawal', serif;
+  --font-arabic: 'Tajawal', 'Noto Sans Arabic', sans-serif;
+}
+
+/* Accessible Root Text Scaling (A- / A / A+) */
+html.text-size-sm {
+  font-size: 15px;
+}
+
+html.text-size-md {
+  font-size: 16px; /* default base */
+}
+
+html.text-size-lg {
+  font-size: 18.5px; /* large scale for elderly / low-vision accessibility */
 }
 
 body {
   font-family: var(--font-sans);
+  font-size: 1.125rem; /* 18px body font minimum */
+  line-height: 1.7;
   background-color: #f8fafc;
   color: #0f172a;
   scroll-behavior: smooth;
@@ -16,13 +33,20 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
 }
 
-/* Multilingual Typography Overrides */
+/* ================= MULTILINGUAL TYPOGRAPHY & RTL ================= */
+
+/* Arabic Typography */
 html[lang="ar"] body, 
-html[lang="ar"] input, 
 html[lang="ar"] select, 
 html[lang="ar"] button,
 html[lang="ar"] textarea {
-  font-family: 'Tajawal', var(--font-sans) !important;
+  font-family: var(--font-arabic) !important;
+  line-height: 1.8 !important;
+}
+
+html[lang="ar"] input {
+  font-family: 'Noto Sans Arabic', var(--font-sans) !important;
+  line-height: 1.5 !important;
 }
 
 html[lang="ar"] h1, 
@@ -31,17 +55,20 @@ html[lang="ar"] h3,
 html[lang="ar"] h4, 
 html[lang="ar"] h5, 
 html[lang="ar"] h6 {
-  font-family: 'Tajawal', var(--font-display) !important;
+  font-family: var(--font-arabic) !important;
   font-weight: 800 !important;
+  line-height: 1.5 !important;
 }
 
-html[lang="ur"] body, 
-html[lang="ur"] input, 
-html[lang="ur"] select, 
-html[lang="ur"] button,
-html[lang="ur"] textarea {
-  font-family: 'Noto Nastaliq Urdu', 'Tajawal', var(--font-sans) !important;
-  line-height: 2.2 !important; /* Nastaliq requires extra line-height */
+/* Urdu Typography (Noto Nastaliq for prose, Noto Sans Arabic for crisp inputs & numerals) */
+html[lang="ur"] body,
+html[lang="ur"] p,
+html[lang="ur"] blockquote,
+html[lang="ur"] label,
+html[lang="ur"] li,
+html[lang="ur"] button {
+  font-family: var(--font-urdu) !important;
+  line-height: 2.1 !important; /* Generous line height ensures ligatures and diacritics never clip */
 }
 
 html[lang="ur"] h1, 
@@ -50,8 +77,100 @@ html[lang="ur"] h3,
 html[lang="ur"] h4, 
 html[lang="ur"] h5, 
 html[lang="ur"] h6 {
-  font-family: 'Noto Nastaliq Urdu', 'Tajawal', var(--font-display) !important;
+  font-family: var(--font-urdu) !important;
   line-height: 2.0 !important;
+  font-weight: 700 !important;
+}
+
+/* Input fields, numbers and currency codes in Urdu */
+html[lang="ur"] input,
+html[lang="ur"] select,
+html[lang="ur"] .currency-symbol,
+html[lang="ur"] .font-mono,
+html[lang="ur"] .tabular-nums {
+  font-family: 'Noto Sans Arabic', 'Inter', sans-serif !important;
+  line-height: 1.5 !important;
+}
+
+/* RTL Logical Properties & Directional Mirroring */
+[dir="rtl"] .rtl-mirror {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .rtl-flip {
+  transform: rotate(180deg);
+}
+
+/* Progress bar fill for RTL */
+[dir="rtl"] #wizard-progress-bar {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+/* Text Size Selector Buttons */
+.text-size-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  color: #475569;
+  transition: all 0.2s ease;
+  min-height: 36px;
+  min-width: 36px;
+}
+
+.text-size-btn:hover {
+  color: #047857;
+  background-color: #ffffff;
+}
+
+.text-size-btn.active {
+  background-color: #ffffff;
+  color: #065f46;
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Read Aloud Button Styles */
+.read-aloud-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  min-height: 48px; /* 48px tap target */
+}
+
+.read-aloud-btn:hover {
+  background-color: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.read-aloud-btn.speaking {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  border-color: #fcd34d !important;
+  animation: speechPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes speechPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+  }
 }
 
 /* Custom Scrollbars */

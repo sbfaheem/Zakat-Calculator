@@ -58,8 +58,39 @@
         <button type="button" onclick="resetWizard()" class="text-slate-400 hover:text-rose-600 text-xs font-bold pb-1.5 pt-0.5 transition-colors" data-i18n="btn_start_over">Reset / Start Again</button>
       </nav>
 
-      <!-- Currency, Language Selector & Auto-save Status -->
-      <div class="flex items-center gap-3">
+      <!-- Currency, Language, Text Size Selector & Auto-save Status -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Text Size Control (A- / A / A+) -->
+        <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-2xs" role="group" aria-label="Text size control">
+          <button 
+            type="button" 
+            onclick="setTextSize('sm')" 
+            id="text-size-sm" 
+            class="text-size-btn px-2 py-1 text-xs font-bold tap-target-48 sm:tap-target-auto" 
+            title="Small text" 
+            aria-label="Small text size"
+            aria-pressed="false"
+          >A-</button>
+          <button 
+            type="button" 
+            onclick="setTextSize('md')" 
+            id="text-size-md" 
+            class="text-size-btn active px-2.5 py-1 text-xs font-bold tap-target-48 sm:tap-target-auto" 
+            title="Normal text" 
+            aria-label="Normal text size"
+            aria-pressed="true"
+          >A</button>
+          <button 
+            type="button" 
+            onclick="setTextSize('lg')" 
+            id="text-size-lg" 
+            class="text-size-btn px-2 py-1 text-xs font-bold tap-target-48 sm:tap-target-auto" 
+            title="Large text" 
+            aria-label="Large text size"
+            aria-pressed="false"
+          >A+</button>
+        </div>
+
         <!-- Auto-save Pill -->
         <span id="nav-autosave-badge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-100 shadow-sm">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -117,7 +148,7 @@
 
   <!-- ================= SPIRITUAL INSIGHTS BANNER ================= -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 no-print animate-fade-in-up">
-    <div class="relative bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-950 text-white rounded-3xl p-8 md:p-10 shadow-premium-lg overflow-hidden border border-emerald-800/30">
+    <div class="relative bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-950 text-white rounded-3xl p-5 sm:p-8 md:p-10 shadow-premium-lg overflow-hidden border border-emerald-800/30">
       <!-- Ambient glow effect circles -->
       <div class="absolute -right-24 -top-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div class="absolute -left-24 -bottom-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -135,7 +166,7 @@
         <div class="w-full overflow-hidden relative">
           <div class="carousel-track">
             <!-- Slide 1 -->
-            <div class="carousel-slide flex flex-col justify-center text-center min-h-[150px] md:min-h-[120px] px-12 sm:px-16 md:px-24">
+            <div class="carousel-slide flex flex-col justify-center text-center min-h-[140px] md:min-h-[120px] px-8 sm:px-14 md:px-20">
               <blockquote class="text-sm md:text-base italic text-slate-100 font-medium leading-relaxed max-w-4xl mx-auto" data-i18n="insight_1_quote">
                 "Indeed, those who believe and do righteous deeds and establish prayer and give Zakat will have their reward..."
               </blockquote>
@@ -144,7 +175,7 @@
               </cite>
             </div>
             <!-- Slide 2 -->
-            <div class="carousel-slide flex flex-col justify-center text-center min-h-[150px] md:min-h-[120px] px-12 sm:px-16 md:px-24">
+            <div class="carousel-slide flex flex-col justify-center text-center min-h-[140px] md:min-h-[120px] px-8 sm:px-14 md:px-20">
               <blockquote class="text-sm md:text-base italic text-slate-100 font-medium leading-relaxed max-w-4xl mx-auto" data-i18n="insight_2_quote">
                 "There is not a day upon which the servants wake up except that two angels descend..."
               </blockquote>
@@ -153,7 +184,7 @@
               </cite>
             </div>
             <!-- Slide 3 -->
-            <div class="carousel-slide flex flex-col justify-center text-center min-h-[150px] md:min-h-[120px] px-12 sm:px-16 md:px-24">
+            <div class="carousel-slide flex flex-col justify-center text-center min-h-[140px] md:min-h-[120px] px-8 sm:px-14 md:px-20">
               <blockquote class="text-sm md:text-base italic text-slate-100 font-medium leading-relaxed max-w-4xl mx-auto" data-i18n="insight_3_quote">
                 "Take, [O Muhammad], from their wealth a charity by which you purify them and cause them increase..."
               </blockquote>
@@ -162,7 +193,7 @@
               </cite>
             </div>
             <!-- Slide 4 -->
-            <div class="carousel-slide flex flex-col justify-center text-center min-h-[150px] md:min-h-[120px] px-12 sm:px-16 md:px-24">
+            <div class="carousel-slide flex flex-col justify-center text-center min-h-[140px] md:min-h-[120px] px-8 sm:px-14 md:px-20">
               <blockquote class="text-sm md:text-base italic text-slate-100 font-medium leading-relaxed max-w-4xl mx-auto" data-i18n="insight_4_quote">
                 "Charity extinguishes sin as water extinguishes fire."
               </blockquote>
@@ -256,6 +287,12 @@
           <p class="text-base sm:text-lg text-slate-600 leading-relaxed font-medium" data-i18n="welcome_desc">
             A serene, simple, and spiritually precise calculator. We guide you step by step with plain everyday words.
           </p>
+          <div class="pt-2 flex justify-center">
+            <button type="button" onclick="readStepAloud(1)" id="read-aloud-btn-1" class="read-aloud-btn" aria-label="Read this step aloud">
+              <span class="read-aloud-icon">🔊</span>
+              <span class="read-aloud-label" data-i18n="btn_read_aloud">سنیں (آواز میں)</span>
+            </button>
+          </div>
         </div>
 
         <!-- Language Choice -->
@@ -419,13 +456,19 @@
     <div id="step-2" class="wizard-step no-print">
       <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
         
-        <div>
-          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="cash_step_title">
-            Cash at home and in the bank
-          </h2>
-          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="cash_step_subtitle">
-            Enter all paper currency, bank balances, and reliable money owed to you.
-          </p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="cash_step_title">
+              Cash at home and in the bank
+            </h2>
+            <p class="text-base text-slate-500 font-medium mt-1" data-i18n="cash_step_subtitle">
+              Enter all paper currency, bank balances, and reliable money owed to you.
+            </p>
+          </div>
+          <button type="button" onclick="readStepAloud(2)" id="read-aloud-btn-2" class="read-aloud-btn self-start sm:self-center" aria-label="Read this step aloud">
+            <span class="read-aloud-icon">🔊</span>
+            <span class="read-aloud-label" data-i18n="btn_read_aloud">سنیں (آواز میں)</span>
+          </button>
         </div>
 
         <div class="space-y-5">
@@ -521,13 +564,19 @@
     <div id="step-3" class="wizard-step no-print">
       <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
         
-        <div>
-          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="gold_step_title">
-            Gold and Silver
-          </h2>
-          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="gold_step_subtitle">
-            Enter gold and silver in any weight (tolas, grams, or ounces) and select its carat purity.
-          </p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="gold_step_title">
+              Gold and Silver
+            </h2>
+            <p class="text-base text-slate-500 font-medium mt-1" data-i18n="gold_step_subtitle">
+              Enter gold and silver in any weight (tolas, grams, or ounces) and select its carat purity.
+            </p>
+          </div>
+          <button type="button" onclick="readStepAloud(3)" id="read-aloud-btn-3" class="read-aloud-btn self-start sm:self-center" aria-label="Read this step aloud">
+            <span class="read-aloud-icon">🔊</span>
+            <span class="read-aloud-label" data-i18n="btn_read_aloud">سنیں (آواز میں)</span>
+          </button>
         </div>
 
         <!-- Neutral Note on Jewelry -->
@@ -648,13 +697,19 @@
     <div id="step-4" class="wizard-step no-print">
       <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
         
-        <div>
-          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="business_step_title">
-            Business goods and investments
-          </h2>
-          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="business_step_subtitle">
-            Enter trade inventory, business cash, shares, and real estate purchased for resale.
-          </p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="business_step_title">
+              Business goods and investments
+            </h2>
+            <p class="text-base text-slate-500 font-medium mt-1" data-i18n="business_step_subtitle">
+              Enter trade inventory, business cash, shares, and real estate purchased for resale.
+            </p>
+          </div>
+          <button type="button" onclick="readStepAloud(4)" id="read-aloud-btn-4" class="read-aloud-btn self-start sm:self-center" aria-label="Read this step aloud">
+            <span class="read-aloud-icon">🔊</span>
+            <span class="read-aloud-label" data-i18n="btn_read_aloud">سنیں (آواز میں)</span>
+          </button>
         </div>
 
         <!-- Essential Exclusion Note -->
@@ -758,13 +813,19 @@
     <div id="step-5" class="wizard-step no-print">
       <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
         
-        <div>
-          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="debts_step_title">
-            Money you owe others
-          </h2>
-          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="debts_step_subtitle">
-            Only subtract debts and bills due right now or within the current lunar year.
-          </p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="debts_step_title">
+              Money you owe others
+            </h2>
+            <p class="text-base text-slate-500 font-medium mt-1" data-i18n="debts_step_subtitle">
+              Only subtract debts and bills due right now or within the current lunar year.
+            </p>
+          </div>
+          <button type="button" onclick="readStepAloud(5)" id="read-aloud-btn-5" class="read-aloud-btn self-start sm:self-center" aria-label="Read this step aloud">
+            <span class="read-aloud-icon">🔊</span>
+            <span class="read-aloud-label" data-i18n="btn_read_aloud">سنیں (آواز میں)</span>
+          </button>
         </div>
 
         <!-- Advisory Note -->
@@ -851,13 +912,19 @@
     <div id="step-6" class="wizard-step no-print">
       <div class="bg-white border border-slate-100 rounded-3xl p-6 sm:p-8 shadow-premium space-y-6">
         
-        <div>
-          <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="result_step_title">
-            Your Zakat Calculation Result
-          </h2>
-          <p class="text-base text-slate-500 font-medium mt-1" data-i18n="result_step_subtitle">
-            Complete spiritual assessment of your wealth purification obligation.
-          </p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 font-display" data-i18n="result_step_title">
+              Your Zakat Calculation Result
+            </h2>
+            <p class="text-base text-slate-500 font-medium mt-1" data-i18n="result_step_subtitle">
+              Complete spiritual assessment of your wealth purification obligation.
+            </p>
+          </div>
+          <button type="button" onclick="readStepAloud(6)" id="read-aloud-btn-6" class="read-aloud-btn self-start sm:self-center" aria-label="Read this step aloud">
+            <span class="read-aloud-icon">🔊</span>
+            <span class="read-aloud-label" data-i18n="btn_read_aloud">سنیں (آواز میں)</span>
+          </button>
         </div>
 
         <!-- Al-Hawl Question Card -->
