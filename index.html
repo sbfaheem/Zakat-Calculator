@@ -8,6 +8,14 @@
   <meta name="description" content="A serene, accurate, and premium Zakat calculator designed to help you purify your wealth. Calculate assets, liabilities, and Nisab thresholds in real-time based on Islamic principles.">
   <meta name="keywords" content="Zakat Calculator, Islamic Finance, Nisab Gold, Nisab Silver, Purify Wealth, Sadaqah, Islamic Calculator">
   
+  <!-- Resource Hints & Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap">
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -30,7 +38,7 @@
   <!-- Local Custom CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-slate-50/50 min-h-screen flex flex-col antialiased selection:bg-emerald-100 selection:text-emerald-800">
+<body class="theme-auto bg-slate-50/50 min-h-screen flex flex-col antialiased selection:bg-emerald-100 selection:text-emerald-800">
 
   <!-- ================= HEADER / NAVIGATION ================= -->
   <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 no-print">
@@ -112,7 +120,7 @@
         <!-- Currency Select -->
         <div class="relative">
           <select 
-            id="currency-select" 
+            id="currency-select" aria-label="Select Currency" 
             class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300"
           >
             <!-- Generated dynamically via JS -->
@@ -324,7 +332,7 @@
             2. Choose Currency / کرنسی منتخب کریں
           </label>
           <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-            <button type="button" onclick="setCurrency('PKR')" class="curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-emerald-600 text-white border-emerald-600 shadow-sm" data-curr="PKR">
+            <button type="button" onclick="setCurrency('PKR')" class="curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-emerald-700 text-white border-emerald-700 shadow-sm" data-curr="PKR">
               <span class="block text-base">PKR (Rs)</span>
               <span class="text-[11px] opacity-90">پاکستان</span>
             </button>
@@ -386,7 +394,7 @@
                 <button type="button" onclick="showHelp('silver-nisab')" class="text-xs text-emerald-700 font-bold hover:underline">? Help</button>
               </div>
               <div class="relative">
-                <span class="absolute start-3.5 top-3 text-sm font-bold text-slate-400 currency-symbol">Rs</span>
+                <span class="absolute start-3.5 top-3 text-sm font-bold text-slate-600 currency-symbol">Rs</span>
                 <input type="number" id="silver-price-input" step="0.01" min="0" inputmode="decimal" class="w-full bg-white border border-slate-300 rounded-xl ps-10 pe-4 py-2.5 text-base text-slate-900 font-bold input-focus-ring">
               </div>
               <p class="text-[11px] text-slate-500 mt-1" data-i18n="silver_price_hint">Editable. Silver Nisab: 52.5 tolas = 612.36 grams</p>
@@ -402,7 +410,7 @@
                 <button type="button" onclick="showHelp('gold-nisab')" class="text-xs text-emerald-700 font-bold hover:underline">? Help</button>
               </div>
               <div class="relative">
-                <span class="absolute start-3.5 top-3 text-sm font-bold text-slate-400 currency-symbol">Rs</span>
+                <span class="absolute start-3.5 top-3 text-sm font-bold text-slate-600 currency-symbol">Rs</span>
                 <input type="number" id="gold-price-input" step="0.01" min="0" inputmode="decimal" class="w-full bg-white border border-slate-300 rounded-xl ps-10 pe-4 py-2.5 text-base text-slate-900 font-bold input-focus-ring">
               </div>
               <p class="text-[11px] text-slate-500 mt-1" data-i18n="gold_price_hint">Editable. Gold Nisab: 7.5 tolas = 87.48 grams</p>
@@ -487,7 +495,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-cash-in-hand" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="cashInHand">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_cash_in_hand">All cash in pockets, safe, wallet, or drawers.</p>
@@ -504,7 +512,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-bank-accounts" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="bankAccounts">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_bank_accounts">Total current balance across all checking and savings accounts.</p>
@@ -521,7 +529,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-other-savings" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="otherSavings">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_other_savings">BC/committees saved, National Savings certificates, or foreign currency cash.</p>
@@ -538,7 +546,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-money-owed-to-me" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="moneyOwedToMe">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_money_owed_to_me">Only count good loans you expect to be repaid. Doubtful bad debts are not counted.</p>
@@ -736,7 +744,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-shop-stock" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="shopStock">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_shop_stock">Valued at wholesale cost on calculation date. Do not count store fixtures or shelves.</p>
@@ -753,7 +761,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-business-cash" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="businessCash">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_business_cash">Cash held for operating expenses, payroll, or supplier payments.</p>
@@ -770,7 +778,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-shares-funds" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="sharesFunds">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_shares_funds">Active trading shares at current market value; long-term dividend shares on their zakatable liquid assets proportion.</p>
@@ -787,7 +795,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-slate-400 currency-symbol">Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-slate-600 currency-symbol">Rs</span>
               <input type="text" id="wizard-property-for-sale" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-12 pe-4 py-3 text-xl text-slate-900 font-extrabold input-focus-ring transition-all" data-wizard-field="propertyForSale">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_property_for_sale">Only property purchased with active intention to resell for commercial profit.</p>
@@ -852,7 +860,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-rose-500 currency-symbol">-Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-rose-700 currency-symbol">-Rs</span>
               <input type="text" id="wizard-debts-due-now" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-14 pe-4 py-3 text-xl text-rose-700 font-extrabold input-focus-ring transition-all" data-wizard-field="debtsDueNow">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_debts_due_now">Money you borrowed from relatives, friends, or lenders that must be paid back now.</p>
@@ -869,7 +877,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-rose-500 currency-symbol">-Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-rose-700 currency-symbol">-Rs</span>
               <input type="text" id="wizard-unpaid-bills" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-14 pe-4 py-3 text-xl text-rose-700 font-extrabold input-focus-ring transition-all" data-wizard-field="unpaidBills">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_unpaid_bills">Overdue house rent, pending electricity/gas bills, or due salaries of home/office staff.</p>
@@ -886,7 +894,7 @@
               </button>
             </div>
             <div class="relative">
-              <span class="absolute start-4 top-3 text-lg font-bold text-rose-500 currency-symbol">-Rs</span>
+              <span class="absolute start-4 top-3 text-lg font-bold text-rose-700 currency-symbol">-Rs</span>
               <input type="text" id="wizard-installments-this-year" inputmode="decimal" placeholder="0" class="wizard-input-field w-full bg-white border border-slate-300 rounded-xl ps-14 pe-4 py-3 text-xl text-rose-700 font-extrabold input-focus-ring transition-all" data-wizard-field="installmentsThisYear">
             </div>
             <p class="text-xs text-slate-500 font-medium" data-i18n="hint_installments_this_year">Only the sum of installments falling due in the next 12 months.</p>
@@ -1197,15 +1205,15 @@
       <!-- Brand & Mission -->
       <div>
         <span class="text-lg font-bold text-white font-display" data-i18n="brand_name_footer">Zakat<span class="text-emerald-500">Flow</span></span>
-        <p class="text-xs text-slate-500 mt-3 leading-relaxed max-w-sm" data-i18n="footer_desc">
+        <p class="text-xs text-slate-300 mt-3 leading-relaxed max-w-sm" data-i18n="footer_desc">
           A modern digital experience supporting the accurate distribution and purification of wealth. Dedicated to spiritual precision and communal growth.
         </p>
       </div>
 
       <!-- Islamic Jurisprudence Summary -->
       <div>
-        <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3 font-display" data-i18n="footer_categories_title">Eight Categories of Zakat</h4>
-        <p class="text-xs text-slate-500 leading-relaxed italic">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3 font-display" data-i18n="footer_categories_title">Eight Categories of Zakat</h3>
+        <p class="text-xs text-slate-300 leading-relaxed italic">
           <span data-i18n="footer_categories_text">"Zakat expenditures are only for the poor and for the needy and for those employed to collect it and for bringing hearts together and for freeing captives and for those in debt and for the cause of Allah and for the [stranded] traveler..."</span> <br>
           <strong class="text-emerald-500 block mt-1 text-[10px] not-italic font-bold uppercase" data-i18n="footer_categories_source">— Surah At-Tawbah 9:60</strong>
         </p>
@@ -1213,7 +1221,7 @@
 
       <!-- Quick Resource Links -->
       <div>
-        <h4 class="text-sm font-bold text-white uppercase tracking-wider mb-3 font-display" data-i18n="footer_resources">Resources</h4>
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider mb-3 font-display" data-i18n="footer_resources">Resources</h3>
         <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
           <button type="button" onclick="openModal('principles-modal')" class="hover:text-emerald-400 transition-colors text-start" data-i18n="nav_principles">Principles</button>
           <button type="button" onclick="openModal('nisab-modal')" class="hover:text-emerald-400 transition-colors text-start" data-i18n="nav_nisab">Nisab Standards</button>
@@ -1225,7 +1233,7 @@
     </div>
 
     <!-- Copyright & Guaranteed Privacy Line -->
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-semibold">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-300 font-semibold">
       <div>
         <span data-i18n="footer_copyright">&copy; 2026 ZakatFlow. Dedicated to spiritual precision and communal growth.</span>
         <p class="text-xs text-emerald-400/90 mt-1 flex items-center gap-1.5 font-medium">
@@ -1234,9 +1242,9 @@
         </p>
       </div>
       <div class="flex gap-4">
-        <button type="button" onclick="openModal('terms-modal')" class="hover:text-slate-300 transition-colors" data-i18n="footer_terms">Terms of Service</button>
-        <button type="button" onclick="openModal('privacy-modal')" class="hover:text-slate-300 transition-colors" data-i18n="footer_privacy">Privacy Policy</button>
-        <button type="button" onclick="openModal('support-modal')" class="hover:text-slate-300 transition-colors" data-i18n="footer_contact">Contact Support</button>
+        <button type="button" onclick="openModal('terms-modal')" class="text-slate-300 hover:text-white transition-colors underline-offset-2 hover:underline" data-i18n="footer_terms">Terms of Service</button>
+        <button type="button" onclick="openModal('privacy-modal')" class="text-slate-300 hover:text-white transition-colors underline-offset-2 hover:underline" data-i18n="footer_privacy">Privacy Policy</button>
+        <button type="button" onclick="openModal('support-modal')" class="text-slate-300 hover:text-white transition-colors underline-offset-2 hover:underline" data-i18n="footer_contact">Contact Support</button>
       </div>
     </div>
   </footer>

@@ -1192,7 +1192,7 @@ function updateCurrencyCards() {
   document.querySelectorAll('.curr-card').forEach(card => {
     const curr = card.getAttribute('data-curr');
     if (curr === STATE.currency) {
-      card.className = "curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-emerald-600 text-white border-emerald-600 shadow-sm";
+      card.className = "curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-emerald-700 text-white border-emerald-700 shadow-sm";
     } else {
       card.className = "curr-card tap-target-48 p-3 rounded-2xl border text-center transition-all duration-200 font-bold text-sm bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
     }

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap');
+/* Fonts loaded via preconnected <link> in index.html for parallel non-blocking delivery */
 
 :root {
   --font-sans: 'Inter', sans-serif;
@@ -260,42 +260,101 @@ a:focus-visible {
 
 /* Dark Mode support (Calm dark SaaS palette) */
 @media (prefers-color-scheme: dark) {
+  body,
   body.theme-auto {
     background-color: #090d16;
     color: #f1f5f9;
   }
+  body .bg-white,
   body.theme-auto .bg-white {
     background-color: #111827;
     color: #f8fafc;
     border-color: #1f2937;
   }
+  body .bg-slate-50,
+  body .bg-slate-50\/50,
   body.theme-auto .bg-slate-50,
   body.theme-auto .bg-slate-50\/50 {
     background-color: #172033;
     color: #f8fafc;
   }
+  body .text-slate-800,
+  body .text-slate-900,
   body.theme-auto .text-slate-800,
   body.theme-auto .text-slate-900 {
     color: #f8fafc;
   }
+  body .text-slate-500,
+  body .text-slate-600,
   body.theme-auto .text-slate-500,
   body.theme-auto .text-slate-600 {
     color: #94a3b8;
   }
+  body .border-slate-100,
+  body .border-slate-200,
   body.theme-auto .border-slate-100,
   body.theme-auto .border-slate-200 {
     border-color: #1f2937;
   }
+  body input,
+  body select,
   body.theme-auto input,
   body.theme-auto select {
     background-color: #172033;
     color: #f8fafc;
     border-color: #334155;
   }
+  body header,
   body.theme-auto header {
     background-color: rgba(17, 24, 39, 0.85);
     border-color: #1f2937;
   }
+  body aside#sticky-mobile-summary,
+  body.theme-auto aside#sticky-mobile-summary {
+    background-color: rgba(17, 24, 39, 0.95);
+    border-color: #1f2937;
+  }
+}
+
+body.dark {
+  background-color: #090d16;
+  color: #f1f5f9;
+}
+body.dark .bg-white {
+  background-color: #111827;
+  color: #f8fafc;
+  border-color: #1f2937;
+}
+body.dark .bg-slate-50,
+body.dark .bg-slate-50\/50 {
+  background-color: #172033;
+  color: #f8fafc;
+}
+body.dark .text-slate-800,
+body.dark .text-slate-900 {
+  color: #f8fafc;
+}
+body.dark .text-slate-500,
+body.dark .text-slate-600 {
+  color: #94a3b8;
+}
+body.dark .border-slate-100,
+body.dark .border-slate-200 {
+  border-color: #1f2937;
+}
+body.dark input,
+body.dark select {
+  background-color: #172033;
+  color: #f8fafc;
+  border-color: #334155;
+}
+body.dark header {
+  background-color: rgba(17, 24, 39, 0.85);
+  border-color: #1f2937;
+}
+body.dark aside#sticky-mobile-summary {
+  background-color: rgba(17, 24, 39, 0.95);
+  border-color: #1f2937;
 }
 
 /* Smooth Transitions */
