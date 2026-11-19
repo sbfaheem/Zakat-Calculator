@@ -1593,16 +1593,27 @@ function updateWizardCalculations() {
     zakatDue: 0
   };
 
+  // 3. Extract Totals with Defensive Fallbacks
+  const cashTotal = totals.cashTotal ?? totals.breakdown?.cash?.total ?? 0;
+  const metalsTotal = totals.metalsTotal ?? totals.breakdown?.preciousMetals?.total ?? 0;
+  const businessTotal = totals.businessTotal ?? totals.breakdown?.business?.total ?? 0;
+  const debtsTotal = totals.debtsTotal ?? totals.breakdown?.liabilities?.total ?? 0;
+  const goldPureGrams = totals.goldPureGrams ?? totals.breakdown?.preciousMetals?.gold?.pureGoldGrams ?? 0;
+  const goldValue = totals.goldValue ?? totals.breakdown?.preciousMetals?.gold?.total ?? 0;
+  const silverValue = totals.silverValue ?? totals.breakdown?.preciousMetals?.silver?.total ?? 0;
+  const netWealth = totals.netWealth ?? 0;
+  const zakatDue = totals.zakatDue ?? totals.zakatResult?.zakatDue ?? 0;
+
   // 3. Update Step Subtotals
   const subtotalCashEl = document.getElementById('wizard-subtotal-cash');
   const subtotalMetalsEl = document.getElementById('wizard-subtotal-metals');
   const subtotalBusinessEl = document.getElementById('wizard-subtotal-business');
   const subtotalDebtsEl = document.getElementById('wizard-subtotal-debts');
 
-  if (subtotalCashEl) subtotalCashEl.textContent = formatMoney(totals.cashTotal);
-  if (subtotalMetalsEl) subtotalMetalsEl.textContent = formatMoney(totals.metalsTotal);
-  if (subtotalBusinessEl) subtotalBusinessEl.textContent = formatMoney(totals.businessTotal);
-  if (subtotalDebtsEl) subtotalDebtsEl.textContent = `-${formatMoney(totals.debtsTotal)}`;
+  if (subtotalCashEl) subtotalCashEl.textContent = formatMoney(cashTotal);
+  if (subtotalMetalsEl) subtotalMetalsEl.textContent = formatMoney(metalsTotal);
+  if (subtotalBusinessEl) subtotalBusinessEl.textContent = formatMoney(businessTotal);
+  if (subtotalDebtsEl) subtotalDebtsEl.textContent = `-${formatMoney(debtsTotal)}`;
 
   // 4. Update Gold & Silver Live Math Displays
   const pureGoldDisplay = document.getElementById('wizard-pure-gold-display');
@@ -1610,13 +1621,13 @@ function updateWizardCalculations() {
   const silverValDisplay = document.getElementById('wizard-silver-val-display');
 
   if (pureGoldDisplay) {
-    pureGoldDisplay.textContent = `${totals.goldPureGrams.toFixed(2)} grams`;
+    pureGoldDisplay.textContent = `${Number(goldPureGrams || 0).toFixed(2)} grams`;
   }
   if (goldValDisplay) {
-    goldValDisplay.textContent = formatMoney(totals.goldValue);
+    goldValDisplay.textContent = formatMoney(goldValue);
   }
   if (silverValDisplay) {
-    silverValDisplay.textContent = formatMoney(totals.silverValue);
+    silverValDisplay.textContent = formatMoney(silverValue);
   }
 
   // 5. Update Live Bottom Bar
@@ -1624,8 +1635,8 @@ function updateWizardCalculations() {
   const liveNetWealthEl = document.getElementById('live-net-wealth-text');
   const liveNisabChipVal = document.getElementById('live-nisab-chip-val');
 
-  if (stickyZakatEl) stickyZakatEl.textContent = formatMoney(totals.zakatDue);
-  if (liveNetWealthEl) liveNetWealthEl.textContent = `(Net: ${formatMoney(totals.netWealth)})`;
+  if (stickyZakatEl) stickyZakatEl.textContent = formatMoney(zakatDue);
+  if (liveNetWealthEl) liveNetWealthEl.textContent = `(Net: ${formatMoney(netWealth)})`;
   if (liveNisabChipVal) liveNisabChipVal.textContent = formatMoney(activeNisabThreshold);
 
   // 6. Update Step 6 Breakdown Cards (6 cards with small icons)
@@ -1636,11 +1647,11 @@ function updateWizardCalculations() {
   const cardNet = document.getElementById('card-breakdown-net');
   const cardNisab = document.getElementById('card-breakdown-nisab');
 
-  if (cardCash) cardCash.textContent = formatMoney(totals.cashTotal);
-  if (cardMetals) cardMetals.textContent = formatMoney(totals.metalsTotal);
-  if (cardBusiness) cardBusiness.textContent = formatMoney(totals.businessTotal);
-  if (cardDebts) cardDebts.textContent = `-${formatMoney(totals.debtsTotal)}`;
-  if (cardNet) cardNet.textContent = formatMoney(totals.netWealth);
+  if (cardCash) cardCash.textContent = formatMoney(cashTotal);
+  if (cardMetals) cardMetals.textContent = formatMoney(metalsTotal);
+  if (cardBusiness) cardBusiness.textContent = formatMoney(businessTotal);
+  if (cardDebts) cardDebts.textContent = `-${formatMoney(debtsTotal)}`;
+  if (cardNet) cardNet.textContent = formatMoney(netWealth);
   if (cardNisab) cardNisab.textContent = formatMoney(activeNisabThreshold);
 
   // 7. Update Step 6 Main Result Card & Canonical Plain Headline

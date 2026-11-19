@@ -288,12 +288,24 @@
         business: { shopStock, businessCash, sharesFunds, propertyForSale, total: totalBusiness },
         liabilities: { debtsDueNow, unpaidBills, installmentsThisYear, total: totalLiabilities }
       },
+      cashTotal: totalCash,
+      goldPureGrams: pureGoldGrams,
+      goldValue: totalGold,
+      silverGrams: silverWeightGrams,
+      silverValue: totalSilver,
+      metalsTotal: totalPreciousMetals,
+      businessTotal: totalBusiness,
+      debtsTotal: totalLiabilities,
+      grossAssets: totalAssets,
       totalAssets,
       totalLiabilities,
       netWealth,
       nisabThreshold,
       activeStandard: standard,
-      zakatResult
+      zakatResult,
+      meetsNisab: zakatResult.meetsNisab,
+      zakatDue: zakatResult.zakatDue,
+      isEligible: zakatResult.isEligible
     };
   }
 
