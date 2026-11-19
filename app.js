@@ -1172,6 +1172,21 @@ function initStep1Controls() {
   updateLanguageCards();
   updateCurrencyCards();
   initNisabPriceInputs();
+
+  // Attach change listeners to header selects
+  const langSelect = document.getElementById('language-select');
+  if (langSelect) {
+    langSelect.addEventListener('change', (e) => {
+      setLanguage(e.target.value);
+    });
+  }
+
+  const currSelect = document.getElementById('currency-select');
+  if (currSelect) {
+    currSelect.addEventListener('change', (e) => {
+      setCurrency(e.target.value);
+    });
+  }
 }
 
 function updateLanguageCards() {
@@ -1265,6 +1280,7 @@ function translateUI() {
 
   // Update dynamic banner and step titles
   updateStepHeader();
+  if (typeof window.updateCarousel === 'function') window.updateCarousel();
   if (typeof resetAllReadAloudButtons === 'function') resetAllReadAloudButtons();
 }
 
@@ -2006,6 +2022,8 @@ function initCarousel() {
       }
     });
   }
+
+  window.updateCarousel = updateCarousel;
 
   function nextSlide() {
     currentIndex = (currentIndex + 1) % slides.length;

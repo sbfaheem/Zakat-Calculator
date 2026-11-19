@@ -107,6 +107,7 @@
         <div class="relative">
           <select 
             id="language-select" 
+            onchange="setLanguage(this.value)"
             class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300"
             aria-label="Select Language"
           >
@@ -119,7 +120,9 @@
         <!-- Currency Select -->
         <div class="relative">
           <select 
-            id="currency-select" aria-label="Select Currency" 
+            id="currency-select" 
+            onchange="setCurrency(this.value)"
+            aria-label="Select Currency" 
             class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300"
           >
             <!-- Generated dynamically via JS -->
