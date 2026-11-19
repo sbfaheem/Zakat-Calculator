@@ -33,11 +33,14 @@ for (const rel of requiredFiles) {
 
 // 2. Syntax validation
 try {
+  execSync(`node --check "${path.join(projectRoot, 'app.js')}"`, { stdio: 'pipe' });
+  execSync(`node --check "${path.join(projectRoot, 'nisab.js')}"`, { stdio: 'pipe' });
+  execSync(`node --check "${path.join(projectRoot, 'api/prices.js')}"`, { stdio: 'pipe' });
   require(path.join(projectRoot, 'nisab.js'));
   require(path.join(projectRoot, 'api/prices.js'));
-  console.log('  ✓ JS modules syntax check passed');
+  console.log('  ✓ JS syntax check passed (app.js, nisab.js, api/prices.js)');
 } catch (err) {
-  console.error('❌ JS syntax error:', err);
+  console.error('❌ JS syntax error:', err.message || err);
   process.exit(1);
 }
 

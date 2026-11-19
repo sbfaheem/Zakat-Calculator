@@ -11,7 +11,6 @@
   <!-- Resource Hints & Google Fonts Preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://cdn.tailwindcss.com">
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap">
@@ -41,7 +40,7 @@
 <body class="theme-auto bg-slate-50/50 min-h-screen flex flex-col antialiased selection:bg-emerald-100 selection:text-emerald-800">
 
   <!-- ================= HEADER / NAVIGATION ================= -->
-  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 no-print">
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs no-print">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Brand Logo -->
@@ -56,14 +55,14 @@
       </a>
 
       <!-- Desktop Nav Links -->
-      <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+      <nav class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm font-semibold text-slate-600 whitespace-nowrap">
         <a href="#calculator-section" class="text-emerald-700 border-b-2 border-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_calculator">Calculator</a>
         <button type="button" onclick="openModal('recipients-modal')" class="text-emerald-800 hover:text-emerald-950 font-bold pb-1.5 pt-0.5 transition-colors flex items-center gap-1.5" data-i18n="nav_recipients">
           <span>🤲</span> <span data-i18n="nav_recipients_text">Who Can Receive Zakat?</span>
         </button>
         <button type="button" onclick="openModal('principles-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_principles">Principles</button>
         <button type="button" onclick="openModal('nisab-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_nisab">Nisab Info</button>
-        <button type="button" onclick="resetWizard()" class="text-slate-400 hover:text-rose-600 text-xs font-bold pb-1.5 pt-0.5 transition-colors" data-i18n="btn_start_over">Reset / Start Again</button>
+        <button type="button" onclick="resetWizard()" class="text-slate-400 hover:text-rose-600 text-xs font-bold pb-1.5 pt-0.5 transition-colors whitespace-nowrap" data-i18n="btn_start_over">Reset</button>
       </nav>
 
       <!-- Currency, Language, Text Size Selector & Auto-save Status -->
@@ -1612,10 +1611,9 @@
   </div>
 
   <!-- ================= LIVE "YOUR ZAKAT SO FAR" STICKY BAR ================= -->
-  <aside id="sticky-mobile-summary">
+  <aside id="sticky-mobile-summary" class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/80 py-3.5 px-4 sm:px-6 shadow-2xl transition-transform duration-300 no-print" aria-label="Live Zakat summary">
     <!-- Screen Reader Live Calculation Announcer -->
     <div id="live-calculator-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-   class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/80 py-3.5 px-4 sm:px-6 shadow-2xl transition-transform duration-300 no-print" aria-label="Live Zakat summary">
     <div class="max-w-4xl mx-auto flex items-center justify-between gap-3">
       <div class="flex flex-col text-start min-w-0">
         <div class="flex items-center gap-2">

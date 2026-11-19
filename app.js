@@ -1699,10 +1699,6 @@ function updateWizardCalculations() {
   syncPrintReport(totals, standardName, activeNisabThreshold);
 }
 
-  // 9. Sync PDF Print Elements
-  syncPrintReport(totals, standardName, activeNisabThreshold);
-}
-
 // Synchronize Wizard state into Print Report DOM for high-fidelity PDF export
 function syncPrintReport(totals, standardName, activeNisab) {
   const printAssetsBody = document.getElementById('print-assets-table-body');
