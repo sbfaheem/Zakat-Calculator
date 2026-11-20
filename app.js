@@ -36,6 +36,9 @@ const STATE = {
   silverPrice: CURRENCIES.PKR.silver,
   isLivePrice: false,
   pricesLastUpdated: '18 Nov 2026',
+  pricesLastFetchedTime: 0,
+  rateSource: 'PakGold Sarafa',
+  ratesData: null,
   isUserCustomPrices: false,
   currentStep: 1,
   wizard: {
@@ -98,6 +101,9 @@ const TRANSLATIONS = {
     gold_price_hint: 'تبدیل کیا جا سکتا ہے۔ سونے کا نصاب: 7.5 تولہ = 87.48 گرام',
     threshold_silver_label: 'چاندی کے نصاب کی حد:',
     threshold_gold_label: 'سونے کے نصاب کی حد:',
+    btn_refresh_rates: 'ریٹس ریفریش کریں',
+    badge_custom_rates: 'کسٹم ریٹس فعال ہیں',
+    btn_use_live_rates: 'لائیو ریٹس استعمال کریں',
     advanced_nisab_title: '⚙️ ایڈوانسڈ: نصاب کا معیار تبدیل کریں (سونا / چاندی)',
     advanced_show: 'تفصیل دیکھیں',
     advanced_hide: 'چھپائیں',
@@ -317,6 +323,9 @@ const TRANSLATIONS = {
     gold_price_hint: 'Editable. Gold Nisab: 7.5 tolas = 87.48 grams',
     threshold_silver_label: 'Silver Nisab Threshold:',
     threshold_gold_label: 'Gold Nisab Threshold:',
+    btn_refresh_rates: 'Refresh Rates',
+    badge_custom_rates: 'Custom Rates Active',
+    btn_use_live_rates: 'Use Live Rates',
     advanced_nisab_title: '⚙️ Advanced: Change Nisab Standard (Gold / Silver)',
     advanced_show: 'Show details',
     advanced_hide: 'Hide',
@@ -538,6 +547,9 @@ const TRANSLATIONS = {
     gold_price_hint: 'قابل للتعديل. نصاب الذهب: 7.5 تولة = 87.48 جرام',
     threshold_silver_label: 'قيمة نصاب الفضة:',
     threshold_gold_label: 'قيمة نصاب الذهب:',
+    btn_refresh_rates: 'تحديث الأسعار',
+    badge_custom_rates: 'الأسعار المخصصة مفعلة',
+    btn_use_live_rates: 'استخدام الأسعار الحية',
     advanced_nisab_title: '⚙️ خيارات متقدمة: تغيير معيار النصاب (ذهب / فضة)',
     advanced_show: 'عرض التفاصيل',
     advanced_hide: 'إخفاء',
@@ -1164,6 +1176,7 @@ document.addEventListener('DOMContentLoaded', () => {
   translateUI();
   updateWizardCalculations();
   fetchLivePrices();
+  setupRatesAutoRefresh();
 });
 
 // Setup Step 1 Language & Currency Card Selectors
@@ -1298,6 +1311,11 @@ function translateUI() {
 function initNisabPriceInputs() {
   const goldInput = document.getElementById('gold-price-input');
   const silverInput = document.getElementById('silver-price-input');
+  const customIndicator = document.getElementById('custom-rate-indicator');
+
+  if (STATE.isUserCustomPrices && customIndicator) {
+    customIndicator.classList.remove('hidden');
+  }
 
   if (goldInput && silverInput) {
     goldInput.value = STATE.goldPrice;
@@ -1305,6 +1323,7 @@ function initNisabPriceInputs() {
 
     goldInput.addEventListener('input', (e) => {
       STATE.isUserCustomPrices = true;
+      if (customIndicator) customIndicator.classList.remove('hidden');
       STATE.goldPrice = NisabModule ? NisabModule.parseLocalizedNumber(e.target.value) : (parseFloat(e.target.value) || 0);
       updateWizardCalculations();
       saveWizardState();
@@ -1312,6 +1331,7 @@ function initNisabPriceInputs() {
 
     silverInput.addEventListener('input', (e) => {
       STATE.isUserCustomPrices = true;
+      if (customIndicator) customIndicator.classList.remove('hidden');
       STATE.silverPrice = NisabModule ? NisabModule.parseLocalizedNumber(e.target.value) : (parseFloat(e.target.value) || 0);
       updateWizardCalculations();
       saveWizardState();
@@ -1340,29 +1360,116 @@ function initNisabPriceInputs() {
   }
 }
 
-// Fetch live rates from /api/prices
-async function fetchLivePrices() {
+// 15-Minute Auto-Refresh Polling and Tab Visibility Setup
+const AUTO_REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 900,000 ms (15 minutes)
+let ratesPollingTimer = null;
+
+function setupRatesAutoRefresh() {
+  if (ratesPollingTimer) clearInterval(ratesPollingTimer);
+  ratesPollingTimer = setInterval(() => {
+    fetchLivePrices(false);
+  }, AUTO_REFRESH_INTERVAL_MS);
+
+  function onTabActive() {
+    const elapsed = Date.now() - (STATE.pricesLastFetchedTime || 0);
+    if (elapsed >= AUTO_REFRESH_INTERVAL_MS) {
+      fetchLivePrices(false);
+    }
+  }
+
+  window.addEventListener('focus', onTabActive);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      onTabActive();
+    }
+  });
+}
+
+// Manual Refresh Rates with 10s Cooldown
+let lastManualRefreshTime = 0;
+window.manualRefreshRates = async function() {
+  const now = Date.now();
+  if (now - lastManualRefreshTime < 10000) {
+    return; // 10 second cooldown
+  }
+  lastManualRefreshTime = now;
+
+  const icon = document.getElementById('refresh-rates-icon');
+  const btn = document.getElementById('btn-refresh-rates');
+  if (icon) icon.classList.add('animate-spin');
+  if (btn) btn.disabled = true;
+
+  try {
+    await fetchLivePrices(true);
+  } finally {
+    setTimeout(() => {
+      if (icon) icon.classList.remove('animate-spin');
+      if (btn) btn.disabled = false;
+    }, 600);
+  }
+};
+
+// Reset to Live Rates when Custom Override was Active
+window.resetToLiveRates = function() {
+  STATE.isUserCustomPrices = false;
+  const customIndicator = document.getElementById('custom-rate-indicator');
+  if (customIndicator) customIndicator.classList.add('hidden');
+
+  const curr = STATE.currency;
+  if (STATE.ratesData && STATE.ratesData.currencies && STATE.ratesData.currencies[curr]) {
+    STATE.goldPrice = STATE.ratesData.currencies[curr].goldPricePerGram;
+    STATE.silverPrice = STATE.ratesData.currencies[curr].silverPricePerGram;
+  } else if (CURRENCIES[curr]) {
+    STATE.goldPrice = CURRENCIES[curr].gold;
+    STATE.silverPrice = CURRENCIES[curr].silver;
+  }
+
+  const goldInput = document.getElementById('gold-price-input');
+  const silverInput = document.getElementById('silver-price-input');
+  if (goldInput) goldInput.value = STATE.goldPrice;
+  if (silverInput) silverInput.value = STATE.silverPrice;
+
+  updateWizardCalculations();
+  saveWizardState();
+};
+
+// Fetch live rates from /api/metal-rates with multi-source fallback
+async function fetchLivePrices(forceRefresh = false) {
   const curr = STATE.currency;
   try {
-    const res = await fetch(`/api/prices?currency=${curr}`);
+    const res = await fetch(`/api/metal-rates?currency=${curr}${forceRefresh ? '&refresh=true' : ''}`);
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
     const data = await res.json();
 
-    if (data && data.currencies && data.currencies[curr]) {
-      const curRates = data.currencies[curr];
+    if (data) {
+      STATE.ratesData = data;
       STATE.isLivePrice = Boolean(data.isLive);
-      STATE.pricesLastUpdated = data.updatedAtReadable || '18 Nov 2026';
+      STATE.pricesLastUpdated = data.updatedAtReadable || 'Live';
+      STATE.pricesLastFetchedTime = Date.now();
+      STATE.rateSource = data.source || 'PakGold Sarafa';
+
+      let goldRate = STATE.goldPrice;
+      let silverRate = STATE.silverPrice;
+
+      if (data.currencies && data.currencies[curr]) {
+        goldRate = data.currencies[curr].goldPricePerGram;
+        silverRate = data.currencies[curr].silverPricePerGram;
+      } else if (data.gold && data.silver) {
+        goldRate = data.gold.activePricePerGram;
+        silverRate = data.silver.activePricePerGram;
+      }
 
       if (!STATE.isUserCustomPrices) {
-        STATE.goldPrice = curRates.goldPricePerGram;
-        STATE.silverPrice = curRates.silverPricePerGram;
+        STATE.goldPrice = goldRate;
+        STATE.silverPrice = silverRate;
         const goldInput = document.getElementById('gold-price-input');
         const silverInput = document.getElementById('silver-price-input');
         if (goldInput) goldInput.value = STATE.goldPrice;
         if (silverInput) silverInput.value = STATE.silverPrice;
       }
 
-      updatePriceStatusUI(data.isLive, data.updatedAtReadable, data.notice);
+      updateLiveRatesDisplay(data);
+      updatePriceStatusUI(data.isLive, data.updatedAtReadable, data.notice, data.source);
       updateWizardCalculations();
       return;
     }
@@ -1373,26 +1480,68 @@ async function fetchLivePrices() {
   // Graceful offline fallback
   STATE.isLivePrice = false;
   STATE.pricesLastUpdated = '18 Nov 2026';
-  updatePriceStatusUI(false, '18 Nov 2026', 'Live price unavailable. Please check the price below.');
+  updatePriceStatusUI(false, '18 Nov 2026', 'Live price unavailable. Please check the price below.', 'Offline Fallback Standards');
   updateWizardCalculations();
 }
 
-function updatePriceStatusUI(isLive, dateStr, notice) {
+function updateLiveRatesDisplay(data) {
+  const sym = CURRENCIES[STATE.currency] ? CURRENCIES[STATE.currency].symbol : 'Rs';
+  const goldTolaEl = document.getElementById('live-gold-tola-display');
+  const goldGramEl = document.getElementById('live-gold-gram-display');
+  const silverTolaEl = document.getElementById('live-silver-tola-display');
+  const silverGramEl = document.getElementById('live-silver-gram-display');
+  const sourceTagEl = document.getElementById('price-source-text');
+
+  if (sourceTagEl && data.source) {
+    sourceTagEl.textContent = data.source;
+  }
+
+  const curr = STATE.currency;
+  let goldGram = STATE.goldPrice;
+  let silverGram = STATE.silverPrice;
+  let goldTola = Math.round(goldGram * 11.664);
+  let silverTola = Math.round(silverGram * 11.664);
+
+  if (data && data.currencies && data.currencies[curr]) {
+    const curObj = data.currencies[curr];
+    goldGram = curObj.goldPricePerGram;
+    silverGram = curObj.silverPricePerGram;
+    goldTola = curObj.goldPricePerTola;
+    silverTola = curObj.silverPricePerTola;
+  } else if (data && data.gold && data.silver && curr === 'PKR') {
+    goldGram = data.gold.activePricePerGram;
+    goldTola = data.gold.activePricePerTola;
+    silverGram = data.silver.activePricePerGram;
+    silverTola = data.silver.activePricePerTola;
+  }
+
+  if (goldTolaEl) goldTolaEl.textContent = `${sym} ${formatNumberWithCommas(goldTola)} / tola`;
+  if (goldGramEl) goldGramEl.textContent = `${sym} ${formatNumberWithCommas(goldGram)} / g`;
+  if (silverTolaEl) silverTolaEl.textContent = `${sym} ${formatNumberWithCommas(silverTola)} / tola`;
+  if (silverGramEl) silverGramEl.textContent = `${sym} ${formatNumberWithCommas(silverGram)} / g`;
+}
+
+function updatePriceStatusUI(isLive, dateStr, notice, source) {
   const lang = STATE.language;
   const banner = document.getElementById('price-status-banner');
   const badge = document.getElementById('price-live-badge');
   const badgeText = document.getElementById('price-live-badge-text');
   const lastUpdatedEl = document.getElementById('price-last-updated-text');
   const messageEl = document.getElementById('price-status-message');
+  const sourceTag = document.getElementById('price-source-text');
+
+  if (sourceTag && source) {
+    sourceTag.textContent = source;
+  }
 
   if (lastUpdatedEl) {
-    lastUpdatedEl.textContent = dateStr || '18 Nov 2026';
+    lastUpdatedEl.textContent = dateStr || 'Live';
   }
 
   if (isLive) {
     if (banner) banner.classList.add('hidden');
     if (badge) {
-      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
+      badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800';
     }
     if (badgeText) {
       badgeText.textContent = lang === 'ur' ? 'لائیو مارکیٹ ریٹس' : (lang === 'ar' ? 'أسعار السوق الحية' : 'Live Market Rates');
@@ -1403,10 +1552,10 @@ function updatePriceStatusUI(isLive, dateStr, notice) {
       if (messageEl && notice) messageEl.textContent = notice;
     }
     if (badge) {
-      badge.className = 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800';
+      badge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800';
     }
     if (badgeText) {
-      badgeText.textContent = lang === 'ur' ? '18 نومبر 2026 ریٹس (فال بیک)' : (lang === 'ar' ? 'أسعار احتياطية (18 نوفمبر 2026)' : '18 Nov 2026 Rates (Fallback)');
+      badgeText.textContent = lang === 'ur' ? 'فال بیک ریٹس (آف لائن)' : (lang === 'ar' ? 'أسعار احتياطية' : 'Fallback Rates (Offline)');
     }
   }
 }
@@ -1941,6 +2090,9 @@ function saveWizardState() {
       currency: STATE.currency,
       nisabStandard: STATE.nisabStandard,
       currentStep: STATE.currentStep,
+      isUserCustomPrices: STATE.isUserCustomPrices,
+      goldPrice: STATE.goldPrice,
+      silverPrice: STATE.silverPrice,
       wizard: STATE.wizard,
       savedAt: new Date().toISOString()
     };
@@ -1968,6 +2120,11 @@ function loadWizardState() {
     if (data.language && TRANSLATIONS[data.language]) STATE.language = data.language;
     if (data.currency && CURRENCIES[data.currency]) STATE.currency = data.currency;
     if (data.nisabStandard) STATE.nisabStandard = data.nisabStandard;
+    if (typeof data.isUserCustomPrices === 'boolean') {
+      STATE.isUserCustomPrices = data.isUserCustomPrices;
+    }
+    if (data.goldPrice && data.goldPrice > 0) STATE.goldPrice = data.goldPrice;
+    if (data.silverPrice && data.silverPrice > 0) STATE.silverPrice = data.silverPrice;
     if (data.wizard) {
       STATE.wizard = Object.assign(STATE.wizard, data.wizard);
     }

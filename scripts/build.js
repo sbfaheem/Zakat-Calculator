@@ -18,7 +18,8 @@ const requiredFiles = [
   'styles.css',
   'app.js',
   'nisab.js',
-  'api/prices.js'
+  'api/prices.js',
+  'api/metal-rates.js'
 ];
 
 for (const rel of requiredFiles) {
@@ -36,9 +37,11 @@ try {
   execSync(`node --check "${path.join(projectRoot, 'app.js')}"`, { stdio: 'pipe' });
   execSync(`node --check "${path.join(projectRoot, 'nisab.js')}"`, { stdio: 'pipe' });
   execSync(`node --check "${path.join(projectRoot, 'api/prices.js')}"`, { stdio: 'pipe' });
+  execSync(`node --check "${path.join(projectRoot, 'api/metal-rates.js')}"`, { stdio: 'pipe' });
   require(path.join(projectRoot, 'nisab.js'));
   require(path.join(projectRoot, 'api/prices.js'));
-  console.log('  ✓ JS syntax check passed (app.js, nisab.js, api/prices.js)');
+  require(path.join(projectRoot, 'api/metal-rates.js'));
+  console.log('  ✓ JS syntax check passed (app.js, nisab.js, api/prices.js, api/metal-rates.js)');
 } catch (err) {
   console.error('❌ JS syntax error:', err.message || err);
   process.exit(1);
