@@ -41,34 +41,34 @@
 
   <!-- ================= HEADER / NAVIGATION ================= -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-2xs no-print">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       
-      <!-- Brand Logo -->
-      <a href="#calculator-section" class="flex items-center gap-2.5 group" aria-label="ZakatFlow Home">
-        <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 group-hover:scale-105 transition-transform duration-200" aria-hidden="true">
-          <!-- Leaf / Sprout Icon -->
-          <svg class="w-5.5 h-5.5 text-emerald-600" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
-          </svg>
-        </div>
-        <span class="text-xl font-bold tracking-tight text-slate-800 font-display" data-i18n="brand_name">Zakat<span class="text-emerald-600">Flow</span></span>
-      </a>
+      <!-- Brand Logo & Desktop Nav Group -->
+      <div class="flex items-center gap-6 xl:gap-8 min-w-0">
+        <a href="#calculator-section" class="flex items-center gap-2.5 group flex-shrink-0" aria-label="ZakatFlow Home">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 group-hover:scale-105 transition-transform duration-200" aria-hidden="true">
+            <!-- Leaf / Sprout Icon -->
+            <svg class="w-5.5 h-5.5 text-emerald-600" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+          </div>
+          <span class="text-xl font-bold tracking-tight text-slate-800 font-display whitespace-nowrap" data-i18n="brand_name">Zakat<span class="text-emerald-600">Flow</span></span>
+        </a>
 
-      <!-- Desktop Nav Links -->
-      <nav class="hidden lg:flex items-center gap-4 xl:gap-6 text-sm font-semibold text-slate-600 whitespace-nowrap">
-        <a href="#calculator-section" class="text-emerald-700 border-b-2 border-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_calculator">Calculator</a>
-        <button type="button" onclick="openModal('recipients-modal')" class="text-emerald-800 hover:text-emerald-950 font-bold pb-1.5 pt-0.5 transition-colors flex items-center gap-1.5" data-i18n="nav_recipients">
-          <span>🤲</span> <span data-i18n="nav_recipients_text">Who Can Receive Zakat?</span>
-        </button>
-        <button type="button" onclick="openModal('principles-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_principles">Principles</button>
-        <button type="button" onclick="openModal('nisab-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_nisab">Nisab Info</button>
-        <button type="button" onclick="resetWizard()" class="text-slate-400 hover:text-rose-600 text-xs font-bold pb-1.5 pt-0.5 transition-colors whitespace-nowrap" data-i18n="btn_start_over">Reset</button>
-      </nav>
+        <!-- Desktop Nav Links -->
+        <nav class="hidden xl:flex items-center gap-5 text-sm font-semibold text-slate-600 whitespace-nowrap">
+          <a href="#calculator-section" class="text-emerald-700 border-b-2 border-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_calculator">Calculator</a>
+          <button type="button" onclick="openModal('recipients-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_recipients">Recipients Guide</button>
+          <button type="button" onclick="openModal('principles-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_principles">Principles</button>
+          <button type="button" onclick="openModal('nisab-modal')" class="hover:text-emerald-700 pb-1.5 pt-0.5 transition-colors" data-i18n="nav_nisab">Nisab Info</button>
+          <button type="button" onclick="resetWizard()" class="text-slate-400 hover:text-rose-600 text-xs font-bold pb-1.5 pt-0.5 transition-colors whitespace-nowrap" data-i18n="btn_start_over">Reset</button>
+        </nav>
+      </div>
 
       <!-- Currency, Language, Text Size Selector & Auto-save Status -->
-      <div class="flex items-center gap-2 sm:gap-3">
+      <div class="flex items-center gap-2 sm:gap-2.5 md:gap-3 flex-shrink-0">
         <!-- Text Size Control (A- / A / A+) -->
-        <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-2xs" role="group" aria-label="Text size control">
+        <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-2xs flex-shrink-0" role="group" aria-label="Text size control">
           <button 
             type="button" 
             onclick="setTextSize('sm')" 
@@ -99,16 +99,17 @@
         </div>
 
         <!-- Auto-save Pill -->
-        <span id="nav-autosave-badge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-100 shadow-sm">
+        <span id="nav-autosave-badge" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-100 shadow-2xs whitespace-nowrap flex-shrink-0">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span id="nav-autosave-text" data-i18n="badge_autosaved">Saved</span>
         </span>
+
         <!-- Language Select -->
-        <div class="relative">
+        <div class="relative flex-shrink-0">
           <select 
             id="language-select" 
             onchange="setLanguage(this.value)"
-            class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300"
+            class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300"
             aria-label="Select Language"
           >
             <option value="ur" selected>اردو (Urdu)</option>
@@ -118,23 +119,20 @@
         </div>
 
         <!-- Currency Select -->
-        <div class="relative">
+        <div class="relative flex-shrink-0">
           <select 
             id="currency-select" 
             onchange="setCurrency(this.value)"
             aria-label="Select Currency" 
-            class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-600 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300"
+            class="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 cursor-pointer hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all-300 min-w-[96px]"
           >
-            <!-- Generated dynamically via JS -->
+            <option value="PKR" selected>PKR (Rs)</option>
+            <option value="USD">USD ($)</option>
+            <option value="SAR">SAR (SR)</option>
+            <option value="AED">AED (AED)</option>
+            <option value="GBP">GBP (£)</option>
           </select>
         </div>
-        <a 
-          href="#calculator-section" 
-          class="hidden sm:inline-flex items-center justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all-300 shadow-sm shadow-emerald-700/10"
-          data-i18n="nav_calculator"
-        >
-          Calculate Now
-        </a>
       </div>
 
     </div>

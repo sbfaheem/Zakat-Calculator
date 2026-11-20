@@ -1214,7 +1214,17 @@ function updateCurrencyCards() {
   });
 
   const topSelect = document.getElementById('currency-select');
-  if (topSelect) topSelect.value = STATE.currency;
+  if (topSelect) {
+    if (topSelect.options.length === 0) {
+      Object.keys(CURRENCIES).forEach(code => {
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = `${code} (${CURRENCIES[code].symbol})`;
+        topSelect.appendChild(opt);
+      });
+    }
+    topSelect.value = STATE.currency;
+  }
 
   updateCurrencySymbols();
 }
